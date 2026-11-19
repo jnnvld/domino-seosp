@@ -693,15 +693,15 @@ function vRank(){
   let h=`<h2>CLASSIFICAÇÃO</h2>
   <div class="seg" style="margin-bottom:8px"><button data-rk="jog" class="${rankAba==="jog"?"on":""}">👤 Jogadores</button><button data-rk="dup" class="${rankAba==="dup"?"on":""}">👥 Duplas</button></div>
   <div class="seg" style="margin-bottom:8px"><button data-filtro="hoje" class="${rankFiltro==="hoje"?"on":""}">Hoje</button><button data-filtro="decreto" class="${rankFiltro==="decreto"?"on":""}">Desde 18/11</button><button data-filtro="tudo" class="${rankFiltro==="tudo"?"on":""}">Tudo</button></div>`;
-  const leg=`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">PTS: vitória +${PONTO_VIT}; batida especial +2 (preso/dobrada +3); seca +1; infração −1 a −5. Desempate: vitórias → especiais → secas → menos infrações. <a href="#regras" data-go="regras">Tabela completa</a></p>`;
+  const leg=`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">J: jogos. PTS: vitória +${PONTO_VIT}; batida especial +2 (preso/dobrada +3); seca +1; infração −1 a −5. Desempate: vitórias → especiais → secas → menos infrações. <a href="#regras" data-go="regras">Tabela completa</a></p>`;
   if(rankAba==="dup"){
     const L=statsDuplas();
-    h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Dupla</th><th>PTS</th><th>V</th><th>D</th><th>PÇ</th><th>ESP</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""}"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${x.vitorias}</td><td>${x.derrotas}</td><td>${x.pecas}</td><td>${x.espN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+leg:`<div class="card empty">Nenhuma dupla completa jogou nesse período.</div>`;
+    h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Dupla</th><th>PTS</th><th>J</th><th>V</th><th>D</th><th>PÇ</th><th>ESP</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""}"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas}</td><td>${x.pecas}</td><td>${x.espN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+leg:`<div class="card empty">Nenhuma dupla completa jogou nesse período.</div>`;
     h+=`<h2>DUPLAS CADASTRADAS</h2><div class="card">${cache.duplas.length?cache.duplas.map(d=>`<div class="match"><div class="grow"><b>${esc(nomesDupla(d))}</b></div><button class="btn ghost sm" data-rmdp="${d.id}">Excluir</button></div>`).join(""):`<div class="empty" style="padding:10px">Nenhuma dupla cadastrada.</div>`}<button class="btn gold sm" style="width:100%;margin-top:10px" data-act="novaDupla">+ ADICIONAR DUPLA</button></div>`;
     return h;
   }
   const L=stats().filter(x=>x.mesas||x.pts||x.infTot||Object.keys(x.b).length).sort(ordemCamp);
-  h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>PTS</th><th>V</th><th>D</th><th>ESP</th><th>SEC</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""}" data-avj="${esc(x.nome)}" style="cursor:pointer"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${x.vitorias}</td><td>${x.derrotas||0}</td><td>${x.espN}</td><td>${x.secN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+leg:`<div class="card empty">Nenhum registro nesse período.</div>`;
+  h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>PTS</th><th>J</th><th>V</th><th>D</th><th>ESP</th><th>SEC</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""}" data-avj="${esc(x.nome)}" style="cursor:pointer"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas||0}</td><td>${x.espN}</td><td>${x.secN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+leg:`<div class="card empty">Nenhum registro nesse período.</div>`;
   h+=`<div class="row" style="margin:12px 0 6px"><button class="btn tc sm grow" data-act="avulso">+ Lançamento avulso</button><button class="btn sm grow" data-act="novoJog">+ Novo jogador</button></div>
   <div class="row" style="margin-bottom:6px"><button class="btn sm grow" style="background:#8A6A1F" data-act="balanco">📅 Balanço do dia</button><button class="btn gold sm grow" data-act="imgRank">📷 Imagem</button><button class="btn ghost sm" data-act="copiarRank">Texto</button></div>`;
   if(L.length)h+=`<details class="card" style="padding:10px 12px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📊 Estatísticas detalhadas por jogador</summary><div style="margin-top:10px">${L.map((x,i)=>cardJog(x,i,"Pontos",y=>y.pts)).join("")}</div></details>`;
@@ -853,7 +853,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="filaN
 async function copiarRank(){
   const L=stats();const [lab,fn]=ORDENS[rankOrdem];
   const LL=L.filter(x=>x.mesas||x.pts||x.infTot).sort(ordemCamp);
-  const txt=`*DOMINÓ SEOSP · Classificação*\n${rankFiltro==="hoje"?"Hoje":rankFiltro==="decreto"?"Desde 18/11/2026":"Histórico completo"}\n\n`+LL.map((x,i)=>`${i+1}. ${x.nome}: ${x.pts} pts · V ${x.vitorias} · D ${x.derrotas||0} · Esp ${x.espN} · Sec ${x.secN} · Infr ${x.infTot}`).join("\n");
+  const txt=`*DOMINÓ SEOSP · Classificação*\n${rankFiltro==="hoje"?"Hoje":rankFiltro==="decreto"?"Desde 18/11/2026":"Histórico completo"}\n\n`+LL.map((x,i)=>`${i+1}. ${x.nome}: ${x.pts} pts · J ${x.mesas} · V ${x.vitorias} · D ${x.derrotas||0} · Esp ${x.espN} · Sec ${x.secN} · Infr ${x.infTot}`).join("\n");
   try{await navigator.clipboard.writeText(txt);toast("Ranking copiado. É só colar no WhatsApp.");}
   catch(e){openSheet({t:"texto",txt});}
 }
@@ -1008,7 +1008,7 @@ async function imgRank(){
     g.fillStyle=i<3?"#fff":"#1E3A2A";g.font="800 32px Montserrat, sans-serif";g.textAlign="center";g.fillText(String(i+1),112,y+64);g.textAlign="left";
     g.fillStyle="#2E2218";g.font="700 38px 'Source Sans 3', sans-serif";g.fillText(x.nome.length>22?x.nome.slice(0,21)+"…":x.nome,170,y+50);
     g.fillStyle="#6B5A48";g.font="400 25px 'Source Sans 3', sans-serif";
-    g.fillText(`Vit. ${x.vitorias} · Der. ${x.derrotas||0} · Especiais ${x.espN} · Secas ${x.secN} · Infr. ${x.infTot}`,170,y+88);
+    g.fillText(`Jogos ${x.mesas} · Vit. ${x.vitorias} · Der. ${x.derrotas||0} · Esp. ${x.espN} · Secas ${x.secN} · Infr. ${x.infTot}`,170,y+88);
     g.textAlign="right";g.fillStyle="#1E3A2A";g.font="800 56px Montserrat, sans-serif";g.fillText(String(fn(x)),W-80,y+70);g.textAlign="left";
   });
   if(!top.length){g.fillStyle="#6B5A48";g.font="400 34px 'Source Sans 3', sans-serif";g.textAlign="center";g.fillText("Nenhum registro ainda.",W/2,450);g.textAlign="left";}
