@@ -328,7 +328,7 @@ function vMesas(){
   const fim=cache.partidas.filter(p=>p.status!=="ativa").slice(0,10);
   let h=`<h2>MESAS EM ANDAMENTO</h2>`;
   h+=ativas.length?`<div class="card">${ativas.map(linhaPartida).join("")}</div>`:`<div class="card empty">Nenhuma mesa em andamento.</div>`;
-  h+=`<div class="row"><button class="btn gold grow" style="min-height:56px;font-size:15px" data-act="mesaRapida">⚡ MESA RÁPIDA</button><button class="btn grow" style="min-height:56px;font-size:15px" data-act="novaMesa">+ NOVA MESA</button></div><p class="muted" style="margin:6px 2px 0">Mesa rápida: começa na hora como Dupla A × Dupla B, sem nomes. Dá para nomear depois.</p>`;
+  h+=`<div class="row"><button class="btn gold grow" style="min-height:56px;font-size:15px" data-act="mesaRapida">⚡ MESA RÁPIDA</button><button class="btn grow" style="min-height:56px;font-size:15px" data-act="novaMesa">+ NOVA MESA</button></div><p class="muted" style="margin:6px 2px 0">Mesa rápida: começa na hora como Dupla A × Dupla B, sem escolher jogadores.</p>`;
   h+=`<button class="btn" style="width:100%;min-height:56px;margin-top:10px;background:#5E7F4F;font-size:15px" data-act="novoLust">🎯 LUSTRADO · INDIVIDUAL, PONTOS DE 5 EM 5</button>`;
   const la=cache.lustrados.filter(l=>l.status==="ativa");
   if(la.length)h+=`<h2>LUSTRADO EM ANDAMENTO</h2><div class="card">${la.map(linhaLust).join("")}</div>`;
