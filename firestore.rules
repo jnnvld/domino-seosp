@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{col}/{id} {
+      allow read: if col in ['jogadores','duplas','partidas','campeonatos','fila','avulsos','lustrados'];
+      allow create, update: if col in ['jogadores','duplas','partidas','campeonatos','fila','avulsos','lustrados']
+                            && request.resource.data.size() < 40;
+      allow delete: if col in ['fila','duplas'];
+    }
+  }
+}
