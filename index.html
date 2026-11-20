@@ -99,6 +99,8 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));background:var(--tx);color:var(--iv);padding:10px 16px;border-radius:10px;font-size:14px;z-index:30;max-width:90vw}
 .match{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--ln)}
 .match:last-child{border-bottom:0}
+.rg{padding:0;margin-bottom:8px}.rg summary{padding:12px 14px;font-weight:700;color:var(--gd);cursor:pointer;list-style:none}.rg summary::after{content:"▸";float:right;color:var(--go)}.rg[open] summary::after{content:"▾"}.rg .rules{padding:0 14px 10px}
+.gl p{margin:5px 0;font-size:14px}
 .gprot{margin-top:12px;padding-top:10px;border-top:1px solid var(--ln)}
 .doc{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--ln);color:var(--tx);text-decoration:none;font-size:20px}.doc:last-child{border-bottom:0}
 .doc span{flex:1;display:flex;flex-direction:column;font-size:15px}.doc small{font-size:12.5px;color:var(--mu)}
@@ -167,6 +169,12 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .div.lib .hd{background:linear-gradient(0deg,#1E3A2A,#1E3A2A);border-bottom:3px solid #D9B45A}
 .div.sul .hd{background:#5E7F4F;border-bottom:3px solid #B8892B}
 .div .lider{background:#FFF6DC}
+.div.br .hd{background:#2A4D38;border-bottom:3px solid #D9B45A}
+.aviso{position:relative;padding-right:38px!important}
+.segc button{font-size:12.5px;padding-left:4px;padding-right:4px;white-space:nowrap}
+.xbtn{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(46,34,24,.08);color:var(--mu);font-size:13px;cursor:pointer;line-height:26px;padding:0}
+.mt-r.zg{box-shadow:inset 4px 0 #D9B45A}.mt-r.zint{box-shadow:inset 4px 0 #5E7F4F}.mt-r.zmeio{box-shadow:inset 4px 0 #D8CBAA}.mt-r.zlan{box-shadow:inset 4px 0 #C9704A;background:#F7E1D5}
+.mt-r.zg+.mt-r.zint,.mt-r.zint+.mt-r.zmeio,.mt-r.zmeio+.mt-r.zlan,.mt-r.zg+.mt-r.zmeio,.mt-r.zint+.mt-r.zlan,.mt-r.zg+.mt-r.zlan{border-top:2px dashed #CDBB8F}
 .selos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
 .selo{display:flex;gap:8px;align-items:flex-start;background:var(--iv);border:1px solid var(--ln);border-left:4px solid var(--go);border-radius:12px;padding:8px 10px}
 .selo.neg{border-left-color:var(--tc)}.selo .ic{font-size:24px;line-height:1}
@@ -467,7 +475,7 @@ async function adminEntrar(){
   if(hex!==ADMIN_HASH){toast("Senha incorreta.");if(i)i.value="";return;}
   admin=true;try{sessionStorage.setItem("seospAdmin","1");}catch(e){}render();toast("Modo presidente ativo.");
 }let view="mesa",curPartida=null,sheet=null,rankFiltro="decreto",rankOrdem="pts",rankCrit="pts",curCamp=null;
-const VIEWS=[["mesa","MESA"],["mes","CAMP. DO MÊS"],["rank","JOGADORES"],["camp","TORNEIOS"],["regras","REGRAS"]];
+const VIEWS=[["mesa","MESA"],["mes","CAMP. DO MÊS"],["rank","ESTATÍSTICAS"],["camp","TORNEIOS"],["regras","REGRAS"]];
 function go(v){view=v;sheet=null;if(location.hash!=="#"+v)history.replaceState(null,"","#"+v);render();window.scrollTo(0,0);}
 window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(VIEWS.some(x=>x[0]===h)&&h!==view){view=h;render();}});
 
@@ -494,7 +502,8 @@ function vMesas(){
   const fim=cache.partidas.filter(p=>p.status!=="ativa").slice(0,10);
   let h="";
   if(!instalado()&&!localStorage.getItem("seosp_noinst"))h+=`<div class="inst"><span>📲 <b>Instale o placar</b> na tela inicial: abre como app e funciona sem internet.</span><button class="btn gold sm" data-act="instalar">Instalar</button><button class="btn ghost sm" data-act="noinst" aria-label="Dispensar">✕</button></div>`;
-  if(paradas.length)h+=`<div class="banner tc" style="display:block;text-align:left;font-size:14px;line-height:1.4">⚠️ <b>${paradas.length===1?"1 mesa parada":paradas.length+" mesas paradas"} há mais de ${PARADA_H}h.</b> Abra e encerre se o jogo acabou; se foi aberta por engano, avise o Presidente para excluir.</div>`;
+  const kp="parada_"+paradas.map(p=>p.id).join("_");
+  if(paradas.length&&!fechado1(kp))h+=`<div class="banner tc aviso" style="display:block;text-align:left;font-size:14px;line-height:1.4">${xBtn(kp)}⚠️ <b>${paradas.length===1?"1 mesa parada":paradas.length+" mesas paradas"} há mais de ${PARADA_H}h.</b> Abra e encerre se o jogo acabou; se foi aberta por engano, avise o Presidente para excluir.</div>`;
   h+=`<h2>MESAS EM ANDAMENTO</h2>`;
   h+=ativas.length?`<div>${ativas.map(linhaPartida).join("")}</div>`:`<div class="card empty">Nenhuma mesa em andamento.</div>`;
   h+=`<div class="row"><button class="btn gold grow" style="min-height:56px;font-size:15px" data-act="mesaRapida">⚡ MESA RÁPIDA</button><button class="btn grow" style="min-height:56px;font-size:15px" data-act="novaMesa">+ NOVA MESA</button></div><p class="muted" style="margin:6px 2px 0">Mesa rápida: começa na hora como Dupla A × Dupla B, sem escolher jogadores.</p>`;
@@ -670,7 +679,7 @@ document.addEventListener("change",e=>{
   if(t.id==="rankOrdem"){rankOrdem=t.value;render();}
 });
 document.addEventListener("click",async e=>{
-  const el=e.target.closest("[data-autor],[data-extrato],[data-ficha],[data-rkc],[data-campaba],[data-mes],[data-lance],[data-lt],[data-slot],[data-cj],[data-cdp],[data-rmdp],[data-ndp],[data-rk],[data-delev],[data-merge],[data-mto],[data-lsel],[data-lmeta],[data-lpts],[data-lopen],[data-lmaoi],[data-lout],[data-avn],[data-avc],[data-avj],[data-rmav],[data-esc],[data-rmfila],[data-act],[data-go],[data-open],[data-ji],[data-tipo],[data-modo],[data-filtro],[data-camp],[data-cdupla],[data-fmt],[data-jogar],[data-ren]");
+  const el=e.target.closest("[data-fx],[data-comp-aba],[data-autor],[data-extrato],[data-ficha],[data-rkc],[data-campaba],[data-mes],[data-lance],[data-lt],[data-slot],[data-cj],[data-cdp],[data-rmdp],[data-ndp],[data-rk],[data-delev],[data-merge],[data-mto],[data-lsel],[data-lmeta],[data-lpts],[data-lopen],[data-lmaoi],[data-lout],[data-avn],[data-avc],[data-avj],[data-rmav],[data-esc],[data-rmfila],[data-act],[data-go],[data-open],[data-ji],[data-tipo],[data-modo],[data-filtro],[data-camp],[data-cdupla],[data-fmt],[data-jogar],[data-ren]");
   if(!el)return;
   if(el.dataset.go){e.preventDefault();curPartida=null;curCamp=null;curLust=null;go(el.dataset.go);return;}
   if(el.dataset.open){curPartida=el.dataset.open;if(sheet){sheet=null;renderSheet();}if(view!=="mesa"){go("mesa");return;}render();window.scrollTo(0,0);return;}
@@ -684,7 +693,9 @@ document.addEventListener("click",async e=>{
   if(el.dataset.cdp&&sheet&&sheet.t==="nova"){const d=byId("duplas",el.dataset.cdp);if(d){const L=(!sheet.A1&&!sheet.A2)?"A":(!sheet.B1&&!sheet.B2)?"B":(sheet.foco&&sheet.foco[0])||"B";sheet[L+"1"]=nomeJog(d.j1);sheet[L+"2"]=nomeJog(d.j2);sheet.foco=null;}keepScroll();return;}
   if(el.dataset.ndp!=null&&sheet&&sheet.t==="novaDupla"){const n=el.dataset.ndp;sheet.sel=sheet.sel||[];sheet.sel=sheet.sel.includes(n)?sheet.sel.filter(x=>x!==n):sheet.sel.length>=2?[sheet.sel[1],n]:[...sheet.sel,n];keepScroll();return;}
   if(el.dataset.rmdp){if(!el.dataset.ok){el.dataset.ok="1";el.textContent="Confirmar";setTimeout(()=>{if(el.isConnected){delete el.dataset.ok;el.textContent="Excluir";}},3000);return;}await del("duplas",el.dataset.rmdp);toast("Dupla excluída.");return;}
-  if(el.dataset.extrato){openSheet({t:"extrato",id:el.dataset.extrato,off:mesOff});return;}
+  if(el.dataset.fx){try{localStorage.setItem("seosp_x_"+el.dataset.fx,"1");}catch(e){}render();return;}
+  if(el.dataset.compAba){compAba=el.dataset.compAba;render();return;}
+  if(el.dataset.extrato){openSheet({t:"extrato",id:el.dataset.extrato,off:mesOff,comp:el.dataset.comp});return;}
   if(el.dataset.ficha){openSheet({t:"ficha",id:el.dataset.ficha});return;}
   if(el.dataset.rkc){rankCrit=el.dataset.rkc;render();return;}
   if(el.dataset.rk){rankAba=el.dataset.rk;render();return;}
@@ -830,11 +841,12 @@ async function proxima(){
 }
 
 /* ===================== RANKING ===================== */
-function stats(ini=iniPeriodo(),fim=Infinity,soMesas=false){
+function stats(ini=iniPeriodo(),fim=Infinity,modo=false){const soMesas=!!modo;
   const S={};const em=t=>(t||0)>=ini&&(t||0)<fim;const NADA={b:{},inf:{}};const get=id=>!id?Object.assign(NADA,{mesas:0,vitorias:0,derrotas:0,esp:0,infTot:0,adv:0}):S[id]||(S[id]={id,nome:nomeJog(id),mesas:0,vitorias:0,derrotas:0,b:{},inf:{},esp:0,infTot:0,adv:0});
   for(const p of cache.partidas){
     const st=computeState(p);
-    if(soMesas&&(st.A.pecas+st.B.pecas)===0)continue;
+    if(modo==="peca"&&(st.A.pecas+st.B.pecas)===0)continue;
+    if(modo==="jogada"&&!(p.eventos||[]).length)continue;
     for(const j of [p.duplaA.j1,p.duplaA.j2,p.duplaB.j1,p.duplaB.j2])if(em(p.criadoEm))get(j).mesas++;
     if(st.winner&&em(p.criadoEm)){const d=p["dupla"+st.winner];get(d.j1).vitorias++;get(d.j2).vitorias++;const o=p["dupla"+other(st.winner)];get(o.j1).derrotas++;get(o.j2).derrotas++;}
     for(const e of p.eventos||[]){
@@ -886,24 +898,24 @@ function zonasBR(N){
   return {faixas:F,de:i=>{for(const f of F)if(f.n&&i+1>=f.ini&&i+1<=f.fim)return f.k;return "";}};
 }
 function vRank(){
-  let h=`<h2>BRASILEIRÃO</h2><p class="muted" style="margin:-4px 2px 10px;font-size:13px">Ranking geral, por pontos acumulados.</p>
+  let h=`<h2>ESTATÍSTICAS</h2><p class="muted" style="margin:-4px 2px 10px;font-size:13px">Histórico geral, sem disputa de título. As competições estão em Camp. do Mês.</p>
   <div class="seg" style="margin-bottom:8px"><button data-rk="jog" class="${rankAba==="jog"?"on":""}">👤 Jogadores</button><button data-rk="dup" class="${rankAba==="dup"?"on":""}">👥 Duplas</button></div>
   <div class="seg" style="margin-bottom:8px"><button data-filtro="hoje" class="${rankFiltro==="hoje"?"on":""}">Hoje</button><button data-filtro="decreto" class="${rankFiltro==="decreto"?"on":""}">Desde 18/11</button><button data-filtro="tudo" class="${rankFiltro==="tudo"?"on":""}">Tudo</button></div>
-  <div class="seg" style="margin-bottom:8px"><button data-rkc="pts" class="${rankCrit==="pts"?"on":""}">Por pontos</button><button data-rkc="med" class="${rankCrit==="med"?"on":""}">Por média (${LIB_MIN}+ jogos)</button></div>`;
-  const porMed=rankCrit==="med";const comMed=x=>({...x,med:x.mesas?x.pts/x.mesas:0});
+`;
+  rankCrit="pts";const porMed=false;const comMed=x=>({...x,med:x.mesas?x.pts/x.mesas:0});
   const aplica=(lista,ordBase)=>{if(!porMed)return {lista,fora:0};const ok=lista.filter(x=>x.mesas>=LIB_MIN).sort((a,b)=>b.med-a.med||ordBase(a,b));return {lista:ok,fora:lista.length-ok.length};};
   const notaMed=f=>porMed?`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">Ordenado pela média (pontos ÷ jogos), só com ${LIB_MIN} jogos ou mais no período.${f?` ${f} fora por ter menos jogos.`:""} Empate na média: critérios normais.</p>`:"";
-  const leg=`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">J: jogos. MÉD: pontos ÷ jogos. PTS: vitória +${PONTO_VIT}; batida especial +2 (preso/dobrada +3); seca +1; infração −1 a −5. Desempate: vitórias → especiais → secas → menos infrações. <a href="#regras" data-go="regras">Tabela completa</a></p>`;
+  const leg=`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">M: mesas. PC: pontos de classificação (mesa vencida +${PONTO_VIT}; batida especial +2/+3; seca +1; infração −1 a −5). MÉD: PC ÷ mesas. Inclui avulsos. <a href="#regras" data-go="regras">Tabela completa</a></p>`;
   if(rankAba==="dup"){
     const R=aplica(statsDuplas().map(comMed),(a,b)=>ordemCamp(a,b)||b.pecas-a.pecas);const L=R.lista;
-    h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Dupla</th><th>PTS</th><th>MÉD</th><th>J</th><th>V</th><th>D</th><th>PÇ</th><th>ESP</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""}"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas}</td><td>${x.pecas}</td><td>${x.espN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+notaMed(R.fora)+leg:`<div class="card empty">${porMed?`Nenhuma dupla com ${LIB_MIN} jogos ou mais nesse período.`:"Nenhuma dupla completa jogou nesse período."}</div>`;
+    h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Dupla</th><th>PC</th><th>MÉD</th><th>M</th><th>V</th><th>D</th><th>PÇ</th><th>ESP</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""}"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas}</td><td>${x.pecas}</td><td>${x.espN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+notaMed(R.fora)+leg:`<div class="card empty">${porMed?`Nenhuma dupla com ${LIB_MIN} jogos ou mais nesse período.`:"Nenhuma dupla completa jogou nesse período."}</div>`;
     h+=`<h2>DUPLAS CADASTRADAS</h2><div class="card">${cache.duplas.length?cache.duplas.map(d=>`<div class="match"><div class="grow"><b>${esc(nomesDupla(d))}</b></div><button class="btn ghost sm" data-rmdp="${d.id}">Excluir</button></div>`).join(""):`<div class="empty" style="padding:10px">Nenhuma dupla cadastrada.</div>`}<button class="btn gold sm" style="width:100%;margin-top:10px" data-act="novaDupla">+ ADICIONAR DUPLA</button></div>`;
     return h;
   }
   const L0=stats().filter(x=>x.mesas||x.pts||x.infTot||Object.keys(x.b).length).map(comMed).sort(ordemCamp);const R=aplica(L0,ordemCamp);const L=R.lista;
-  const Z=porMed?null:zonasBR(L.length);
+  const Z=null;
   if(Z)h+=`<div class="dvleg">${Z.faixas.filter(f=>f.n).map(f=>`<span><i class="dv ${f.k}"></i><b>${f.nome}</b> <span class="muted">${f.ini===f.fim?f.ini+"º":f.ini+"º–"+f.fim+"º"}</span></span>`).join("")}</div>`;
-  h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>PTS</th><th>MÉD</th><th>J</th><th>V</th><th>D</th><th>ESP</th><th>SEC</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""} ${Z?"z"+Z.de(i):""}" data-ficha="${x.id}" style="cursor:pointer"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas||0}</td><td>${x.espN}</td><td>${x.secN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+notaMed(R.fora)+leg:`<div class="card empty">${porMed?`Ninguém com ${LIB_MIN} jogos ou mais nesse período.`:"Nenhum registro nesse período."}</div>`;
+  h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>PC</th><th>MÉD</th><th>M</th><th>V</th><th>D</th><th>ESP</th><th>SEC</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""} ${Z?"z"+Z.de(i):""}" data-ficha="${x.id}" style="cursor:pointer"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas||0}</td><td>${x.espN}</td><td>${x.secN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+notaMed(R.fora)+leg:`<div class="card empty">${porMed?`Ninguém com ${LIB_MIN} jogos ou mais nesse período.`:"Nenhum registro nesse período."}</div>`;
   h+=`<div class="row" style="margin:12px 0 6px"><button class="btn tc sm grow" data-act="avulso">+ Lançamento avulso</button><button class="btn sm grow" data-act="novoJog">+ Novo jogador</button></div>
   <div class="row" style="margin-bottom:6px"><button class="btn sm grow" style="background:#8A6A1F" data-act="balanco">📅 Balanço do dia</button><button class="btn gold sm grow" data-act="imgRank">📷 Imagem</button><button class="btn ghost sm" data-act="copiarRank">Texto</button></div>`;
   if(L.length)h+=`<details class="card" style="padding:10px 12px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📊 Estatísticas detalhadas por jogador</summary><div style="margin-top:10px">${L.map((x,i)=>cardJog(x,i,"Pontos",y=>y.pts)).join("")}</div></details>`;
@@ -946,17 +958,22 @@ function confronto(grupo,w){
 }
 function tabelaMes(off){
   const w=janelaMes(off);
-  const L=stats(w.ini,w.fim,true).filter(x=>x.mesas>0).map(x=>({...x,med:x.pts/x.mesas}));
-  const ord=(a,b)=>b.med-a.med||b.pts-a.pts||b.vitorias-a.vitorias||b.espN-a.espN||b.secN-a.secN||a.infTot-b.infTot;
-  const classif=lista=>{lista.sort((a,b)=>ord(a,b)||a.nome.localeCompare(b.nome,"pt-BR"));const out=[];
+  const classif=(lista,ord)=>{lista.sort((a,b)=>ord(a,b)||a.nome.localeCompare(b.nome,"pt-BR"));const out=[];
     for(let i=0;i<lista.length;){let j=i+1;while(j<lista.length&&ord(lista[i],lista[j])===0)j++;
       const g=lista.slice(i,j);if(g.length>1){const v=confronto(g,w);g.forEach(x=>x.cd=v[x.id]);g.sort((a,b)=>b.cd-a.cd||a.nome.localeCompare(b.nome,"pt-BR"));}
       g.forEach((x,k)=>{x.pos=(k>0&&g.length>1&&x.cd===g[k-1].cd)?g[k-1].pos:out.length+k+1;x.empate=g.length>1;});
       out.push(...g);i=j;}
     return out;};
-  const lib=classif(L.filter(x=>x.mesas>=LIB_MIN)),sul=classif(L.filter(x=>x.mesas>=SUL_MIN&&x.mesas<LIB_MIN));
-  return {w,lib,sul,aq:L.filter(x=>x.mesas<SUL_MIN).sort((a,b)=>b.mesas-a.mesas||ord(a,b)||a.nome.localeCompare(b.nome,"pt-BR")),
-    campLib:lib.filter(x=>x.pos===1),campSul:sul.filter(x=>x.pos===1)};
+  // Libertadores e Sul-Americana: mesas com peça, por média
+  const L=stats(w.ini,w.fim,"peca").filter(x=>x.mesas>0).map(x=>({...x,med:x.pts/x.mesas}));
+  const ordM=(a,b)=>b.med-a.med||b.pts-a.pts||b.vitorias-a.vitorias||b.espN-a.espN||b.secN-a.secN||a.infTot-b.infTot;
+  const lib=classif(L.filter(x=>x.mesas>=LIB_MIN),ordM),sul=classif(L.filter(x=>x.mesas>=SUL_MIN&&x.mesas<LIB_MIN),ordM);
+  // Brasileirão: toda mesa com jogada, por total de PC
+  const B=stats(w.ini,w.fim,"jogada").filter(x=>x.mesas>0).map(x=>({...x,med:x.pts/x.mesas}));
+  const ordB=(a,b)=>b.pts-a.pts||b.vitorias-a.vitorias||b.espN-a.espN||b.secN-a.secN||a.infTot-b.infTot;
+  const br=classif(B,ordB);
+  return {w,lib,sul,br,aq:L.filter(x=>x.mesas<SUL_MIN).sort((a,b)=>b.mesas-a.mesas||ordM(a,b)||a.nome.localeCompare(b.nome,"pt-BR")),
+    campLib:lib.filter(x=>x.pos===1),campSul:sul.filter(x=>x.pos===1),campBr:br.filter(x=>x.pos===1)};
 }
 const fmtMed=v=>v.toFixed(2).replace(".",",");
 function decompor(x){
@@ -966,82 +983,93 @@ function decompor(x){
   return {vit,bat,inf,sb,si,tot:vit+sb+si};
 }
 const aprov=x=>x.mesas?Math.round(100*x.vitorias/x.mesas)+"%":"–";
+const COMP={br:{nome:"Brasileirão",ic:"🇧🇷",camp:"Campeão do Brasileirão"},lib:{nome:"Libertadores",ic:"🏆",camp:"Campeão da Libertadores"},sul:{nome:"Sul-Americana",ic:"🥈",camp:"Campeão da Sul-Americana"}};
 function tabelaDiv(lista,tipo,fechado){
-  if(!lista.length)return `<div class="empty" style="padding:14px">${tipo==="lib"?`Ninguém chegou a ${LIB_MIN} jogos ainda.`:`Ninguém nessa faixa ainda.`}</div>`;
-  return `<div class="mt">${lista.map(x=>`<div class="mt-r ${x.pos===1?"lider":""}" data-extrato="${x.id}">
+  if(!lista.length)return `<div class="empty" style="padding:14px">${tipo==="lib"?`Ninguém chegou a ${LIB_MIN} mesas ainda.`:tipo==="br"?"Nenhuma mesa no mês ainda.":`Ninguém nessa faixa ainda.`}</div>`;
+  const Z=tipo==="br"?zonasBR(lista.length):null;
+  return `${Z?`<div class="dvleg" style="padding:8px 12px 0">${Z.faixas.filter(f=>f.n).map(f=>`<span><i class="dv ${f.k}"></i><b>${f.nome}</b> <span class="muted">${f.ini===f.fim?f.ini+"º":f.ini+"º–"+f.fim+"º"}</span></span>`).join("")}</div>`:""}<div class="mt">${lista.map((x,i)=>`<div class="mt-r ${x.pos===1?"lider":""} ${Z?"z"+Z.de(i):""}" data-extrato="${x.id}" data-comp="${tipo}">
     <div class="mt-p">${x.pos===1?(fechado?"🏆":"👑"):x.pos+"º"}</div>
-    <div class="mt-n"><b>${esc(x.nome)}</b><span class="mt-c">${x.pts} pts ÷ ${x.mesas} jogos</span><span class="mt-s">V ${x.vitorias} · D ${x.derrotas||0} · aproveit. ${aprov(x)}${x.infTot?` · <em>${x.infTot} infr.</em>`:""}</span>${tipo==="sul"?`<span class="falta">faltam ${LIB_MIN-x.mesas} p/ Libertadores</span>`:""}${x.empate&&x.cd!=null?`<span class="falta" style="background:#F3E3B5;color:#6B4E12">empate · ${x.cd} vit. no confronto direto</span>`:""}</div>
-    <div class="mt-m"><b>${fmtMed(x.med)}</b><span>média</span></div><div class="mt-go">›</div></div>`).join("")}</div>`;
+    <div class="mt-n"><b>${esc(x.nome)}</b>${tipo==="br"?`<span class="mt-c">${x.mesas} mesas · V ${x.vitorias} · D ${x.derrotas||0}</span><span class="mt-s">aproveit. ${aprov(x)}${x.infTot?` · <em>${x.infTot} infr.</em>`:""}</span>`:`<span class="mt-c">${x.pts} PC ÷ ${x.mesas} mesas</span><span class="mt-s">V ${x.vitorias} · D ${x.derrotas||0} · aproveit. ${aprov(x)}${x.infTot?` · <em>${x.infTot} infr.</em>`:""}</span>`}${tipo==="sul"?`<span class="falta">faltam ${LIB_MIN-x.mesas} mesas p/ Libertadores</span>`:""}${x.empate&&x.cd!=null?`<span class="falta" style="background:#F3E3B5;color:#6B4E12">empate · ${x.cd} vit. no confronto direto</span>`:""}</div>
+    <div class="mt-m"><b>${tipo==="br"?x.pts:fmtMed(x.med)}</b><span>${tipo==="br"?"PC":"média"}</span></div><div class="mt-go">›</div></div>`).join("")}</div>`;
 }
-function motivoPos(a,b){ // por que a (acima) está à frente de b
-  if(a.med!==b.med)return `a média de ${esc(a.nome)} é maior (${fmtMed(a.med)} contra ${fmtMed(b.med)}).`;
-  const c=[["pts","mais pontos no mês"],["vitorias","mais vitórias"],["espN","mais batidas especiais"],["secN","mais batidas secas"]];
-  for(const [k,t] of c)if(a[k]!==b[k])return `a média é igual (${fmtMed(a.med)}) e o desempate é por ${t}: ${a[k]} contra ${b[k]}.`;
-  if(a.infTot!==b.infTot)return `a média é igual e o desempate é por menos infrações: ${a.infTot} contra ${b.infTot}.`;
+function motivoPos(a,b,tipo){ // por que a (acima) está à frente de b
+  if(tipo!=="br"&&a.med!==b.med)return `a média de ${esc(a.nome)} é maior (${fmtMed(a.med)} contra ${fmtMed(b.med)}).`;
+  if(tipo==="br"&&a.pts!==b.pts)return `${esc(a.nome)} tem mais PC no mês (${a.pts} contra ${b.pts}).`;
+  const base=tipo==="br"?`os PC são iguais (${a.pts})`:`a média é igual (${fmtMed(a.med)})`;
+  const c=tipo==="br"?[["vitorias","mais vitórias"],["espN","mais batidas especiais"],["secN","mais batidas secas"]]:[["pts","mais PC no mês"],["vitorias","mais vitórias"],["espN","mais batidas especiais"],["secN","mais batidas secas"]];
+  for(const [k,t] of c)if(a[k]!==b[k])return `${base} e o desempate é por ${t}: ${a[k]} contra ${b[k]}.`;
+  if(a.infTot!==b.infTot)return `${base} e o desempate é por menos infrações: ${a.infTot} contra ${b.infTot}.`;
   if(a.cd!=null&&a.cd!==b.cd)return `empate em tudo; ${esc(a.nome)} venceu mais mesas no confronto direto (${a.cd} contra ${b.cd}).`;
   return "empate total: dividem a posição.";
 }
 function shExtrato(){
-  const t=tabelaMes(sheet.off||0);const div=t.lib.some(y=>y.id===sheet.id)?"lib":"sul";const L=t[div];const i=L.findIndex(y=>y.id===sheet.id);const x=L[i];
+  const t=tabelaMes(sheet.off||0);const div=sheet.comp||(t.lib.some(y=>y.id===sheet.id)?"lib":"sul");const L=t[div];const i=L.findIndex(y=>y.id===sheet.id);const x=L[i];
   if(!x)return `<p>Jogador não encontrado.</p><button class="btn ghost" data-act="fecharSheet">Fechar</button>`;
-  const d=decompor(x);const ln=(l,v,cls="")=>`<div class="ex-l ${cls}"><span>${l}</span><b>${v>0?"+":""}${v}</b></div>`;
-  let h=`<h3>${esc(x.nome.toUpperCase())}</h3><p class="muted" style="margin:-6px 0 10px">${div==="lib"?"🏆 Libertadores":"🥈 Sul-Americana"} · ${t.w.nome} · ${x.pos}º lugar</p>
-  <div class="ex"><div class="ex-t">DE ONDE VÊM OS PONTOS</div>
-  ${ln(`Vitórias: ${x.vitorias} × ${PONTO_VIT}`,d.vit)}
+  const br=div==="br";const d=decompor(x);const ln=(l,v,cls="")=>`<div class="ex-l ${cls}"><span>${l}</span><b>${v>0?"+":""}${v}</b></div>`;
+  let h=`<h3>${esc(x.nome.toUpperCase())}</h3><p class="muted" style="margin:-6px 0 10px">${COMP[div].ic} ${COMP[div].nome} · ${t.w.nome} · ${x.pos}º lugar</p>
+  <div class="ex"><div class="ex-t">DE ONDE VÊM OS PC (PONTOS DE CLASSIFICAÇÃO)</div>
+  ${ln(`Mesas vencidas: ${x.vitorias} × ${PONTO_VIT}`,d.vit)}
   ${d.bat.map(r=>ln(`${r.nome}: ${r.n}`,r.pts)).join("")}
   ${d.inf.map(r=>ln(`${r.nome}: ${r.n}`,r.pts,"neg")).join("")}
-  <div class="ex-l tot"><span>Total de pontos</span><b>${x.pts}</b></div>
-  <div class="ex-l"><span>Jogos no mês</span><b>${x.mesas}</b></div>
-  <div class="ex-r">MÉDIA = ${x.pts} ÷ ${x.mesas} = <b>${fmtMed(x.med)}</b></div>
-  <p class="muted" style="margin:6px 0 0;font-size:12.5px">Ou seja: ${fmtMed(x.med)} pontos, em média, a cada mesa jogada.</p></div>`;
+  <div class="ex-l tot"><span>Total de PC</span><b>${x.pts}</b></div>
+  <div class="ex-l"><span>Mesas no mês</span><b>${x.mesas}</b></div>
+  ${br?`<div class="ex-r">Classificação por <b>total de PC</b>: ${x.pts}</div>`:`<div class="ex-r">MÉDIA = ${x.pts} ÷ ${x.mesas} = <b>${fmtMed(x.med)}</b></div><p class="muted" style="margin:6px 0 0;font-size:12.5px">Ou seja: ${fmtMed(x.med)} PC, em média, a cada mesa.</p>`}</div>`;
   const viz=[];if(i>0)viz.push(["acima",L[i-1],x]);if(i<L.length-1)viz.push(["abaixo",x,L[i+1]]);
   if(viz.length){h+=`<div class="ex-t" style="margin-top:14px">COMPARAÇÃO COM QUEM ESTÁ ${viz.length>1?"PERTO":viz[0][0]==="acima"?"ACIMA":"ABAIXO"}</div>`;
     const cols=[x];if(i>0)cols.unshift(L[i-1]);if(i<L.length-1)cols.push(L[i+1]);
     const row=(l,f)=>`<tr><td class="n">${l}</td>${cols.map(c=>`<td class="${c.id===x.id?"me":""}">${f(c)}</td>`).join("")}</tr>`;
     h+=`<table class="tb ex-c"><thead><tr><th></th>${cols.map(c=>`<th class="${c.id===x.id?"me":""}">${c.pos}º ${esc(c.nome.split(" ")[0])}</th>`).join("")}</tr></thead><tbody>
-    ${row("Jogos",c=>c.mesas)}${row("Vitórias",c=>c.vitorias)}${row("Aproveitamento",aprov)}${row("Pts de vitórias",c=>decompor(c).vit)}${row("Pts de batidas",c=>"+"+decompor(c).sb)}${row("Infrações",c=>decompor(c).si)}${row("<b>Pontos</b>",c=>`<b>${c.pts}</b>`)}${row("<b>Média</b>",c=>`<b>${fmtMed(c.med)}</b>`)}</tbody></table>`;
-    h+=viz.map(([k,a,b])=>`<p class="ex-w">${k==="acima"?`⬆ <b>${esc(a.nome)}</b> está à frente porque ${motivoPos(a,b)}`:`⬇ <b>${esc(x.nome)}</b> está à frente de ${esc(b.nome)} porque ${motivoPos(a,b)}`}</p>`).join("");
-    h+=`<p class="muted" style="font-size:12.5px">Jogar mais ou vencer mais não basta: conta quanto se faz <b>por jogo</b>. Cada mesa sem pontos baixa a média; batidas e vitórias sobem; infrações descontam.</p>`;}
-  h+=`<details class="ex" style="margin-top:12px"><summary class="ex-t" style="cursor:pointer;margin:0">📜 COMO FUNCIONA A ${div==="lib"?"LIBERTADORES":"SUL-AMERICANA"}</summary><div style="font-size:13.5px;line-height:1.45;margin-top:6px">
-    <p style="margin:4px 0"><b>Quem disputa:</b> ${div==="lib"?`quem tem ${LIB_MIN} jogos ou mais no mês`:`quem tem de ${SUL_MIN} a ${LIB_MIN-1} jogos no mês; ao chegar a ${LIB_MIN}, sobe na hora para a Libertadores`}.</p>
-    <p style="margin:4px 0"><b>Jogo que conta:</b> mesa em que saiu pelo menos uma peça (mesmo sem encerrar).</p>
-    <p style="margin:4px 0"><b>Classificação:</b> pela média = pontos ÷ jogos. Vitória +${PONTO_VIT}; batidas especiais +2/+3; seca +1; infrações −1 a −5.</p>
-    <p style="margin:4px 0"><b>Desempate:</b> pontos → vitórias → especiais → secas → menos infrações → confronto direto.</p>
-    <p style="margin:4px 0"><b>Título:</b> o 1º no último dia do mês é Campeão da ${div==="lib"?"Libertadores":"Sul-Americana"}.</p></div></details>`;
+    ${row("Mesas",c=>c.mesas)}${row("Vitórias",c=>c.vitorias)}${row("Aproveitamento",aprov)}${row("PC de vitórias",c=>decompor(c).vit)}${row("PC de batidas",c=>"+"+decompor(c).sb)}${row("Infrações",c=>decompor(c).si)}${row("<b>Total PC</b>",c=>`<b>${c.pts}</b>`)}${br?"":row("<b>Média</b>",c=>`<b>${fmtMed(c.med)}</b>`)}</tbody></table>`;
+    h+=viz.map(([k,a,b])=>`<p class="ex-w">${k==="acima"?`⬆ <b>${esc(a.nome)}</b> está à frente porque ${motivoPos(a,b,div)}`:`⬇ <b>${esc(x.nome)}</b> está à frente de ${esc(b.nome)} porque ${motivoPos(a,b,div)}`}</p>`).join("");
+    if(!br)h+=`<p class="muted" style="font-size:12.5px">Jogar mais ou vencer mais não basta: conta quanto se faz <b>por mesa</b>. Mesa sem PC baixa a média; batidas e vitórias sobem; infrações descontam.</p>`;}
+  h+=`<details class="ex" style="margin-top:12px"><summary class="ex-t" style="cursor:pointer;margin:0">📜 COMO FUNCIONA ${br?"O BRASILEIRÃO":"A "+COMP[div].nome.toUpperCase()}</summary><div style="font-size:13.5px;line-height:1.45;margin-top:6px">${regraComp(div)}</div></details>`;
   h+=`<div class="row" style="margin-top:12px"><button class="btn ghost grow" data-act="fecharSheet">Fechar</button><button class="btn grow" data-ficha="${x.id}">Ficha completa</button></div>`;
   return h;
 }
+function regraComp(div){
+  const pc=`<p style="margin:4px 0"><b>PC (pontos de classificação):</b> mesa vencida +${PONTO_VIT}; batidas especiais +2/+3; seca +1; infrações −1 a −5.</p>`;
+  if(div==="br")return `<p style="margin:4px 0"><b>Quem disputa:</b> todos que jogaram no mês.</p><p style="margin:4px 0"><b>Mesa que conta:</b> toda mesa com pelo menos uma jogada lançada, com ou sem peça.</p>${pc}<p style="margin:4px 0"><b>Classificação:</b> pelo total de PC no mês. Desempate: vitórias → especiais → secas → menos infrações → confronto direto.</p><p style="margin:4px 0"><b>Zonas:</b> G, Intermediário, Meio de tabela e Lanterna, proporcionais ao nº de jogadores.</p><p style="margin:4px 0"><b>Título:</b> o 1º no último dia do mês é Campeão do Brasileirão.</p>`;
+  return `<p style="margin:4px 0"><b>Quem disputa:</b> ${div==="lib"?`quem tem ${LIB_MIN} mesas ou mais no mês`:`quem tem de ${SUL_MIN} a ${LIB_MIN-1} mesas no mês; ao chegar a ${LIB_MIN}, sobe na hora para a Libertadores`}.</p><p style="margin:4px 0"><b>Mesa que conta:</b> mesa em que saiu pelo menos uma peça (mesmo sem encerrar).</p>${pc}<p style="margin:4px 0"><b>Classificação:</b> pela média = PC ÷ mesas. Desempate: PC → vitórias → especiais → secas → menos infrações → confronto direto.</p><p style="margin:4px 0"><b>Título:</b> o 1º no último dia do mês é ${COMP[div].camp}.</p>`;
+}
 function regMensal(){return `
-  <p><b>Art. 1º Temporada.</b> O Campeonato do Mês começa às 00h do dia 1º e termina às 23h59 do último dia do mês (horário da Bahia). Vale a data em que a mesa foi aberta no Placar Oficial. No dia 1º seguinte a tabela recomeça; as mesas continuam no histórico.</p>
-  <p><b>Art. 2º Jogo.</b> Conta como jogo, para os 4 jogadores, cada mesa registrada no Placar Oficial em que <b>pelo menos uma peça</b> tenha sido marcada (por batida seca, 3, 5, decisiva ou infração), mesmo que alguém esqueça de encerrar a mesa. Mesa que parou antes da primeira peça não conta: nem o jogo, nem os pontos lançados nela (ela segue valendo no Brasileirão). A vitória (+${PONTO_VIT}) vai para quem venceu a mesa.</p>
-  <p><b>Art. 3º Pontos.</b> Valem os pontos da classificação, conforme a Lei nº 0608/2026: vitória na mesa +${PONTO_VIT}; batida especial +2 (lasquinez preso e buchada dobrada +3); batida seca +1; infrações de −1 a −5. Lançamentos avulsos e o Lustrado <b>não</b> contam para o Campeonato do Mês (seguem valendo no Brasileirão).</p>
-  <p><b>Art. 4º Critério.</b> A classificação é pela <b>média de pontos por jogo (MÉD)</b> = pontos no mês ÷ jogos no mês.</p>
-  <p><b>Art. 5º Divisões.</b> I – <b>Libertadores:</b> ${LIB_MIN} jogos ou mais no mês. II – <b>Sul-Americana:</b> de ${SUL_MIN} a ${LIB_MIN-1} jogos. III – <b>Em aquecimento:</b> menos de ${SUL_MIN} jogos; aparece na lista, mas não disputa título.</p>
-  <p><b>Art. 6º Acesso.</b> Ao completar ${LIB_MIN} jogos, o jogador passa na hora para a Libertadores, levando a média que tem. A divisão final é definida pelo total de jogos no encerramento do mês.</p>
-  <p><b>Art. 7º Campeões.</b> O 1º colocado de cada divisão no encerramento do mês é o Campeão da Libertadores e o Campeão da Sul-Americana, registrados na Galeria de Campeões.</p>
-  <p><b>Art. 8º Desempate</b>, nesta ordem: I – mais pontos no mês; II – mais vitórias; III – mais batidas especiais; IV – mais batidas secas; V – menos infrações; VI – <b>confronto direto</b>: mais mesas vencidas contra o(s) empatado(s) no mês, jogando em duplas adversárias. Persistindo o empate, o título é dividido.</p>
-  <p><b>Art. 9º Registro e correções.</b> Só vale o que estiver lançado no Placar Oficial. Erros de lançamento são corrigidos pelo Presidente, que pode excluir mesas ou jogadas lançadas indevidamente; a tabela é recalculada automaticamente.</p>
-  <p><b>Art. 9º-A Selos do mês</b> (honrarias, não mudam a classificação): 👑 Rei da Buchada (mais buchadas); 🧼 Mão Limpa (menos infrações, com ${SUL_MIN}+ jogos; empate: mais jogos); 🔥 Maior Sequência (mais vitórias seguidas, mínimo 2); 🐈 Gato do Mês (mais gatos).</p>
-  <p><b>Art. 10. Casos omissos</b> são decididos pela maioria dos presentes, mínimo de 3 (Art. 26 da Lei nº 0608/2026).</p>`;}
+  <p><b>Art. 1º Temporada.</b> O Campeonato do Mês começa às 00h do dia 1º e termina às 23h59 do último dia do mês (horário da Bahia). Vale a data em que a mesa foi aberta no Placar Oficial. No dia 1º seguinte as tabelas recomeçam; as mesas continuam no histórico.</p>
+  <p><b>Art. 2º Competições.</b> São disputadas três competições no mês: I – <b>Brasileirão</b>, com todos os jogadores, pelo total de PC; II – <b>Libertadores</b>, com quem tem ${LIB_MIN} mesas ou mais, pela média; III – <b>Sul-Americana</b>, com quem tem de ${SUL_MIN} a ${LIB_MIN-1} mesas, pela média. Com menos de ${SUL_MIN} mesas, o jogador fica <b>em aquecimento</b> na Libertadores/Sul-Americana, mas disputa o Brasileirão.</p>
+  <p><b>Art. 3º Mesa que conta.</b> I – No Brasileirão: toda mesa com pelo menos uma jogada lançada, com ou sem peça. II – Na Libertadores e na Sul-Americana: só a mesa em que <b>pelo menos uma peça</b> foi conquistada (por vitória direta, batida seca a partir de 5, rodada decisiva ou infração), mesmo que ninguém a encerre; a mesa que parou antes da primeira peça não conta, nem os PC lançados nela.</p>
+  <p><b>Art. 4º PC – pontos de classificação.</b> Não se confundem com os pontos do placar da mesa (3 e 5, Art. 3º da Lei). Valem: mesa vencida +${PONTO_VIT}; batida especial +2 (lasquinez preso e buchada dobrada +3); batida seca +1; infrações de −1 a −5. Lançamentos avulsos e o Lustrado <b>não</b> contam no Campeonato do Mês (aparecem só em Estatísticas).</p>
+  <p><b>Art. 5º Média.</b> Na Libertadores e na Sul-Americana, a classificação é pela <b>média = PC ÷ mesas</b> no mês.</p>
+  <p><b>Art. 6º Acesso.</b> Ao completar ${LIB_MIN} mesas, o jogador passa na hora para a Libertadores, levando a média que tem. A divisão final é a do encerramento do mês.</p>
+  <p><b>Art. 7º Zonas do Brasileirão.</b> A tabela é dividida em proporção ao número de jogadores (a partir de 5): G (40% de cima; com 10 jogadores, G4 = 1º ao 4º), Intermediário (20% seguintes), Meio de tabela (o restante) e Lanterna (20% de baixo).</p>
+  <p><b>Art. 8º Campeões.</b> O 1º colocado de cada competição no encerramento do mês é Campeão do Brasileirão, da Libertadores e da Sul-Americana, registrados na Galeria de Campeões.</p>
+  <p><b>Art. 9º Desempate</b>, nesta ordem: I – Brasileirão: mais vitórias, mais batidas especiais, mais batidas secas, menos infrações; II – Libertadores e Sul-Americana: mais PC, mais vitórias, mais batidas especiais, mais batidas secas, menos infrações; III – em todas, por último, o <b>confronto direto</b>: mais mesas vencidas contra o(s) empatado(s) no mês, em duplas adversárias. Persistindo o empate, o título é dividido.</p>
+  <p><b>Art. 10. Registro e correções.</b> Só vale o que estiver lançado no Placar Oficial. Erros são corrigidos pelo Presidente, que pode excluir mesas ou jogadas lançadas indevidamente, com motivo registrado no Histórico de exclusões; as tabelas são recalculadas automaticamente.</p>
+  <p><b>Art. 11. Selos do mês</b> (honrarias, não mudam a classificação): 👑 Rei da Buchada (mais buchadas); 🧼 Mão Limpa (menos infrações, com ${SUL_MIN}+ mesas; empate: mais mesas); 🔥 Maior Sequência (mais vitórias seguidas, mínimo 2); 🐈 Gato do Mês (mais gatos).</p>
+  <p><b>Art. 12. Casos omissos</b> são decididos pela maioria dos presentes, mínimo de 3 (Art. 26 da Lei nº 0608/2026).</p>`;}
+let compAba="br";
+function fechado1(k){try{return localStorage.getItem("seosp_x_"+k)==="1";}catch(e){return false;}}
+const xBtn=k=>`<button class="xbtn" data-fx="${k}" aria-label="Fechar aviso">✕</button>`;
 function vMensal(){
   const t=tabelaMes(mesOff);const agora=Date.now();const fechado=agora>=t.w.fim;
   const dias=Math.ceil((t.w.fim-agora)/86400000);
   let h=`<h2>CAMPEONATO DO MÊS</h2>
   <div class="mesbar"><button class="btn ghost sm" data-mes="-1" aria-label="Mês anterior">‹</button><div class="nm">${t.w.nome}</div><button class="btn ghost sm" data-mes="1" ${mesOff>=0?"disabled":""} aria-label="Próximo mês">›</button></div>
   <p class="muted" style="text-align:center;margin:-4px 0 12px">${fechado?"Mês encerrado · campeões definidos":mesOff===0?`Em disputa · termina em ${dias} dia(s)`:""}</p>`;
-  if(mesOff===0&&new Date().getDate()<=7){const a=tabelaMes(-1);if(a.campLib.length||a.campSul.length)h+=`<div class="card" style="border:2px solid var(--go,#B8892B);background:#F3E3B5"><div class="grp" style="margin-top:0;color:var(--gd)">🏆 CAMPEÕES DE ${a.w.nome.toUpperCase()}</div>
-    <div style="font-size:15px;line-height:1.6">🏆 Libertadores: <b>${a.campLib.length?a.campLib.map(x=>esc(x.nome)).join(" e "):"—"}</b><br>🥈 Sul-Americana: <b>${a.campSul.length?a.campSul.map(x=>esc(x.nome)).join(" e "):"—"}</b></div>
-    <div class="row" style="margin-top:10px"><button class="btn sm grow" data-mes="-1">Ver tabela final</button><button class="btn gold sm grow" data-act="txtMes" data-off="-1">📋 Texto p/ WhatsApp</button></div></div>`;}
-  if(t.lib.length||t.sul.length||t.aq.length)h+=`<div class="row" style="margin-bottom:12px"><button class="btn grow" data-act="imgMensal">📸 Imagem</button><button class="btn ghost grow" data-act="txtMes" data-off="${mesOff}">📋 Texto p/ WhatsApp</button></div>`;
-  h+=`<div class="howto">📊 <b>Quem faz mais pontos POR JOGO fica na frente.</b> A média é <b>pontos ÷ jogos</b>, então quem jogou ou venceu mais não fica automaticamente acima. <b>Toque num jogador</b> para ver a conta e por que ele está naquela posição.</div>`;
-  h+=`<div class="div lib"><div class="hd"><b>🏆 LIBERTADORES</b><span>${LIB_MIN}+ jogos no mês</span></div>${tabelaDiv(t.lib,"lib",fechado)}</div>`;
-  h+=`<div class="div sul"><div class="hd"><b>🥈 SUL-AMERICANA</b><span>${SUL_MIN} a ${LIB_MIN-1} jogos</span></div>${tabelaDiv(t.sul,"sul",fechado)}</div>`;
-  if(t.aq.length)h+=`<div class="card"><div class="grp" style="margin-top:0;color:var(--mu)">EM AQUECIMENTO · menos de ${SUL_MIN} jogos</div><div class="chips">${t.aq.map(x=>`<span class="chip">${esc(x.nome)} · ${x.mesas} jogo(s), faltam ${SUL_MIN-x.mesas}</span>`).join("")}</div></div>`;
+  if(mesOff===0&&new Date().getDate()<=7&&!fechado1("camp"+(new Date().getMonth()))){const a=tabelaMes(-1);if(a.campBr.length||a.campLib.length||a.campSul.length)h+=`<div class="card aviso" style="border:2px solid var(--go);background:#F3E3B5">${xBtn("camp"+(new Date().getMonth()))}<div class="grp" style="margin-top:0;color:var(--gd)">🏆 CAMPEÕES DE ${a.w.nome.toUpperCase()}</div>
+    <div style="font-size:15px;line-height:1.6">${["br","lib","sul"].map(k=>{const c=a["camp"+k[0].toUpperCase()+k.slice(1)];return `${COMP[k].ic} ${COMP[k].nome}: <b>${c.length?c.map(x=>esc(x.nome)).join(" e "):"—"}</b>`;}).join("<br>")}</div>
+    <div class="row" style="margin-top:10px"><button class="btn sm grow" data-mes="-1">Ver tabelas finais</button><button class="btn gold sm grow" data-act="txtMes" data-off="-1">📋 Texto p/ WhatsApp</button></div></div>`;}
+  h+=`<div class="seg segc" style="margin-bottom:10px">${["br","lib","sul"].map(k=>`<button data-comp-aba="${k}" class="${compAba===k?"on":""}">${COMP[k].nome}</button>`).join("")}</div>`;
+  const lista=t[compAba];
+  if(lista.length||t.aq.length)h+=`<div class="row" style="margin-bottom:10px"><button class="btn sm grow" data-act="imgMensal">📸 Imagem</button><button class="btn ghost sm grow" data-act="txtMes" data-off="${mesOff}">📋 Texto p/ WhatsApp</button></div>`;
+  if(compAba==="br"){if(!fechado1("howbr"))h+=`<div class="howto aviso">${xBtn("howbr")}🇧🇷 <b>Brasileirão: quem soma mais PC no mês fica na frente.</b> Conta toda mesa com jogada. <b>Toque num jogador</b> para ver a conta.</div>`;
+    h+=`<div class="div br"><div class="hd"><b>🇧🇷 BRASILEIRÃO</b><span>todos · total de PC</span></div>${tabelaDiv(t.br,"br",fechado)}</div>`;}
+  else{if(!fechado1("howmed"))h+=`<div class="howto aviso">${xBtn("howmed")}📊 <b>Quem faz mais PC POR MESA fica na frente.</b> A média é <b>PC ÷ mesas</b>: jogar ou vencer mais não basta. <b>Toque num jogador</b> para ver a conta e o motivo da posição.</div>`;
+    h+=compAba==="lib"?`<div class="div lib"><div class="hd"><b>🏆 LIBERTADORES</b><span>${LIB_MIN}+ mesas com peça</span></div>${tabelaDiv(t.lib,"lib",fechado)}</div>`:`<div class="div sul"><div class="hd"><b>🥈 SUL-AMERICANA</b><span>${SUL_MIN} a ${LIB_MIN-1} mesas com peça</span></div>${tabelaDiv(t.sul,"sul",fechado)}</div>`;
+    if(t.aq.length)h+=`<div class="card"><div class="grp" style="margin-top:0;color:var(--mu)">EM AQUECIMENTO · menos de ${SUL_MIN} mesas</div><div class="chips">${t.aq.map(x=>`<span class="chip">${esc(x.nome)} · ${x.mesas}, faltam ${SUL_MIN-x.mesas}</span>`).join("")}</div></div>`;}
   const SL=selosMes(mesOff);
-  if(SL.length)h+=`<h2>SELOS DO MÊS</h2><div class="selos">${SL.map(x=>`<div class="selo ${x.neg?"neg":""}"><div class="ic">${x.ic}</div><div><b>${x.nome}</b><span>${x.quem.map(q=>esc(q.nome)).join(" e ")}</span><small>${x.info}</small></div></div>`).join("")}</div>`;
+  if(SL.length)h+=`<h2>SELOS DO MÊS</h2><div class="selos">${SL.map(x=>`<div class="selo ${x.neg?"neg":""}"><div class="ic">${x.ic}</div><div><b>${x.nome}</b><span>${listaNomes(x.quem.map(q=>esc(q.nome)))}</span><small>${x.info}</small></div></div>`).join("")}</div>`;
   h+=`<details class="card" style="padding:10px 14px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📜 Regulamento do Campeonato do Mês</summary><div class="rules" style="margin-top:6px">${regMensal()}</div></details>`;
-  const galeria=[];for(let o=-1;o>=-12;o--){const g=tabelaMes(o);if(g.lib.length||g.sul.length)galeria.push(g);}
-  h+=`<h2>GALERIA DE CAMPEÕES</h2><div class="card">${galeria.length?galeria.map(g=>`<div class="match"><div class="grow"><b>${g.w.nome}</b><div class="muted">🏆 Libertadores: ${g.campLib.length?g.campLib.map(x=>esc(x.nome)).join(" e ")+" ("+fmtMed(g.campLib[0].med)+")":"—"}<br>🥈 Sul-Americana: ${g.campSul.length?g.campSul.map(x=>esc(x.nome)).join(" e ")+" ("+fmtMed(g.campSul[0].med)+")":"—"}</div></div></div>`).join(""):`<div class="empty" style="padding:12px">Os campeões aparecem aqui quando o primeiro mês terminar.</div>`}</div>`;
+  const galeria=[];for(let o=-1;o>=-12;o--){const g=tabelaMes(o);if(g.br.length||g.lib.length||g.sul.length)galeria.push(g);}
+  const cmp=(g,k)=>{const c=g["camp"+k[0].toUpperCase()+k.slice(1)];return c.length?c.map(x=>esc(x.nome)).join(" e ")+` (${k==="br"?c[0].pts+" PC":fmtMed(c[0].med)})`:"—";};
+  h+=`<h2>GALERIA DE CAMPEÕES</h2><div class="card">${galeria.length?galeria.map(g=>`<div class="match"><div class="grow"><b>${g.w.nome}</b><div class="muted">${["br","lib","sul"].map(k=>`${COMP[k].ic} ${COMP[k].nome}: ${cmp(g,k)}`).join("<br>")}</div></div></div>`).join(""):`<div class="empty" style="padding:12px">Os campeões aparecem aqui quando o primeiro mês terminar.</div>`}</div>`;
   return h;
 }
 function vCamps(){
@@ -1166,7 +1194,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="filaN
 async function copiarRank(){
   const L=stats();const [lab,fn]=ORDENS[rankOrdem];
   const LL=L.filter(x=>x.mesas||x.pts||x.infTot).sort(ordemCamp);
-  const txt=`*DOMINÓ SEOSP · Brasileirão*\n${rankFiltro==="hoje"?"Hoje":rankFiltro==="decreto"?"Desde 18/11/2026":"Histórico completo"}\n\n`+LL.map((x,i)=>`${i+1}. ${x.nome}: ${x.pts} pts · J ${x.mesas} · V ${x.vitorias} · D ${x.derrotas||0} · Esp ${x.espN} · Sec ${x.secN} · Infr ${x.infTot}`).join("\n");
+  const txt=`*DOMINÓ SEOSP · Estatísticas gerais*\n${rankFiltro==="hoje"?"Hoje":rankFiltro==="decreto"?"Desde 18/11/2026":"Histórico completo"}\n\n`+LL.map((x,i)=>`${i+1}. ${x.nome}: ${x.pts} PC · M ${x.mesas} · V ${x.vitorias} · D ${x.derrotas||0} · Esp ${x.espN} · Sec ${x.secN} · Infr ${x.infTot}`).join("\n");
   try{await navigator.clipboard.writeText(txt);toast("Ranking copiado. É só colar no WhatsApp.");}
   catch(e){openSheet({t:"texto",txt});}
 }
@@ -1311,7 +1339,7 @@ async function imgRank(){
   const selo=document.querySelector("header img");
   if(selo&&selo.complete){g.save();g.beginPath();g.arc(140,165,88,0,Math.PI*2);g.fillStyle="#FBF6EA";g.fill();g.lineWidth=6;g.strokeStyle="#D9B45A";g.stroke();g.clip();g.drawImage(selo,56,81,168,168);g.restore();}
   g.fillStyle="#D9B45A";g.font="600 26px Montserrat, sans-serif";g.fillText("D O M I N Ó   S E O S P",262,118);
-  g.fillStyle="#FBF6EA";g.font="700 68px Cinzel, Georgia, serif";g.fillText("BRASILEIRÃO",258,196);
+  g.fillStyle="#FBF6EA";g.font="700 68px Cinzel, Georgia, serif";g.fillText("ESTATÍSTICAS",258,196);
   g.font="600 30px 'Source Sans 3', sans-serif";g.fillStyle="#E9DDBF";
   g.fillText(`Classificação por ${lab.toLowerCase()} · ${rankFiltro==="hoje"?"hoje":rankFiltro==="decreto"?"desde 18/11/2026":"histórico completo"}`,262,246);
   g.font="400 24px 'Source Sans 3', sans-serif";g.fillText("Atualizado em "+new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}),262,286);
@@ -1322,7 +1350,7 @@ async function imgRank(){
     g.fillStyle=i<3?"#fff":"#1E3A2A";g.font="800 32px Montserrat, sans-serif";g.textAlign="center";g.fillText(String(i+1),112,y+64);g.textAlign="left";
     g.fillStyle="#2E2218";g.font="700 38px 'Source Sans 3', sans-serif";g.fillText(x.nome.length>22?x.nome.slice(0,21)+"…":x.nome,170,y+50);
     g.fillStyle="#6B5A48";g.font="400 25px 'Source Sans 3', sans-serif";
-    g.fillText(`Jogos ${x.mesas} · Vit. ${x.vitorias} · Der. ${x.derrotas||0} · Esp. ${x.espN} · Secas ${x.secN} · Infr. ${x.infTot}`,170,y+88);
+    g.fillText(`Mesas ${x.mesas} · Vit. ${x.vitorias} · Der. ${x.derrotas||0} · Esp. ${x.espN} · Secas ${x.secN} · Infr. ${x.infTot}`,170,y+88);
     g.textAlign="right";g.fillStyle="#1E3A2A";g.font="800 56px Montserrat, sans-serif";g.fillText(String(fn(x)),W-80,y+70);g.textAlign="left";
   });
   if(!top.length){g.fillStyle="#6B5A48";g.font="400 34px 'Source Sans 3', sans-serif";g.textAlign="center";g.fillText("Nenhum registro ainda.",W/2,450);g.textAlign="left";}
@@ -1353,15 +1381,16 @@ function baixarBackup(){
 /* ===================== TEXTO DO MÊS P/ WHATSAPP ===================== */
 function textoMes(off){
   const t=tabelaMes(off);const fechado=Date.now()>=t.w.fim;
-  const lin=(x)=>`${x.pos===1?(fechado?"🏆":"👑"):x.pos+"."} ${x.nome}: *${fmtMed(x.med)}* (${x.pts} pts ÷ ${x.mesas} jogos · V ${x.vitorias} D ${x.derrotas||0})`;
-  const camp=l=>l.length?l.map(x=>x.nome).join(" e ")+` (média ${fmtMed(l[0].med)})`:"—";
+  const linM=(x)=>`${x.pos===1?(fechado?"🏆":"👑"):x.pos+"."} ${x.nome}: *${fmtMed(x.med)}* (${x.pts} PC ÷ ${x.mesas} mesas · V ${x.vitorias} D ${x.derrotas||0})`;
+  const linB=(x)=>`${x.pos===1?(fechado?"🏆":"👑"):x.pos+"."} ${x.nome}: *${x.pts} PC* (${x.mesas} mesas · V ${x.vitorias} D ${x.derrotas||0})`;
+  const camp=(l,br)=>l.length?l.map(x=>x.nome).join(" e ")+(br?` (${l[0].pts} PC)`:` (média ${fmtMed(l[0].med)})`):"—";
   let s=`*DOMINÓ SEOSP · CAMPEONATO DO MÊS*\n*${t.w.nome}*${fechado?" · encerrado":" · parcial"}\n`;
-  if(fechado)s+=`\n🏆 *Campeão da Libertadores:* ${camp(t.campLib)}\n🥈 *Campeão da Sul-Americana:* ${camp(t.campSul)}\n`;
-  s+=`\n*LIBERTADORES* (${LIB_MIN}+ jogos)\n${t.lib.length?t.lib.map(lin).join("\n"):"Ninguém chegou a "+LIB_MIN+" jogos."}\n`;
-  s+=`\n*SUL-AMERICANA* (${SUL_MIN} a ${LIB_MIN-1} jogos)\n${t.sul.length?t.sul.map(lin).join("\n"):"Ninguém nessa faixa."}\n`;
-  const SL=selosMes(off);if(SL.length)s+=`\n*SELOS DO MÊS*\n${SL.map(x=>`${x.ic} ${x.nome}: ${x.quem.map(q=>q.nome).join(" e ")} (${x.info})`).join("\n")}\n`;
-  if(t.aq.length)s+=`\n_Em aquecimento:_ ${t.aq.map(x=>`${x.nome} (${x.mesas})`).join(", ")}\n`;
-  s+=`\nMédia = pontos ÷ jogos no mês (mesas com peça marcada). Regulamento na aba Camp. do Mês.\n${location.origin+location.pathname}#mes`;
+  if(fechado)s+=`\n🇧🇷 *Campeão do Brasileirão:* ${camp(t.campBr,1)}\n🏆 *Campeão da Libertadores:* ${camp(t.campLib)}\n🥈 *Campeão da Sul-Americana:* ${camp(t.campSul)}\n`;
+  s+=`\n*🇧🇷 BRASILEIRÃO* (total de PC)\n${t.br.length?t.br.map(linB).join("\n"):"Nenhuma mesa no mês."}\n`;
+  s+=`\n*🏆 LIBERTADORES* (${LIB_MIN}+ mesas, média)\n${t.lib.length?t.lib.map(linM).join("\n"):"Ninguém chegou a "+LIB_MIN+" mesas."}\n`;
+  s+=`\n*🥈 SUL-AMERICANA* (${SUL_MIN} a ${LIB_MIN-1} mesas, média)\n${t.sul.length?t.sul.map(linM).join("\n"):"Ninguém nessa faixa."}\n`;
+  const SL=selosMes(off);if(SL.length)s+=`\n*SELOS DO MÊS*\n${SL.map(x=>`${x.ic} ${x.nome}: ${listaNomes(x.quem.map(q=>q.nome))} (${x.info})`).join("\n")}\n`;
+  s+=`\nPC = pontos de classificação. Média = PC ÷ mesas. Regulamento na aba Camp. do Mês.\n${location.origin+location.pathname}#mes`;
   return s;
 }
 async function copiarTextoMes(off){const txt=textoMes(off);try{await navigator.clipboard.writeText(txt);toast("Texto copiado. É só colar no WhatsApp.");}catch(e){openSheet({t:"texto",txt});}}
@@ -1369,8 +1398,8 @@ async function copiarTextoMes(off){const txt=textoMes(off);try{await navigator.c
 function fichaJog(id){
   const j=byId("jogadores",id);const nome=j?j.nome:nomeJog(id);
   const x=stats(0,Infinity).find(y=>y.id===id)||{mesas:0,vitorias:0,derrotas:0,pts:0,espN:0,secN:0,infTot:0,b:{},inf:{}};
-  const meses=[];for(let o=0;o>=-5;o--){const t=tabelaMes(o);const L=t.lib.find(y=>y.id===id),S=t.sul.find(y=>y.id===id),A=t.aq.find(y=>y.id===id);if(L||S||A)meses.push({t,o,div:L?"Libertadores":S?"Sul-Americana":"Aquecimento",y:L||S||A});}
-  const titulos=[];for(let o=-1;o>=-24;o--){const t=tabelaMes(o);if(t.campLib.some(y=>y.id===id))titulos.push("🏆 Libertadores · "+t.w.nome);if(t.campSul.some(y=>y.id===id))titulos.push("🥈 Sul-Americana · "+t.w.nome);}
+  const meses=[];for(let o=0;o>=-5;o--){const t=tabelaMes(o);const B=t.br.find(y=>y.id===id),L=t.lib.find(y=>y.id===id),S=t.sul.find(y=>y.id===id),A=t.aq.find(y=>y.id===id);if(B||L||S||A)meses.push({t,o,B,div:L?"Libertadores":S?"Sul-Americana":A?"Aquecimento":"—",y:L||S||A});}
+  const titulos=[];for(let o=-1;o>=-24;o--){const t=tabelaMes(o);if(t.campBr.some(y=>y.id===id))titulos.push("🇧🇷 Brasileirão · "+t.w.nome);if(t.campLib.some(y=>y.id===id))titulos.push("🏆 Libertadores · "+t.w.nome);if(t.campSul.some(y=>y.id===id))titulos.push("🥈 Sul-Americana · "+t.w.nome);}
   const mesas=cache.partidas.filter(p=>[p.duplaA.j1,p.duplaA.j2,p.duplaB.j1,p.duplaB.j2].includes(id)).sort((a,b)=>b.criadoEm-a.criadoEm).slice(0,10);
   const linhaM=p=>{const L=[p.duplaA.j1,p.duplaA.j2].includes(id)?"A":"B";const O=other(L);const st=computeState(p);const d=p["dupla"+L],o=p["dupla"+O];
     const parc=[d.j1,d.j2].find(z=>z&&z!==id);const res=st.winner?(st.winner===L?`<span class="pill" style="background:#DCE8DA;color:var(--gd)">V</span>`:`<span class="pill" style="background:#F2D9C9;color:var(--tc)">D</span>`):`<span class="pill" style="background:#EEE">${p.status==="ativa"?"em jogo":"s/ venc."}</span>`;
@@ -1381,28 +1410,29 @@ function fichaJog(id){
     if(parc){const r=PA[parc]||(PA[parc]={J:0,V:0,D:0});r.J++;if(v)r.V++;if(dd)r.D++;}
     for(const z of [p["dupla"+O].j1,p["dupla"+O].j2])if(z){const r=RV[z]||(RV[z]={J:0,V:0,D:0});r.J++;if(v)r.V++;if(dd)r.D++;}}
   const tabPR=(M,tit,lab)=>{const E=Object.entries(M).sort((a,b)=>b[1].J-a[1].J||b[1].V-a[1].V).slice(0,6);if(!E.length)return "";
-    return `<div class="grp" style="color:var(--gd)">${tit}</div><table class="tb" style="margin-bottom:10px"><thead><tr><th></th><th>${lab}</th><th>J</th><th>V</th><th>D</th><th>APROV.</th></tr></thead><tbody>${E.map(([j,r],k)=>`<tr><td>${k===0&&lab==="Parceiro"?"⭐":""}</td><td class="n">${esc(nomeJog(j))}</td><td>${r.J}</td><td>${r.V}</td><td>${r.D}</td><td class="p">${Math.round(100*r.V/r.J)}%</td></tr>`).join("")}</tbody></table>`;};
+    return `<div class="grp" style="color:var(--gd)">${tit}</div><table class="tb" style="margin-bottom:10px"><thead><tr><th></th><th>${lab}</th><th>M</th><th>V</th><th>D</th><th>APROV.</th></tr></thead><tbody>${E.map(([j,r],k)=>`<tr><td>${k===0&&lab==="Parceiro"?"⭐":""}</td><td class="n">${esc(nomeJog(j))}</td><td>${r.J}</td><td>${r.V}</td><td>${r.D}</td><td class="p">${Math.round(100*r.V/r.J)}%</td></tr>`).join("")}</tbody></table>`;};
   const melhorP=Object.entries(PA).filter(([,r])=>r.J>=3).sort((a,b)=>b[1].V/b[1].J-a[1].V/a[1].J||b[1].J-a[1].J)[0];
   const selos=[];for(let o=0;o>=-12;o--){for(const sl of selosMes(o))if(sl.quem.some(q=>q.id===id))selos.push(`${sl.ic} ${sl.nome} · ${janelaMes(o).nome}${o===0?" (parcial)":""}`);}
   const chips=[];for(const [k,d] of Object.entries(BATIDAS))if(x.b[k])chips.push(`<span class="chip">${d.nome} ${x.b[k]}</span>`);
   for(const [k,d] of Object.entries(INFR))if(x.inf[k])chips.push(`<span class="chip" style="color:var(--tc)"><b>${d.nome} ${x.inf[k]}</b></span>`);
   return `<h3>${esc(nome.toUpperCase())}</h3>
-  <div class="sg" style="margin-bottom:10px"><div><b>${x.mesas}</b><span>Jogos</span></div><div><b>${x.vitorias}</b><span>Vitórias</span></div><div><b>${x.derrotas||0}</b><span>Derrotas</span></div><div><b>${x.pts}</b><span>Pontos</span></div><div><b>${x.mesas?fmtMed(x.pts/x.mesas):"–"}</b><span>Média</span></div><div><b>${x.mesas?Math.round(100*x.vitorias/x.mesas)+"%":"–"}</b><span>Aproveit.</span></div><div><b>${x.espN}</b><span>Especiais</span></div><div class="${x.infTot?"bad":""}"><b>${x.infTot}</b><span>Infrações</span></div></div>
+  <div class="sg" style="margin-bottom:10px"><div><b>${x.mesas}</b><span>Mesas</span></div><div><b>${x.vitorias}</b><span>Vitórias</span></div><div><b>${x.derrotas||0}</b><span>Derrotas</span></div><div><b>${x.pts}</b><span>PC</span></div><div><b>${x.mesas?fmtMed(x.pts/x.mesas):"–"}</b><span>Média</span></div><div><b>${x.mesas?Math.round(100*x.vitorias/x.mesas)+"%":"–"}</b><span>Aproveit.</span></div><div><b>${x.espN}</b><span>Especiais</span></div><div class="${x.infTot?"bad":""}"><b>${x.infTot}</b><span>Infrações</span></div></div>
   <div class="grp" style="color:var(--gd)">TÍTULOS</div><div style="margin-bottom:10px">${titulos.length?titulos.map(t=>`<div>${esc(t)}</div>`).join(""):`<span class="muted">Nenhum título ainda.</span>`}</div>
-  <div class="grp" style="color:var(--gd)">CAMPEONATO DO MÊS</div>${meses.length?`<table class="tb" style="margin-bottom:10px"><thead><tr><th>Mês</th><th>Divisão</th><th>Pos.</th><th>J</th><th>MÉD</th></tr></thead><tbody>${meses.map(m=>`<tr><td class="n">${esc(m.t.w.nome)}</td><td>${m.div}</td><td>${m.y.pos?m.y.pos+"º":"–"}</td><td>${m.y.mesas}</td><td class="p">${fmtMed(m.y.med)}</td></tr>`).join("")}</tbody></table>`:`<p class="muted">Sem jogos válidos nos últimos meses.</p>`}
+  <div class="grp" style="color:var(--gd)">CAMPEONATO DO MÊS</div>${meses.length?`<table class="tb" style="margin-bottom:10px"><thead><tr><th>Mês</th><th>🇧🇷 Pos.</th><th>PC</th><th>Divisão</th><th>Pos.</th><th>MÉD</th></tr></thead><tbody>${meses.map(m=>`<tr><td class="n">${esc(m.t.w.nome)}</td><td>${m.B?m.B.pos+"º":"–"}</td><td>${m.B?m.B.pts:"–"}</td><td>${m.div==="Libertadores"?"Liberta":m.div==="Sul-Americana"?"Sula":m.div}</td><td>${m.y&&m.y.pos?m.y.pos+"º":"–"}</td><td class="p">${m.y?fmtMed(m.y.med):"–"}</td></tr>`).join("")}</tbody></table>`:`<p class="muted">Sem mesas nos últimos meses.</p>`}
   ${selos.length?`<div class="grp" style="color:var(--gd)">SELOS</div><div style="margin-bottom:10px">${selos.map(t=>`<div>${esc(t)}</div>`).join("")}</div>`:""}
-  ${melhorP?`<p class="ex-w">⭐ Melhor parceria: <b>${esc(nomeJog(melhorP[0]))}</b>, ${melhorP[1].V} vitórias em ${melhorP[1].J} jogos juntos (${Math.round(100*melhorP[1].V/melhorP[1].J)}%).</p>`:""}
+  ${melhorP?`<p class="ex-w">⭐ Melhor parceria: <b>${esc(nomeJog(melhorP[0]))}</b>, ${melhorP[1].V} vitórias em ${melhorP[1].J} mesas juntos (${Math.round(100*melhorP[1].V/melhorP[1].J)}%).</p>`:""}
   ${tabPR(PA,"PARCERIAS","Parceiro")}${tabPR(RV,"RIVALIDADES (CONTRA)","Adversário")}
   <div class="grp" style="color:var(--gd)">BATIDAS E INFRAÇÕES (HISTÓRICO)</div><div class="chips" style="margin-bottom:10px">${chips.join("")||`<span class="muted">Nada registrado.</span>`}</div>
   <div class="grp" style="color:var(--gd)">ÚLTIMAS MESAS</div><div>${mesas.length?mesas.map(linhaM).join(""):`<p class="muted">Nenhuma mesa.</p>`}</div>
   <div class="row" style="margin-top:14px"><button class="btn ghost grow" data-act="fecharSheet">Fechar</button><button class="btn tc grow" data-avj="${esc(nome)}">+ Lançamento avulso</button></div>`;
 }
 /* ===================== SELOS DO MÊS ===================== */
+const listaNomes=a=>a.length<2?a.join(""):a.slice(0,-1).join(", ")+" e "+a[a.length-1];
 function selosMes(off){
-  const w=janelaMes(off);const L=stats(w.ini,w.fim,true).filter(x=>x.mesas>0);const out=[];
+  const w=janelaMes(off);const L=stats(w.ini,w.fim,"jogada").filter(x=>x.mesas>0);const out=[];
   const top=(f,min=1)=>{const m=Math.max(0,...L.map(f));return m>=min?{m,quem:L.filter(x=>f(x)===m)}:null;};
   const buch=top(x=>(x.b.buchada||0)+(x.b.buch_dobrada||0));if(buch)out.push({ic:"👑",nome:"Rei da Buchada",quem:buch.quem,info:buch.m+" buchada(s)"});
-  const elig=L.filter(x=>x.mesas>=SUL_MIN);if(elig.length){const mi=Math.min(...elig.map(x=>x.infTot));const g=elig.filter(x=>x.infTot===mi);const mj=Math.max(...g.map(x=>x.mesas));out.push({ic:"🧼",nome:"Mão Limpa",quem:g.filter(x=>x.mesas===mj),info:`${mi} infração(ões) em ${mj} jogos`});}
+  const elig=L.filter(x=>x.mesas>=SUL_MIN);if(elig.length){const mi=Math.min(...elig.map(x=>x.infTot));const g=elig.filter(x=>x.infTot===mi);const mj=Math.max(...g.map(x=>x.mesas));out.push({ic:"🧼",nome:"Mão Limpa",quem:g.filter(x=>x.mesas===mj),info:`${mi} infração(ões) em ${mj} mesas`});}
   // maior sequência de vitórias (mesas com peça, em ordem)
   const seq={},best={};const ms=cache.partidas.filter(p=>p.criadoEm>=w.ini&&p.criadoEm<w.fim).sort((a,b)=>a.criadoEm-b.criadoEm);
   for(const p of ms){const st=computeState(p);if(!st.winner)continue;for(const L2 of ["A","B"])for(const j of [p["dupla"+L2].j1,p["dupla"+L2].j2]){if(!j)continue;seq[j]=L2===st.winner?(seq[j]||0)+1:0;best[j]=Math.max(best[j]||0,seq[j]);}}
@@ -1415,9 +1445,9 @@ async function imgMensal(){
   try{await document.fonts.ready;}catch(e){}
   const t=tabelaMes(mesOff);const agora=Date.now();const fechado=agora>=t.w.fim;const dias=Math.ceil((t.w.fim-agora)/86400000);
   const GR="#1E3A2A",GO="#B8892B",GL="#D9B45A",IV="#FBF6EA",CR="#F4ECD8",TX="#2E2218",MU="#6B5A48",TC="#A0522D",SU="#5E7F4F";
-  const W=1080,RH=104,lib=t.lib.slice(0,15),sul=t.sul.slice(0,15);
+  const W=1080,RH=104,lib=t.lib.slice(0,15),sul=t.sul.slice(0,15),brl=t.br.slice(0,20),eBR=compAba==="br";
   const altDiv=n=>110+Math.max(n,1)*RH+10;
-  const H=380+altDiv(lib.length)+30+altDiv(sul.length)+(t.aq.length?150:0)+190+(selosMes(mesOff).length?60+Math.ceil(selosMes(mesOff).length/2)*102+10:0);
+  const H=380+(eBR?altDiv(brl.length)+40:altDiv(lib.length)+30+altDiv(sul.length)+(t.aq.length?150:0))+190+(selosMes(mesOff).length?60+Math.ceil(selosMes(mesOff).length/2)*102+10:0);
   const c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");
   g.fillStyle=CR;g.fillRect(0,0,W,H);g.fillStyle=GR;g.fillRect(0,0,W,320);g.fillStyle=GO;g.fillRect(0,320,W,8);
   g.strokeStyle=GO;g.lineWidth=3;g.strokeRect(22,22,W-44,H-44);
@@ -1433,33 +1463,38 @@ async function imgMensal(){
     g.fillStyle=IV;g.font="800 36px Montserrat, sans-serif";g.fillText(titulo,80,y+54);
     g.textAlign="right";g.font="600 24px 'Source Sans 3', sans-serif";g.fillStyle="#E9DDBF";g.fillText(sub,W-80,y+52);g.textAlign="left";
     y+=100;
-    if(!lista.length){g.fillStyle=MU;g.font="400 28px 'Source Sans 3', sans-serif";g.fillText(tipo==="lib"?`Ninguém chegou a ${LIB_MIN} jogos ainda.`:"Ninguém nessa faixa ainda.",80,y+60);y+=RH+10;return;}
+    if(!lista.length){g.fillStyle=MU;g.font="400 28px 'Source Sans 3', sans-serif";g.fillText(tipo==="lib"?`Ninguém chegou a ${LIB_MIN} mesas ainda.`:tipo==="br"?"Nenhuma mesa no mês ainda.":"Ninguém nessa faixa ainda.",80,y+60);y+=RH+10;return;}
+    const Z=tipo==="br"?zonasBR(t.br.length):null;const ZC={g:GL,int:SU,meio:"#D8CBAA",lan:"#C9704A"};
     lista.forEach((x,i)=>{
-      const lid=x.pos===1;
-      g.fillStyle=lid?"#F3E3B5":(i%2?CR:IV);rr(g,50,y,W-100,RH-12,16);g.fill();
+      const lid=x.pos===1;const zk=Z?Z.de(i):"";
+      g.fillStyle=lid?"#F3E3B5":zk==="lan"?"#F7E1D5":(i%2?CR:IV);rr(g,50,y,W-100,RH-12,16);g.fill();
+      if(zk){g.fillStyle=ZC[zk];g.fillRect(50,y+8,8,RH-28);}
       if(lid){g.strokeStyle=GO;g.lineWidth=3;rr(g,50,y,W-100,RH-12,16);g.stroke();}
       g.beginPath();g.arc(108,y+46,30,0,Math.PI*2);g.fillStyle=lid?GO:"#E3D3AE";g.fill();
       g.textAlign="center";g.fillStyle=lid?"#fff":GR;g.font="800 28px Montserrat, sans-serif";g.fillText(lid&&fechado?"🏆":String(x.pos),108,y+57);g.textAlign="left";
       g.fillStyle=TX;g.font="700 34px 'Source Sans 3', sans-serif";g.fillText(txtFit(g,x.nome,560),160,y+42);
       g.fillStyle=MU;g.font="400 23px 'Source Sans 3', sans-serif";
-      g.fillText(txtFit(g,`${x.pts} pts ÷ ${x.mesas} jogos · V ${x.vitorias} · D ${x.derrotas||0}`+(x.infTot?` · Inf ${x.infTot}`:"")+(x.empate&&x.cd!=null?` · C.D. ${x.cd}`:"")+(tipo==="sul"?` · faltam ${LIB_MIN-x.mesas} p/ Lib.`:""),640),160,y+76);
-      g.textAlign="right";g.fillStyle=GR;g.font="800 48px Montserrat, sans-serif";g.fillText(fmtMed(x.med),W-80,y+56);
-      g.fillStyle=MU;g.font="600 18px 'Source Sans 3', sans-serif";g.fillText("MÉDIA",W-80,y+80);g.textAlign="left";
+      g.fillText(txtFit(g,(tipo==="br"?`${x.mesas} mesas · V ${x.vitorias} · D ${x.derrotas||0}`:`${x.pts} PC ÷ ${x.mesas} mesas · V ${x.vitorias} · D ${x.derrotas||0}`)+(x.infTot?` · Inf ${x.infTot}`:"")+(x.empate&&x.cd!=null?` · C.D. ${x.cd}`:"")+(tipo==="sul"?` · faltam ${LIB_MIN-x.mesas} p/ Lib.`:""),640),160,y+76);
+      g.textAlign="right";g.fillStyle=GR;g.font="800 48px Montserrat, sans-serif";g.fillText(tipo==="br"?String(x.pts):fmtMed(x.med),W-80,y+56);
+      g.fillStyle=MU;g.font="600 18px 'Source Sans 3', sans-serif";g.fillText(tipo==="br"?"PC":"MÉDIA",W-80,y+80);g.textAlign="left";
       y+=RH;});
     y+=10;};
-  div(lib,"🏆 LIBERTADORES",`${LIB_MIN}+ jogos no mês`,GR,"lib");y+=30;
-  div(sul,"🥈 SUL-AMERICANA",`${SUL_MIN} a ${LIB_MIN-1} jogos`,SU,"sul");
-  if(t.aq.length){g.fillStyle=MU;g.font="700 24px Montserrat, sans-serif";g.fillText(`EM AQUECIMENTO · menos de ${SUL_MIN} jogos`,60,y+40);
+  if(eBR){div(brl,"🇧🇷 BRASILEIRÃO","todos · total de PC","#2A4D38","br");const Z=zonasBR(t.br.length);
+    if(Z){g.font="600 21px 'Source Sans 3', sans-serif";let zx=60;for(const f of Z.faixas.filter(f=>f.n)){const tx=`${f.nome} ${f.ini===f.fim?f.ini+"º":f.ini+"º–"+f.fim+"º"}`;g.fillStyle={g:GL,int:SU,meio:"#D8CBAA",lan:"#C9704A"}[f.k];g.fillRect(zx,y+10,16,16);g.fillStyle=TX;g.fillText(tx,zx+22,y+25);zx+=g.measureText(tx).width+50;}y+=40;}}
+  else{
+  div(lib,"🏆 LIBERTADORES",`${LIB_MIN}+ mesas com peça`,GR,"lib");y+=30;
+  div(sul,"🥈 SUL-AMERICANA",`${SUL_MIN} a ${LIB_MIN-1} mesas`,SU,"sul");}
+  if(!eBR&&t.aq.length){g.fillStyle=MU;g.font="700 24px Montserrat, sans-serif";g.fillText(`EM AQUECIMENTO · menos de ${SUL_MIN} mesas`,60,y+40);
     g.font="400 24px 'Source Sans 3', sans-serif";g.fillStyle=TX;g.fillText(txtFit(g,t.aq.map(x=>`${x.nome} (${x.mesas})`).join(" · "),W-120),60,y+82);y+=150;}
   const SL=selosMes(mesOff);
   if(SL.length){g.fillStyle=GR;g.font="700 24px Montserrat, sans-serif";g.fillText("SELOS DO MÊS",60,y+36);y+=50;
     SL.forEach((x,k)=>{const cx=60+(k%2)*480,cy=y+Math.floor(k/2)*102;rr(g,cx-10,cy,460,92,14);g.fillStyle=IV;g.fill();g.fillStyle=x.neg?TC:GO;g.fillRect(cx-10,cy,6,92);
       g.font="30px sans-serif";g.fillText(x.ic,cx+6,cy+56);g.fillStyle=GR;g.font="700 18px Montserrat, sans-serif";g.fillText(x.nome.toUpperCase(),cx+52,cy+26);
-      g.fillStyle=TX;g.font="700 22px 'Source Sans 3', sans-serif";g.fillText(txtFit(g,x.quem.map(q=>q.nome).join(" e "),390),cx+52,cy+54);
+      g.fillStyle=TX;g.font="700 22px 'Source Sans 3', sans-serif";g.fillText(txtFit(g,listaNomes(x.quem.map(q=>q.nome)),390),cx+52,cy+54);
       g.fillStyle=MU;g.font="400 19px 'Source Sans 3', sans-serif";g.fillText(txtFit(g,x.info,390),cx+52,cy+80);});
     y+=Math.ceil(SL.length/2)*102+10;}
   y+=10;g.fillStyle=GO;g.fillRect(50,y,W-100,2);
-  g.fillStyle=MU;g.font="400 20px 'Source Sans 3', sans-serif";g.fillText("MÉDIA = pontos ÷ jogos no mês (mesas com peça) · desempate: pts, vit., esp., secas, infr., confronto direto",60,y+40);
+  g.fillStyle=MU;g.font="400 20px 'Source Sans 3', sans-serif";g.fillText(eBR?"PC = pontos de classificação · conta toda mesa com jogada · desempate: vit., esp., secas, infr., C.D.":"MÉDIA = PC ÷ mesas com peça · desempate: PC, vit., esp., secas, infr., confronto direto",60,y+40);
   g.fillText("Placar Oficial · Lei nº 0608/2026 · Decreto nº 001/2026",60,y+78);
   g.textAlign="right";g.fillStyle=GO;g.font="700 26px Cinzel, Georgia, serif";g.fillText("Mão de ferro",W-60,y+78);g.textAlign="left";
   const HF=Math.min(H,y+130);const out=document.createElement("canvas");out.width=W;out.height=HF;const o=out.getContext("2d");o.drawImage(c,0,0);o.strokeStyle=GO;o.lineWidth=3;o.strokeRect(22,22,W-44,HF-44);
@@ -1750,45 +1785,43 @@ async function fazerMerge(){
 
 /* ===================== REGRAS ===================== */
 function vRegras(){
-  return `<h2>COMO O PLACAR FUNCIONA</h2><div class="card rules">
-  <h4>PONTUAÇÃO (ART. 3º)</h4><p>1ª vitória simples = <b>3 pontos</b> · 2ª = <b>5 pontos</b> · 3ª = <b>1 peça</b> (vence a mesa). Vitória direta = <b>1 peça na hora</b>.</p>
-  <h4>EMPATE 3×3 E FECHAMENTO FORÇADO (ARTS. 2º, 6º E 21)</h4><p>Com 3 pontos para cada dupla, ou depois de um fechamento forçado, a próxima rodada é <b>decisiva</b>: quem vencer leva a mesa. A saída é com a bucha de ás.</p>
-  <h4>VITÓRIA DIRETA (ART. 7º)</h4><p>Lasquinez, Lasquinez preso, Buchada, Buchada dobrada, Fechou com o menor ponto. <b>Fechou–Chorou</b>: a peça vai para a dupla adversária.</p>
-  <h4>VITÓRIA SIMPLES (ART. 8º)</h4><p>Batida seca, Fechamento folgando bucha, Fechamento forçado.</p>
-  <h4>SEM FILA (ART. 9º)</h4><p>Sem ninguém esperando e sem “zerou”, conta-se em peças: Lasquinez 1, preso 2, Buchada 1, dobrada 2, Fechamento 1, Fechou–Chorou 2 (para o adversário), Folgando bucha 1. Vitórias simples seguem 3 → 5 → 1 peça. A mesa só termina quando alguém encerra; vence quem tiver mais peças.</p>
-  <h4>REGRAS COMPLEMENTARES (18/11/2026)</h4>
+  return `<h2>REGRAS</h2>
+  <div class="card rules gl"><h4 style="margin-top:0">PALAVRAS DA LEI, NO PLACAR</h4>
+  <p><b>Mesa</b> — a disputa entre duas duplas até uma delas conquistar <b>1 peça</b> (Art. 4º). Nas tabelas: <b>M</b>.</p>
+  <p><b>Rodada</b> (partida) — cada jogo dentro da mesa, do embaralhar até a batida ou o fechamento.</p>
+  <p><b>Pontos</b> — só o placar da mesa: 1ª vitória simples = <b>3</b>, 2ª = <b>5</b> (Art. 3º).</p>
+  <p><b>Peça</b> — a conquista que vence a mesa: 3ª vitória simples ou qualquer vitória direta (Art. 3º, III e IV).</p>
+  <p><b>Vitória simples</b> — batida seca, fechamento folgando bucha, fechamento forçado (Art. 8º). <b>Vitória direta</b> — lasquinez, lasquinez preso, buchada, buchada dobrada, fechou com menor ponto (Art. 7º).</p>
+  <p><b>Rodada decisiva</b> — após 3×3 ou fechamento forçado: quem vencer leva a peça (Arts. 6º e 21).</p>
+  <p><b>PC — pontos de classificação</b> — o que soma nas tabelas (mesa vencida +${PONTO_VIT}, batidas, infrações). Não se confunde com os pontos 3 e 5 da mesa.</p>
+  <p><b>Média</b> — PC ÷ mesas (Libertadores e Sul-Americana).</p></div>
+  <details class="card rg"><summary>🁢 Como se ganha a mesa (Arts. 3º a 8º e 21)</summary><div class="rules"><p>1ª vitória simples = <b>3 pontos</b> · 2ª = <b>5 pontos</b> · 3ª = <b>1 peça</b>. Vitória direta = <b>1 peça na hora</b>. <b>Fechou–Chorou</b>: a peça vai para a dupla adversária.</p><p>Com 3×3, ou depois de um fechamento forçado, a próxima rodada é <b>decisiva</b>, com saída na bucha de ás.</p></div></details>
+  <details class="card rg"><summary>🔁 Sem fila (Art. 9º)</summary><div class="rules"><p>Sem ninguém esperando e sem “zerou”, conta-se em peças: Lasquinez 1, preso 2, Buchada 1, dobrada 2, Fechamento 1, Fechou–Chorou 2 (para o adversário), Folgando bucha 1. Vitórias simples seguem 3 → 5 → 1 peça. A mesa só termina quando alguém encerra; vence quem tiver mais peças.</p></div></details>
+  <details class="card rg"><summary>➕ Regras complementares (18/11/2026)</summary><div class="rules">
   <p><b>1. Vitória direta com pontos na mesa:</b> com o placar em 3×0, 3×3, 5×3, 3×5, 5×5 ou qualquer outro de batida seca, quem bater com vitória direta (Lasquinez, Lasquinez preso, Buchada, Buchada dobrada, Fechou com menor ponto, Fechou–Chorou) ganha a peça, e <b>os pontos das duas duplas continuam</b>.</p>
   <p><b>2. Passar com pedra na mão:</b> sem fila, vale <b>2 peças</b> para a dupla adversária. Com fila, continua valendo 1 peça e encerra a mesa.</p>
   <p><b>3. Batida seca a partir de 5 pontos:</b> a dupla que já está com 5 pontos ganha <b>1 peça</b> a cada batida seca, e o jogo <b>zera</b> (0×0).</p>
   <p><b>4. Rodada decisiva (3×3):</b> quem vencer leva a peça. Se venceu com <b>batida seca</b>, o jogo <b>zera</b>. Se venceu com <b>vitória direta</b>, os pontos continuam.</p>
   <p><b>Resumo:</b> peça de vitória direta mantém os pontos na mesa; peça de batida seca zera.</p>
-  <h4>TABELA DE PONTOS DA CLASSIFICAÇÃO</h4>
-  <p>Vitória de mesa <b>+3</b> · Lasquinez, Buchada, Fechou com menor ponto, Folgando bucha <b>+2</b> · Lasquinez preso e Buchada dobrada <b>+3</b> · Batida seca e Fechamento forçado <b>+1</b> · Fechou–Chorou <b>−1</b>.</p>
-  <p>Infrações tiram pontos: fraude <b>−5</b>; passar com pedra, gato, fingir <b>−3</b>; colagem irregular, esqueceu de jogar, sinais <b>−2</b>; pedra marcada no sorteio <b>−1</b>.</p>
-  <p>Desempate, nesta ordem: vitórias → batidas especiais → batidas secas → menos infrações → menos derrotas. Duplas: mesmos critérios, e depois peças.</p>
-  <h4>CAMPEONATO DO MÊS</h4>
-  ${regMensal()}
-  <h4>INFRAÇÕES</h4>
-  <p><b>Derrota imediata</b> (1 peça ao adversário; sem fila, passar com pedra vale 2): passar com pedra na mão (22), gato (23), fingir que não tem e jogar (24), fraude (24-D).</p>
-  <p><b>3 pontos ao adversário</b>, contados como uma vitória simples dele: colagem irregular (24-A, com advertência), esqueceu de jogar ou “passei” errado (24-B), sinais ao parceiro (24 §4).</p>
-  <p><b>Pedra marcada no sorteio</b> (24-C): o infrator perde o sorteio. Fica registrado, sem efeito no placar.</p>
-  <h4>REGISTRO OFICIAL (DECRETO Nº 001/2026)</h4><p>A partir de 18/11/2026 as infrações valem por jogador. No ranking, o filtro “Desde 18/11/2026” mostra a contagem oficial.</p>
-  <h4>LUSTRADO (MODO INDIVIDUAL)</h4><p>Cada um joga por si, normalmente em 3. Na sua vez, se a soma das pontas da mesa der <b>5 ou múltiplo de 5</b>, você marca esse valor (5, 10, 15…). Quem bate, ou vence o fechamento, soma os pontos que sobraram na mão dos adversários, <b>arredondados para baixo ao múltiplo de 5</b>. Vence quem atingir a meta primeiro ou, sem meta, quem tiver mais pontos ao encerrar. Regras do lustrado variam de mesa para mesa: combinem antes.</p>
-  <h4>BOAS PRÁTICAS</h4><p>Registre cada mesa de um aparelho por vez. Errou? Use “Desfazer último”. Casos omissos: maioria dos presentes, mínimo de 3 (Art. 26).</p>
-  </div>
+  </div></details>
+  <details class="card rg"><summary>⚠️ Infrações (Arts. 22 a 24-D)</summary><div class="rules"><p><b>Derrota imediata</b> (1 peça ao adversário; sem fila, passar com pedra vale 2 peças): passar com pedra na mão (22), gato (23), fingir que não tem e jogar (24), fraude (24-D).</p><p><b>3 pontos ao adversário</b> no placar da mesa, como uma vitória simples dele: colagem irregular (24-A, com advertência), esqueceu de jogar ou “passei” errado (24-B), sinais ao parceiro (24 §4).</p><p><b>Pedra marcada no sorteio</b> (24-C): o infrator perde o sorteio. Fica registrado, sem efeito no placar.</p><p><b>Registro oficial (Decreto nº 001/2026):</b> desde 18/11/2026 as infrações contam por jogador.</p></div></details>
+  <details class="card rg"><summary>📊 PC – pontos de classificação</summary><div class="rules"><p>Mesa vencida <b>+${PONTO_VIT}</b> · Lasquinez, Buchada, Fechou com menor ponto, Folgando bucha <b>+2</b> · Lasquinez preso e Buchada dobrada <b>+3</b> · Batida seca e Fechamento forçado <b>+1</b> · Fechou–Chorou <b>−1</b>.</p><p>Infrações: fraude <b>−5</b>; passar com pedra, gato, fingir <b>−3</b>; colagem irregular, esqueceu de jogar, sinais <b>−2</b>; pedra marcada no sorteio <b>−1</b>.</p></div></details>
+  <details class="card rg"><summary>🏆 Campeonato do Mês (Brasileirão, Libertadores, Sul-Americana)</summary><div class="rules">${regMensal()}</div></details>
+  <details class="card rg"><summary>📈 Estatísticas</summary><div class="rules"><p>Histórico geral, sem disputa de título, nos períodos Hoje, Desde 18/11 ou Tudo. Inclui lançamentos avulsos. Desempate: vitórias → especiais → secas → menos infrações → menos derrotas. Duplas: mesmos critérios e depois peças.</p></div></details>
+  <details class="card rg"><summary>🎯 Lustrado (modo individual)</summary><div class="rules"><p>Cada um joga por si, normalmente em 3. Na sua vez, se a soma das pontas da mesa der <b>5 ou múltiplo de 5</b>, você marca esse valor (5, 10, 15…). Quem bate, ou vence o fechamento, soma os pontos que sobraram na mão dos adversários, <b>arredondados para baixo ao múltiplo de 5</b>. Vence quem atingir a meta primeiro ou, sem meta, quem tiver mais pontos ao encerrar. Regras do lustrado variam de mesa para mesa: combinem antes.</p></div></details>
+  <details class="card rg"><summary>✅ Boas práticas</summary><div class="rules"><p>Registre cada mesa de um celular por vez. Errou? Use “Desfazer último” (fica registrado). Casos omissos: maioria dos presentes, mínimo de 3 (Art. 26).</p></div></details>
   <h2>DOCUMENTOS OFICIAIS</h2><div class="card docs">
   <a class="doc" href="docs/lei-0608-2026.pdf" target="_blank" rel="noopener">📜 <span><b>Lei Municipal nº 0608/2026</b><small>Regulamento completo do Dominó SEOSP</small></span>›</a>
   <a class="doc" href="docs/decreto-001-2026.pdf" target="_blank" rel="noopener">⚖️ <span><b>Decreto nº 001/2026</b><small>Transição para 2027 e registro por jogador</small></span>›</a>
   <a class="doc" href="docs/card-regras.pdf" target="_blank" rel="noopener">🃏 <span><b>Card de regras da mesa</b><small>Resumo para imprimir</small></span>›</a>
   <a class="doc" href="docs/card-o-que-mudou.pdf" target="_blank" rel="noopener">🔄 <span><b>Card “O que mudou”</b><small>Mudanças da transição</small></span>›</a></div>
-  <h2>BRASILEIRÃO</h2><div class="card rules"><p>Ranking geral, por <b>pontos acumulados</b> no período escolhido (Hoje, Desde 18/11 ou Tudo). Conta toda mesa com pelo menos uma jogada, avulsos e infrações. A tabela é dividida em zonas, proporcionais ao número de jogadores (a partir de 5): <b>G</b> (40% de cima; com 10 jogadores, G4 = 1º ao 4º), <b>Intermediário</b> (20% seguintes; 5º e 6º), <b>Meio de tabela</b> (o restante; 7º e 8º) e <b>Lanterna</b> 🔦 (20% de baixo; 9º e 10º). As zonas são só do Brasileirão e não têm relação com Libertadores e Sul-Americana, que são do Campeonato do Mês. Toque no nome para ver a ficha completa.</p></div>
   <h2>TRANSPARÊNCIA</h2><div class="card">
   <p style="margin:0 0 8px">Cada lance fica registrado com <b>quem lançou e o horário</b>. Desfazer e excluir também ficam registrados, com o motivo.</p>
   <div class="row" style="align-items:center"><span class="grow">Este celular lança como: <b>${esc(autor()||"não identificado")}</b></span><button class="btn ghost sm" data-act="trocarAutor">${autor()?"Trocar":"Identificar"}</button></div>
   <details style="margin-top:10px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">🗂 Histórico de exclusões e desfeitos (${historicoExclusoes().length})</summary>
   <div style="margin-top:8px">${(()=>{const H=historicoExclusoes().slice(0,60);return H.length?H.map(x=>`<div class="hx"><div><b>${esc(x.o)}</b></div>${x.ctx?`<div class="muted">${esc(x.ctx)}</div>`:""}<div class="muted" style="font-size:12px">${x.em?fmtData(x.em):""}${x.por?" · por "+esc(x.por):""}${x.lancou?" · lançado por "+esc(x.lancou):""}</div>${x.mot?`<div style="font-size:13px">Motivo: ${esc(x.mot)}</div>`:""}</div>`).join(""):`<p class="muted">Nada foi excluído ou desfeito.</p>`;})()}</div></details></div>
   <h2>INSTALAR NO CELULAR</h2><div class="card"><p style="margin:0 0 8px">${instalado()?"✔ O placar já está instalado neste celular.":"Instale o placar na tela inicial: abre como aplicativo e <b>funciona sem internet</b> (os lances ficam salvos e sobem quando a conexão voltar)."}</p>${instalado()?"":`<button class="btn gold sm" data-act="instalar">📲 Instalar app</button>`}</div>
-  <h2>MODO PRESIDENTE</h2><div class="card">${admin?`<p style="margin:0 0 10px"><b>🔓 Ativo neste aparelho.</b> Aparecem os botões de excluir mesas, jogadas, lustrados, lançamentos avulsos e campeonatos.</p><button class="btn ghost" data-act="adminSair">Sair do modo presidente</button><button class="btn sm" style="margin-left:8px;background:#8A6A1F" data-act="importar">Importar dados do placar antigo</button><button class="btn gold sm" style="width:100%;margin-top:10px" data-act="backup">💾 Baixar backup completo (faça todo dia 1º)</button>
+  <h2>MODO PRESIDENTE</h2><div class="card">${admin?`<p style="margin:0 0 10px"><b>🔓 Ativo neste aparelho.</b> Aparecem os botões de excluir mesas, jogadas, lustrados, avulsos e torneios, e de juntar jogadores.</p><button class="btn ghost" data-act="adminSair">Sair do modo presidente</button><button class="btn gold sm" style="width:100%;margin-top:10px" data-act="backup">💾 Baixar backup completo (faça todo dia 1º)</button>
   <div class="gprot"><div class="ex-t">🔐 PROTEÇÃO COM GOOGLE</div>${gUser?`<p style="margin:4px 0">Conectado como <b>${esc(gUser.email)}</b>. ${presEmail()===gUser.email?"Este é o e-mail do Presidente.":""}</p><button class="btn ghost sm" data-act="sairGoogle">Desconectar Google</button>
   <details style="margin-top:8px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">Passo a passo para ativar a proteção (uma vez)</summary><div class="rules" style="margin-top:6px">
   <p><b>1.</b> No Firebase (console.firebase.google.com) › projeto <b>domino-seosp</b> › <b>Authentication</b> › <b>Sign-in method</b> › ative <b>Google</b>.</p>
