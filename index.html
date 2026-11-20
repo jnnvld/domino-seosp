@@ -21,7 +21,7 @@ header .t2{font-family:Montserrat,sans-serif;font-size:10.5px;letter-spacing:2.5
 #sync{margin-left:auto;font-size:12px;color:var(--gl);text-align:right}
 main{max-width:720px;margin:0 auto;padding:14px 14px calc(96px + env(safe-area-inset-bottom))}
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--gd);border-top:3px solid var(--go);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:6}
-nav a{flex:1;text-align:center;color:#CFC3A5;text-decoration:none;padding:9px 2px 8px;font-family:Montserrat,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:56px}
+nav a{flex:1;min-width:0;text-align:center;color:#CFC3A5;text-decoration:none;padding:9px 1px 8px;font-family:Montserrat,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.3px;line-height:1.15;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:56px}
 nav a svg{width:22px;height:22px}
 nav a.on{color:var(--gl)}
 h2{font-family:Montserrat,sans-serif;font-size:13px;letter-spacing:2.5px;color:var(--gd);margin:18px 0 10px;display:flex;align-items:center;gap:10px}
@@ -301,7 +301,8 @@ async function garantirJogador(nome){
 }
 const ICONS={
   mesa:'<rect x="5" y="3" width="6" height="12" rx="1.5"/><rect x="13" y="9" width="6" height="12" rx="1.5"/><path d="M5 9h6M13 15h6"/>',
-  rank:'<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/>',
+  mes:'<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/>',
+  rank:'<path d="M9 21V10h6v11M3 21v-7h6M15 21v-5h6v5M2 21h20"/><path d="M12 3l1 2 2 .3-1.5 1.4.4 2.1L12 7.8l-1.9 1 .4-2.1L9 5.3l2-.3z"/>',
   camp:'<path d="M4 5h5v4H4zM4 15h5v4H4zM15 10h5v4h-5z"/><path d="M9 7h3v10H9M12 12h3"/>',
   regras:'<path d="M6 3h9l3 3v15H6z"/><path d="M9 9h6M9 13h6M9 17h4"/>'
 };
@@ -317,7 +318,7 @@ async function adminEntrar(){
   if(hex!==ADMIN_HASH){toast("Senha incorreta.");if(i)i.value="";return;}
   admin=true;try{sessionStorage.setItem("seospAdmin","1");}catch(e){}render();toast("Modo presidente ativo.");
 }let view="mesa",curPartida=null,sheet=null,rankFiltro="decreto",rankOrdem="pts",rankCrit="pts",curCamp=null;
-const VIEWS=[["mesa","MESA"],["rank","JOGADORES"],["camp","CAMPEONATO"],["regras","REGRAS"]];
+const VIEWS=[["mesa","MESA"],["mes","CAMP. DO MÊS"],["rank","JOGADORES"],["camp","TORNEIOS"],["regras","REGRAS"]];
 function go(v){view=v;sheet=null;if(location.hash!=="#"+v)history.replaceState(null,"","#"+v);render();window.scrollTo(0,0);}
 window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(VIEWS.some(x=>x[0]===h)&&h!==view){view=h;render();}});
 
@@ -327,7 +328,8 @@ function render(){
   const app=document.getElementById("app");
   if(view==="mesa")app.innerHTML=curLust&&byId("lustrados",curLust)?vLust(byId("lustrados",curLust)):curPartida&&byId("partidas",curPartida)?vPartida(byId("partidas",curPartida)):vMesas();
   else if(view==="rank")app.innerHTML=vRank();
-  else if(view==="camp")app.innerHTML=curCamp&&byId("campeonatos",curCamp)?vCampDet(byId("campeonatos",curCamp)):(campAba==="mensal"?vMensal():vCamps());
+  else if(view==="mes")app.innerHTML=vMensal();
+  else if(view==="camp")app.innerHTML=curCamp&&byId("campeonatos",curCamp)?vCampDet(byId("campeonatos",curCamp)):vCamps();
   else app.innerHTML=vRegras();
   renderSheet();
 }
@@ -793,7 +795,7 @@ function regMensal(){return `
 function vMensal(){
   const t=tabelaMes(mesOff);const agora=Date.now();const fechado=agora>=t.w.fim;
   const dias=Math.ceil((t.w.fim-agora)/86400000);
-  let h=`<div class="seg" style="margin-bottom:12px"><button data-campaba="mensal" class="on">🏆 Campeonato do mês</button><button data-campaba="torneios">Torneios</button></div>
+  let h=`<h2>CAMPEONATO DO MÊS</h2>
   <div class="mesbar"><button class="btn ghost sm" data-mes="-1" aria-label="Mês anterior">‹</button><div class="nm">${t.w.nome}</div><button class="btn ghost sm" data-mes="1" ${mesOff>=0?"disabled":""} aria-label="Próximo mês">›</button></div>
   <p class="muted" style="text-align:center;margin:-4px 0 12px">${fechado?"Mês encerrado · campeões definidos":mesOff===0?`Em disputa · termina em ${dias} dia(s)`:""}</p>`;
   if(t.lib.length||t.sul.length||t.aq.length)h+=`<button class="btn" data-act="imgMensal" style="width:100%;margin-bottom:12px">📸 Imagem do campeonato do mês</button>`;
@@ -806,15 +808,15 @@ function vMensal(){
   return h;
 }
 function vCamps(){
-  let h=`<div class="seg" style="margin-bottom:12px"><button data-campaba="mensal">🏆 Campeonato do mês</button><button data-campaba="torneios" class="on">Torneios</button></div><h2>TORNEIOS</h2>`;
-  h+=cache.campeonatos.length?`<div class="card">${cache.campeonatos.map(c=>{const fim=c.campeao;return `<div class="match" data-camp="${c.id}" style="cursor:pointer"><div class="grow"><b>${esc(c.nome)}</b><div class="muted">${c.formato==="mata"?"Mata-mata":"Pontos corridos"} · ${c.duplas.length} duplas</div></div>${fim?`<span class="pill" style="background:#F3E2B5;color:#5B4310">🏆 ${esc((c.duplas.find(d=>d.id===fim)||{}).nome)}</span>`:`<span class="pill" style="background:#DCE8DA;color:var(--gd)">em disputa</span>`}</div>`;}).join("")}</div>`:`<div class="card empty">Nenhum campeonato criado.</div>`;
-  h+=`<button class="btn gold" style="width:100%;min-height:56px" data-act="novoCamp">+ NOVO CAMPEONATO</button>`;
-  h+=`<p class="muted" style="margin-top:10px">Cada jogo do campeonato é uma mesa normal: termina quando uma dupla faz 1 peça, com as regras e infrações da lei.</p>`;
+  let h=`<h2>TORNEIOS</h2>`;
+  h+=cache.campeonatos.length?`<div class="card">${cache.campeonatos.map(c=>{const fim=c.campeao;return `<div class="match" data-camp="${c.id}" style="cursor:pointer"><div class="grow"><b>${esc(c.nome)}</b><div class="muted">${c.formato==="mata"?"Mata-mata":"Pontos corridos"} · ${c.duplas.length} duplas</div></div>${fim?`<span class="pill" style="background:#F3E2B5;color:#5B4310">🏆 ${esc((c.duplas.find(d=>d.id===fim)||{}).nome)}</span>`:`<span class="pill" style="background:#DCE8DA;color:var(--gd)">em disputa</span>`}</div>`;}).join("")}</div>`:`<div class="card empty">Nenhum torneio criado.</div>`;
+  h+=`<button class="btn gold" style="width:100%;min-height:56px" data-act="novoCamp">+ NOVO TORNEIO</button>`;
+  h+=`<p class="muted" style="margin-top:10px">Cada jogo do torneio é uma mesa normal: termina quando uma dupla faz 1 peça, com as regras e infrações da lei.</p>`;
   return h;
 }
 function shCamp(){
   const s=sheet;
-  return `<h3>NOVO CAMPEONATO</h3>
+  return `<h3>NOVO TORNEIO</h3>
   <label class="f" for="cNome">Nome</label><input type="text" id="cNome" value="${esc(s.nome)}" placeholder="Ex.: Copa SEOSP 2027" maxlength="50">
   <label class="f">Formato</label>
   <div class="seg"><button data-fmt="pontos" class="${s.fmt==="pontos"?"on":""}">Pontos corridos</button><button data-fmt="mata" class="${s.fmt==="mata"?"on":""}">Mata-mata</button></div>
