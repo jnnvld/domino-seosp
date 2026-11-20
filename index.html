@@ -843,7 +843,7 @@ async function proxima(){
 
 /* ===================== RANKING ===================== */
 function stats(ini=iniPeriodo(),fim=Infinity,modo=false){const soMesas=!!modo;
-  const S={};const em=t=>(t||0)>=ini&&(t||0)<fim;const NADA={b:{},inf:{}};const get=id=>!id?Object.assign(NADA,{mesas:0,vitorias:0,derrotas:0,esp:0,infTot:0,adv:0}):S[id]||(S[id]={id,nome:nomeJog(id),mesas:0,vitorias:0,derrotas:0,b:{},inf:{},esp:0,infTot:0,adv:0});
+  const S={};const em=t=>(t||0)>=ini&&(t||0)<fim;const NADA={b:{},inf:{}};const get=id=>!id?Object.assign(NADA,{mesas:0,vitorias:0,derrotas:0,esp:0,infTot:0,adv:0}):S[id]||(S[id]={id,nome:nomeJog(id),mesas:0,vitorias:0,derrotas:0,b:{},inf:{},esp:0,infTot:0,adv:0,ass:0});
   for(const p of cache.partidas){
     const st=computeState(p);
     if(modo==="peca"&&(st.A.pecas+st.B.pecas)===0)continue;
@@ -852,7 +852,8 @@ function stats(ini=iniPeriodo(),fim=Infinity,modo=false){const soMesas=!!modo;
     if(st.winner&&em(p.criadoEm)){const d=p["dupla"+st.winner];get(d.j1).vitorias++;get(d.j2).vitorias++;const o=p["dupla"+other(st.winner)];get(o.j1).derrotas++;get(o.j2).derrotas++;}
     for(const e of p.eventos||[]){
       if(!em(e.t))continue;const x=get(e.jog);
-      if(e.k==="batida"){x.b[e.tipo]=(x.b[e.tipo]||0)+1;if(BATIDAS[e.tipo]&&BATIDAS[e.tipo].esp)x.esp++;}
+      if(e.k==="batida"){x.b[e.tipo]=(x.b[e.tipo]||0)+1;if(BATIDAS[e.tipo]&&BATIDAS[e.tipo].esp)x.esp++;
+        if(e.tipo!=="fechou_chorou"){const D=[p.duplaA,p.duplaB].find(d=>d.j1===e.jog||d.j2===e.jog);const par=D&&(D.j1===e.jog?D.j2:D.j1);if(par){const y=get(par);y.ass=(y.ass||0)+1;}}}
       else{x.inf[e.tipo]=(x.inf[e.tipo]||0)+1;x.infTot++;if(INFR[e.tipo]&&INFR[e.tipo].adv)x.adv++;}
     }
   }
@@ -873,9 +874,10 @@ function stats(ini=iniPeriodo(),fim=Infinity,modo=false){const soMesas=!!modo;
 const PONTOS_BAT={lasquinez:2,lasq_preso:3,buchada:2,buch_dobrada:3,fechou_menor:2,folgando:2,forcado:1,seca:1,fechou_chorou:-1};
 const PONTOS_INF={passar:-3,gato:-3,fingir:-3,fraude:-5,colagem:-2,esqueceu:-2,sinais:-2,sorteio:-1};
 const PONTO_VIT=3;
+const PONTO_ASS=1; // assistência: parceiro de quem bateu (qualquer batida, exceto Fechou–Chorou)
 const isEsp=t=>BATIDAS[t]&&(BATIDAS[t].cat==="direta"&&!BATIDAS[t].adv||BATIDAS[t].esp);
 const isSec=t=>t==="seca"||t==="forcado";
-function pontuar(x){let p=x.vitorias*PONTO_VIT;for(const[k,n]of Object.entries(x.b))p+=(PONTOS_BAT[k]||0)*n;for(const[k,n]of Object.entries(x.inf))p+=(PONTOS_INF[k]||0)*n;
+function pontuar(x){let p=x.vitorias*PONTO_VIT+(x.ass||0)*PONTO_ASS;for(const[k,n]of Object.entries(x.b))p+=(PONTOS_BAT[k]||0)*n;for(const[k,n]of Object.entries(x.inf))p+=(PONTOS_INF[k]||0)*n;
   x.pts=p;x.espN=Object.entries(x.b).reduce((a,[k,n])=>a+(isEsp(k)?n:0),0);x.secN=Object.entries(x.b).reduce((a,[k,n])=>a+(isSec(k)?n:0),0);return x;}
 const ordemCamp=(a,b)=>b.pts-a.pts||b.vitorias-a.vitorias||b.espN-a.espN||b.secN-a.secN||a.infTot-b.infTot||(a.derrotas||0)-(b.derrotas||0)||a.nome.localeCompare(b.nome,"pt-BR");
 let rankAba="jog";
@@ -906,7 +908,7 @@ function vRank(){
   rankCrit="pts";const porMed=false;const comMed=x=>({...x,med:x.mesas?x.pts/x.mesas:0});
   const aplica=(lista,ordBase)=>{if(!porMed)return {lista,fora:0};const ok=lista.filter(x=>x.mesas>=LIB_MIN).sort((a,b)=>b.med-a.med||ordBase(a,b));return {lista:ok,fora:lista.length-ok.length};};
   const notaMed=f=>porMed?`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">Ordenado pela média (pontos ÷ jogos), só com ${LIB_MIN} jogos ou mais no período.${f?` ${f} fora por ter menos jogos.`:""} Empate na média: critérios normais.</p>`:"";
-  const leg=`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">M: mesas. PTS: pontos do campeonato (mesa vencida +${PONTO_VIT}; batida especial +2/+3; seca +1; infração −1 a −5). MÉD: pts ÷ mesas. Inclui avulsos. <a href="#regras" data-go="regras">Tabela completa</a></p>`;
+  const leg=`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">M: mesas. PTS: pontos do campeonato (mesa vencida +${PONTO_VIT}; batida especial +2/+3; seca +1; assistência +${PONTO_ASS}; infração −1 a −5). ASS: assistências. MÉD: pts ÷ mesas. Inclui avulsos. <a href="#regras" data-go="regras">Tabela completa</a></p>`;
   if(rankAba==="dup"){
     const R=aplica(statsDuplas().map(comMed),(a,b)=>ordemCamp(a,b)||b.pecas-a.pecas);const L=R.lista;
     h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Dupla</th><th>PTS</th><th>MÉD</th><th>M</th><th>V</th><th>D</th><th>PÇ</th><th>ESP</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""}"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas}</td><td>${x.pecas}</td><td>${x.espN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+notaMed(R.fora)+leg:`<div class="card empty">${porMed?`Nenhuma dupla com ${LIB_MIN} jogos ou mais nesse período.`:"Nenhuma dupla completa jogou nesse período."}</div>`;
@@ -916,7 +918,7 @@ function vRank(){
   const L0=stats().filter(x=>x.mesas||x.pts||x.infTot||Object.keys(x.b).length).map(comMed).sort(ordemCamp);const R=aplica(L0,ordemCamp);const L=R.lista;
   const Z=null;
   if(Z)h+=`<div class="dvleg">${Z.faixas.filter(f=>f.n).map(f=>`<span><i class="dv ${f.k}"></i><b>${f.nome}</b> <span class="muted">${f.ini===f.fim?f.ini+"º":f.ini+"º–"+f.fim+"º"}</span></span>`).join("")}</div>`;
-  h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>PTS</th><th>MÉD</th><th>M</th><th>V</th><th>D</th><th>ESP</th><th>SEC</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""} ${Z?"z"+Z.de(i):""}" data-ficha="${x.id}" style="cursor:pointer"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas||0}</td><td>${x.espN}</td><td>${x.secN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+notaMed(R.fora)+leg:`<div class="card empty">${porMed?`Ninguém com ${LIB_MIN} jogos ou mais nesse período.`:"Nenhum registro nesse período."}</div>`;
+  h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>PTS</th><th>MÉD</th><th>M</th><th>V</th><th>D</th><th>ESP</th><th>SEC</th><th>ASS</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""} ${Z?"z"+Z.de(i):""}" data-ficha="${x.id}" style="cursor:pointer"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas||0}</td><td>${x.espN}</td><td>${x.secN}</td><td>${x.ass||0}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+notaMed(R.fora)+leg:`<div class="card empty">${porMed?`Ninguém com ${LIB_MIN} jogos ou mais nesse período.`:"Nenhum registro nesse período."}</div>`;
   h+=`<div class="row" style="margin:12px 0 6px"><button class="btn tc sm grow" data-act="avulso">+ Lançamento avulso</button><button class="btn gold sm grow" data-act="imgRank">📷 Imagem</button><button class="btn ghost sm" data-act="copiarRank">Texto</button></div>`;
   if(L.length)h+=`<details class="card" style="padding:10px 12px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📊 Estatísticas detalhadas por jogador</summary><div style="margin-top:10px">${L.map((x,i)=>cardJog(x,i,"Pontos",y=>y.pts)).join("")}</div></details>`;
   const av=cache.avulsos.slice(0,15);
@@ -978,8 +980,8 @@ const fmtMed=v=>v.toFixed(2).replace(".",",");
 function decompor(x){
   const bat=Object.entries(x.b||{}).map(([k,n])=>({nome:(BATIDAS[k]||{nome:k}).nome,n,pts:(PONTOS_BAT[k]||0)*n})).filter(r=>r.pts);
   const inf=Object.entries(x.inf||{}).map(([k,n])=>({nome:(INFR[k]||{nome:k}).nome,n,pts:(PONTOS_INF[k]||0)*n})).filter(r=>r.n);
-  const vit=x.vitorias*PONTO_VIT,sb=bat.reduce((a,r)=>a+r.pts,0),si=inf.reduce((a,r)=>a+r.pts,0);
-  return {vit,bat,inf,sb,si,tot:vit+sb+si};
+  const vit=x.vitorias*PONTO_VIT,sb=bat.reduce((a,r)=>a+r.pts,0),si=inf.reduce((a,r)=>a+r.pts,0),sa=(x.ass||0)*PONTO_ASS;
+  return {vit,bat,inf,sb,si,sa,tot:vit+sb+si+sa};
 }
 const aprov=x=>x.mesas?Math.round(100*x.vitorias/x.mesas)+"%":"–";
 const COMP={br:{nome:"Brasileirão",ic:"🇧🇷",camp:"Campeão do Brasileirão"},lib:{nome:"Libertadores",ic:"🏆",camp:"Campeão da Libertadores"},sul:{nome:"Sul-Americana",ic:"🥈",camp:"Campeão da Sul-Americana"}};
@@ -1009,6 +1011,7 @@ function shExtrato(){
   <div class="ex"><div class="ex-t">DE ONDE VÊM OS PONTOS DO CAMPEONATO</div>
   ${ln(`Mesas vencidas: ${x.vitorias} × ${PONTO_VIT}`,d.vit)}
   ${d.bat.map(r=>ln(`${r.nome}: ${r.n}`,r.pts)).join("")}
+  ${x.ass?ln(`Assistências: ${x.ass} × ${PONTO_ASS}`,d.sa):""}
   ${d.inf.map(r=>ln(`${r.nome}: ${r.n}`,r.pts,"neg")).join("")}
   <div class="ex-l tot"><span>Total de pontos</span><b>${x.pts}</b></div>
   <div class="ex-l"><span>Mesas no mês</span><b>${x.mesas}</b></div>
@@ -1018,7 +1021,7 @@ function shExtrato(){
     const cols=[x];if(i>0)cols.unshift(L[i-1]);if(i<L.length-1)cols.push(L[i+1]);
     const row=(l,f)=>`<tr><td class="n">${l}</td>${cols.map(c=>`<td class="${c.id===x.id?"me":""}">${f(c)}</td>`).join("")}</tr>`;
     h+=`<table class="tb ex-c"><thead><tr><th></th>${cols.map(c=>`<th class="${c.id===x.id?"me":""}">${c.pos}º ${esc(c.nome.split(" ")[0])}</th>`).join("")}</tr></thead><tbody>
-    ${row("Mesas",c=>c.mesas)}${row("Vitórias",c=>c.vitorias)}${row("Aproveitamento",aprov)}${row("Pts de vitórias",c=>decompor(c).vit)}${row("Pts de batidas",c=>"+"+decompor(c).sb)}${row("Infrações",c=>decompor(c).si)}${row("<b>Total de pontos</b>",c=>`<b>${c.pts}</b>`)}${br?"":row("<b>Média</b>",c=>`<b>${fmtMed(c.med)}</b>`)}</tbody></table>`;
+    ${row("Mesas",c=>c.mesas)}${row("Vitórias",c=>c.vitorias)}${row("Aproveitamento",aprov)}${row("Pts de vitórias",c=>decompor(c).vit)}${row("Pts de batidas",c=>"+"+decompor(c).sb)}${row("Assistências",c=>"+"+decompor(c).sa)}${row("Infrações",c=>decompor(c).si)}${row("<b>Total de pontos</b>",c=>`<b>${c.pts}</b>`)}${br?"":row("<b>Média</b>",c=>`<b>${fmtMed(c.med)}</b>`)}</tbody></table>`;
     h+=viz.map(([k,a,b])=>`<p class="ex-w">${k==="acima"?`⬆ <b>${esc(a.nome)}</b> está à frente porque ${motivoPos(a,b,div)}`:`⬇ <b>${esc(x.nome)}</b> está à frente de ${esc(b.nome)} porque ${motivoPos(a,b,div)}`}</p>`).join("");
     if(!br)h+=`<p class="muted" style="font-size:12.5px">Jogar mais ou vencer mais não basta: conta quanto se faz <b>por mesa</b>. Mesa sem pontos baixa a média; batidas e vitórias sobem; infrações descontam.</p>`;}
   h+=`<details class="ex" style="margin-top:12px"><summary class="ex-t" style="cursor:pointer;margin:0">📜 COMO FUNCIONA ${br?"O BRASILEIRÃO":"A "+COMP[div].nome.toUpperCase()}</summary><div style="font-size:13.5px;line-height:1.45;margin-top:6px">${regraComp(div)}</div></details>`;
@@ -1026,7 +1029,7 @@ function shExtrato(){
   return h;
 }
 function regraComp(div){
-  const pc=`<p style="margin:4px 0"><b>pontos do campeonato:</b> mesa vencida +${PONTO_VIT}; batidas especiais +2/+3; seca +1; infrações −1 a −5.</p>`;
+  const pc=`<p style="margin:4px 0"><b>pontos do campeonato:</b> mesa vencida +${PONTO_VIT}; batidas especiais +2/+3; seca +1; <b>assistência +${PONTO_ASS}</b> (parceiro de quem bateu); infrações −1 a −5.</p>`;
   if(div==="br")return `<p style="margin:4px 0"><b>Quem disputa:</b> todos que jogaram no mês.</p><p style="margin:4px 0"><b>Mesa que conta:</b> toda mesa com pelo menos uma jogada lançada, com ou sem peça.</p>${pc}<p style="margin:4px 0"><b>Classificação:</b> pelo total de pontos no mês. Desempate: vitórias → especiais → secas → menos infrações → confronto direto.</p><p style="margin:4px 0"><b>Zonas:</b> G, Intermediário, Meio de tabela e Lanterna, proporcionais ao nº de jogadores.</p><p style="margin:4px 0"><b>Título:</b> o 1º no último dia do mês é Campeão do Brasileirão.</p>`;
   return `<p style="margin:4px 0"><b>Quem disputa:</b> ${div==="lib"?`quem tem ${LIB_MIN} mesas ou mais no mês`:`quem tem de ${SUL_MIN} a ${LIB_MIN-1} mesas no mês; ao chegar a ${LIB_MIN}, sobe na hora para a Libertadores`}.</p><p style="margin:4px 0"><b>Mesa que conta:</b> mesa em que saiu pelo menos uma peça (mesmo sem encerrar).</p>${pc}<p style="margin:4px 0"><b>Classificação:</b> pela média = pts ÷ mesas. Desempate: pontos → vitórias → especiais → secas → menos infrações → confronto direto.</p><p style="margin:4px 0"><b>Título:</b> o 1º no último dia do mês é ${COMP[div].camp}.</p>`;
 }
@@ -1034,14 +1037,14 @@ function tabelaBR(lista,fechado){
   if(!lista.length)return `<div class="empty" style="padding:14px">Nenhuma mesa no mês ainda.</div>`;
   const Z=zonasBR(lista.length);
   return `${Z?`<div class="dvleg" style="padding:8px 12px 0">${Z.faixas.filter(f=>f.n).map(f=>`<span><i class="dv ${f.k}"></i><b>${f.nome}</b> <span class="muted">${f.ini===f.fim?f.ini+"º":f.ini+"º–"+f.fim+"º"}</span></span>`).join("")}</div>`:""}
-  <div style="padding:2px 8px 6px"><table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>PTS</th><th>M</th><th>V</th><th>D</th><th>ESP</th><th>SEC</th><th>INF</th></tr></thead><tbody>${lista.map((x,i)=>`<tr class="${x.pos===1?"g1":""} ${Z?"z"+Z.de(i):""}" data-extrato="${x.id}" data-comp="br" style="cursor:pointer"><td>${x.pos===1?(fechado?"🏆":"👑"):x.pos}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas||0}</td><td>${x.espN}</td><td>${x.secN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table>
-  <p class="muted" style="margin:6px 2px 0;font-size:12px">PTS: pontos do campeonato (mesa vencida +${PONTO_VIT}; batida especial +2/+3; seca +1; infração −1 a −5). M: mesas. Toque no jogador para ver a conta.</p></div>`;
+  <div style="padding:2px 8px 6px"><table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>PTS</th><th>M</th><th>V</th><th>D</th><th>ESP</th><th>SEC</th><th>ASS</th><th>INF</th></tr></thead><tbody>${lista.map((x,i)=>`<tr class="${x.pos===1?"g1":""} ${Z?"z"+Z.de(i):""}" data-extrato="${x.id}" data-comp="br" style="cursor:pointer"><td>${x.pos===1?(fechado?"🏆":"👑"):x.pos}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas||0}</td><td>${x.espN}</td><td>${x.secN}</td><td>${x.ass||0}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table>
+  <p class="muted" style="margin:6px 2px 0;font-size:12px">PTS: pontos do campeonato (mesa vencida +${PONTO_VIT}; batida especial +2/+3; seca +1; assistência +${PONTO_ASS}; infração −1 a −5). M: mesas. ASS: assistências. Toque no jogador para ver a conta.</p></div>`;
 }
 function regMensal(){return `
   <p><b>Art. 1º Temporada.</b> O Campeonato do Mês começa às 00h do dia 1º e termina às 23h59 do último dia do mês (horário da Bahia). Vale a data em que a mesa foi aberta no Placar Oficial. No dia 1º seguinte as tabelas recomeçam; as mesas continuam no histórico.</p>
   <p><b>Art. 2º Competições.</b> São disputadas três competições no mês: I – <b>Brasileirão</b>, com todos os jogadores, pelo total de pontos; II – <b>Libertadores</b>, com quem tem ${LIB_MIN} mesas ou mais, pela média; III – <b>Sul-Americana</b>, com quem tem de ${SUL_MIN} a ${LIB_MIN-1} mesas, pela média. Com menos de ${SUL_MIN} mesas, o jogador fica <b>em aquecimento</b> na Libertadores/Sul-Americana, mas disputa o Brasileirão.</p>
   <p><b>Art. 3º Mesa que conta.</b> I – No Brasileirão: toda mesa com pelo menos uma jogada lançada, com ou sem peça. II – Na Libertadores e na Sul-Americana: só a mesa em que <b>pelo menos uma peça</b> foi conquistada (por vitória direta, batida seca a partir de 5, rodada decisiva ou infração), mesmo que ninguém a encerre; a mesa que parou antes da primeira peça não conta, nem os pontos lançados nela.</p>
-  <p><b>Art. 4º Pontos do campeonato (PTS).</b> Não se confundem com os pontos do placar da mesa (3 e 5, Art. 3º da Lei). Valem: mesa vencida +${PONTO_VIT}; batida especial +2 (lasquinez preso e buchada dobrada +3); batida seca +1; infrações de −1 a −5. Lançamentos avulsos e o Lustrado <b>não</b> contam no Campeonato do Mês (aparecem só em Estatísticas).</p>
+  <p><b>Art. 4º Pontos do campeonato (PTS).</b> Não se confundem com os pontos do placar da mesa (3 e 5, Art. 3º da Lei). Valem: mesa vencida +${PONTO_VIT}; batida especial +2 (lasquinez preso e buchada dobrada +3); batida seca +1; <b>assistência +${PONTO_ASS}</b> para o parceiro de quem bateu, em qualquer batida, exceto Fechou–Chorou; infrações de −1 a −5. Lançamentos avulsos e o Lustrado <b>não</b> contam no Campeonato do Mês (aparecem só em Estatísticas).</p>
   <p><b>Art. 5º Média.</b> Na Libertadores e na Sul-Americana, a classificação é pela <b>média = pts ÷ mesas</b> no mês.</p>
   <p><b>Art. 6º Acesso.</b> Ao completar ${LIB_MIN} mesas, o jogador passa na hora para a Libertadores, levando a média que tem. A divisão final é a do encerramento do mês.</p>
   <p><b>Art. 7º Zonas do Brasileirão.</b> A tabela é dividida em proporção ao número de jogadores (a partir de 5): G (40% de cima; com 10 jogadores, G4 = 1º ao 4º), Intermediário (20% seguintes), Meio de tabela (o restante) e Lanterna (20% de baixo).</p>
@@ -1800,7 +1803,7 @@ function vRegras(){
   <p><b>Peça</b> — a conquista que vence a mesa: 3ª vitória simples ou qualquer vitória direta (Art. 3º, III e IV).</p>
   <p><b>Vitória simples</b> — batida seca, fechamento folgando bucha, fechamento forçado (Art. 8º). <b>Vitória direta</b> — lasquinez, lasquinez preso, buchada, buchada dobrada, fechou com menor ponto (Art. 7º).</p>
   <p><b>Rodada decisiva</b> — após 3×3 ou fechamento forçado: quem vencer leva a peça (Arts. 6º e 21).</p>
-  <p><b>Pontos do campeonato (PTS)</b> — o que soma nas tabelas (mesa vencida +${PONTO_VIT}, batidas, infrações). Não se confunde com os pontos 3 e 5 da mesa.</p>
+  <p><b>Pontos do campeonato (PTS)</b> — o que soma nas tabelas (mesa vencida +${PONTO_VIT}, batidas, assistências, infrações). Não se confunde com os pontos 3 e 5 da mesa.</p>
   <p><b>Média</b> — pontos ÷ mesas (Libertadores e Sul-Americana).</p></div>
   <details class="card rg"><summary>🁢 Como se ganha a mesa (Arts. 3º a 8º e 21)</summary><div class="rules"><p>1ª vitória simples = <b>3 pontos</b> · 2ª = <b>5 pontos</b> · 3ª = <b>1 peça</b>. Vitória direta = <b>1 peça na hora</b>. <b>Fechou–Chorou</b>: a peça vai para a dupla adversária.</p><p>Com 3×3, ou depois de um fechamento forçado, a próxima rodada é <b>decisiva</b>, com saída na bucha de ás.</p></div></details>
   <details class="card rg"><summary>🔁 Sem fila (Art. 9º)</summary><div class="rules"><p>Sem ninguém esperando e sem “zerou”, conta-se em peças: Lasquinez 1, preso 2, Buchada 1, dobrada 2, Fechamento 1, Fechou–Chorou 2 (para o adversário), Folgando bucha 1. Vitórias simples seguem 3 → 5 → 1 peça. A mesa só termina quando alguém encerra; vence quem tiver mais peças.</p></div></details>
@@ -1812,7 +1815,7 @@ function vRegras(){
   <p><b>Resumo:</b> peça de vitória direta mantém os pontos na mesa; peça de batida seca zera.</p>
   </div></details>
   <details class="card rg"><summary>⚠️ Infrações (Arts. 22 a 24-D)</summary><div class="rules"><p><b>Derrota imediata</b> (1 peça ao adversário; sem fila, passar com pedra vale 2 peças): passar com pedra na mão (22), gato (23), fingir que não tem e jogar (24), fraude (24-D).</p><p><b>3 pontos ao adversário</b> no placar da mesa, como uma vitória simples dele: colagem irregular (24-A, com advertência), esqueceu de jogar ou “passei” errado (24-B), sinais ao parceiro (24 §4).</p><p><b>Pedra marcada no sorteio</b> (24-C): o infrator perde o sorteio. Fica registrado, sem efeito no placar.</p><p><b>Registro oficial (Decreto nº 001/2026):</b> desde 18/11/2026 as infrações contam por jogador.</p></div></details>
-  <details class="card rg"><summary>📊 Pontos do campeonato (PTS)</summary><div class="rules"><p>Mesa vencida <b>+${PONTO_VIT}</b> · Lasquinez, Buchada, Fechou com menor ponto, Folgando bucha <b>+2</b> · Lasquinez preso e Buchada dobrada <b>+3</b> · Batida seca e Fechamento forçado <b>+1</b> · Fechou–Chorou <b>−1</b>.</p><p>Infrações: fraude <b>−5</b>; passar com pedra, gato, fingir <b>−3</b>; colagem irregular, esqueceu de jogar, sinais <b>−2</b>; pedra marcada no sorteio <b>−1</b>.</p></div></details>
+  <details class="card rg"><summary>📊 Pontos do campeonato (PTS)</summary><div class="rules"><p>Mesa vencida <b>+${PONTO_VIT}</b> · Lasquinez, Buchada, Fechou com menor ponto, Folgando bucha <b>+2</b> · Lasquinez preso e Buchada dobrada <b>+3</b> · Batida seca e Fechamento forçado <b>+1</b> · Fechou–Chorou <b>−1</b>.</p><p><b>Assistência +${PONTO_ASS}:</b> em toda batida (exceto Fechou–Chorou), o parceiro de quem bateu ganha +${PONTO_ASS}, como a assistência no futebol. Vale para todo o histórico.</p><p>Infrações: fraude <b>−5</b>; passar com pedra, gato, fingir <b>−3</b>; colagem irregular, esqueceu de jogar, sinais <b>−2</b>; pedra marcada no sorteio <b>−1</b>.</p></div></details>
   <details class="card rg"><summary>🏆 Campeonato do Mês (Brasileirão, Libertadores, Sul-Americana)</summary><div class="rules">${regMensal()}</div></details>
   <details class="card rg"><summary>📈 Estatísticas</summary><div class="rules"><p>Histórico geral, sem disputa de título, nos períodos Hoje, Desde 18/11 ou Tudo. Inclui lançamentos avulsos. Desempate: vitórias → especiais → secas → menos infrações → menos derrotas. Duplas: mesmos critérios e depois peças.</p></div></details>
   <details class="card rg"><summary>🎯 Lustrado (modo individual)</summary><div class="rules"><p>Cada um joga por si, normalmente em 3. Na sua vez, se a soma das pontas da mesa der <b>5 ou múltiplo de 5</b>, você marca esse valor (5, 10, 15…). Quem bate, ou vence o fechamento, soma os pontos que sobraram na mão dos adversários, <b>arredondados para baixo ao múltiplo de 5</b>. Vence quem atingir a meta primeiro ou, sem meta, quem tiver mais pontos ao encerrar. Regras do lustrado variam de mesa para mesa: combinem antes.</p></div></details>
