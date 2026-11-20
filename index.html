@@ -562,6 +562,7 @@ document.addEventListener("click",async e=>{
   if(a==="lustDesfazer"){const l=byId("lustrados",curLust);if(!l||!(l.eventos||[]).length)return;await salvarLust({...l,eventos:l.eventos.slice(0,-1),status:"ativa"});toast("Último lançamento desfeito.");return;}
   if(a==="lustEncerrar"){if(el.dataset.ok){const l=byId("lustrados",curLust);if(l){await salvarLust({...l,status:"encerrada",encerradaEm:Date.now()});toast("Lustrado encerrado.");}return;}el.dataset.ok="1";el.textContent="Toque de novo para encerrar";return;}
   if(a==="imgRank")return imgRank();
+  if(a==="imgMensal")return imgMensal();
   if(a==="importar"){if(!admin)return;return importarDados();}
   if(a==="imgMesa")return imgMesa();
   if(a==="balanco"){const d=new Date();const iso=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);return openSheet({t:"balanco",dia:iso});}
@@ -763,6 +764,7 @@ function vMensal(){
   let h=`<div class="seg" style="margin-bottom:12px"><button data-campaba="mensal" class="on">🏆 Campeonato do mês</button><button data-campaba="torneios">Torneios</button></div>
   <div class="mesbar"><button class="btn ghost sm" data-mes="-1" aria-label="Mês anterior">‹</button><div class="nm">${t.w.nome}</div><button class="btn ghost sm" data-mes="1" ${mesOff>=0?"disabled":""} aria-label="Próximo mês">›</button></div>
   <p class="muted" style="text-align:center;margin:-4px 0 12px">${fechado?"Mês encerrado · campeões definidos":mesOff===0?`Em disputa · termina em ${dias} dia(s)`:""}</p>`;
+  if(t.lib.length||t.sul.length||t.aq.length)h+=`<button class="btn" data-act="imgMensal" style="width:100%;margin-bottom:12px">📸 Imagem do campeonato do mês</button>`;
   h+=`<div class="div lib"><div class="hd"><b>🏆 LIBERTADORES</b><span>${LIB_MIN}+ jogos no mês</span></div>${tabelaDiv(t.lib,"lib",fechado)}</div>`;
   h+=`<div class="div sul"><div class="hd"><b>🥈 SUL-AMERICANA</b><span>${SUL_MIN} a ${LIB_MIN-1} jogos</span></div>${tabelaDiv(t.sul,"sul",fechado)}</div>`;
   if(t.aq.length)h+=`<div class="card"><div class="grp" style="margin-top:0;color:var(--mu)">EM AQUECIMENTO · menos de ${SUL_MIN} jogos</div><div class="chips">${t.aq.map(x=>`<span class="chip">${esc(x.nome)} · ${x.mesas} jogo(s), faltam ${SUL_MIN-x.mesas}</span>`).join("")}</div></div>`;
@@ -1073,6 +1075,55 @@ async function baixarImg(){
   if(!d||!imgBlob){downloadsOk=false;toast("Toque e segure a imagem para salvar.");keepScroll();return;}
   const nome=`ranking-domino-seosp-${new Date().toISOString().slice(0,10)}.png`;
   try{await d.save({filename:nome,data:imgBlob});}catch(e){if(e&&e.code==="declined")return;toast("Não deu para salvar aqui. Toque e segure a imagem.");}
+}
+
+/* ===================== CAMPEONATO DO MÊS EM IMAGEM ===================== */
+async function imgMensal(){
+  try{await document.fonts.ready;}catch(e){}
+  const t=tabelaMes(mesOff);const agora=Date.now();const fechado=agora>=t.w.fim;const dias=Math.ceil((t.w.fim-agora)/86400000);
+  const GR="#1E3A2A",GO="#B8892B",GL="#D9B45A",IV="#FBF6EA",CR="#F4ECD8",TX="#2E2218",MU="#6B5A48",TC="#A0522D",SU="#2F5D62";
+  const W=1080,RH=104,lib=t.lib.slice(0,15),sul=t.sul.slice(0,15);
+  const altDiv=n=>110+Math.max(n,1)*RH+10;
+  const H=380+altDiv(lib.length)+30+altDiv(sul.length)+(t.aq.length?150:0)+190;
+  const c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");
+  g.fillStyle=CR;g.fillRect(0,0,W,H);g.fillStyle=GR;g.fillRect(0,0,W,320);g.fillStyle=GO;g.fillRect(0,320,W,8);
+  g.strokeStyle=GO;g.lineWidth=3;g.strokeRect(22,22,W-44,H-44);
+  const selo=document.querySelector("header img");
+  if(selo&&selo.complete){g.save();g.beginPath();g.arc(140,160,88,0,Math.PI*2);g.fillStyle=IV;g.fill();g.lineWidth=6;g.strokeStyle=GL;g.stroke();g.clip();g.drawImage(selo,56,76,168,168);g.restore();}
+  g.fillStyle=GL;g.font="600 26px Montserrat, sans-serif";g.fillText("D O M I N Ó   S E O S P",262,110);
+  g.fillStyle=IV;g.font="700 54px Cinzel, Georgia, serif";g.fillText(txtFit(g,"CAMPEONATO DO MÊS",W-300),258,180);
+  g.font="700 34px 'Source Sans 3', sans-serif";g.fillStyle="#E9DDBF";g.fillText(t.w.nome,262,232);
+  g.font="400 24px 'Source Sans 3', sans-serif";g.fillText(fechado?"Mês encerrado · campeões definidos":`Em disputa · faltam ${dias} dia(s) · parcial de ${new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})}`,262,274);
+  let y=370;
+  const div=(lista,titulo,sub,cor,tipo)=>{
+    rr(g,50,y,W-100,84,18);g.fillStyle=cor;g.fill();
+    g.fillStyle=IV;g.font="800 36px Montserrat, sans-serif";g.fillText(titulo,80,y+54);
+    g.textAlign="right";g.font="600 24px 'Source Sans 3', sans-serif";g.fillStyle="#E9DDBF";g.fillText(sub,W-80,y+52);g.textAlign="left";
+    y+=100;
+    if(!lista.length){g.fillStyle=MU;g.font="400 28px 'Source Sans 3', sans-serif";g.fillText(tipo==="lib"?`Ninguém chegou a ${LIB_MIN} jogos ainda.`:"Ninguém nessa faixa ainda.",80,y+60);y+=RH+10;return;}
+    lista.forEach((x,i)=>{
+      g.fillStyle=i===0?"#F3E3B5":(i%2?CR:IV);rr(g,50,y,W-100,RH-12,16);g.fill();
+      if(i===0){g.strokeStyle=GO;g.lineWidth=3;rr(g,50,y,W-100,RH-12,16);g.stroke();}
+      g.beginPath();g.arc(108,y+46,30,0,Math.PI*2);g.fillStyle=i===0?GO:"#E3D3AE";g.fill();
+      g.textAlign="center";g.fillStyle=i===0?"#fff":GR;g.font="800 28px Montserrat, sans-serif";g.fillText(i===0?(fechado?"🏆":"1"):String(i+1),108,y+57);g.textAlign="left";
+      g.fillStyle=TX;g.font="700 34px 'Source Sans 3', sans-serif";g.fillText(txtFit(g,x.nome,560),160,y+42);
+      g.fillStyle=MU;g.font="400 23px 'Source Sans 3', sans-serif";
+      g.fillText(txtFit(g,`J ${x.mesas} · PTS ${x.pts} · V ${x.vitorias} · Esp ${x.espN} · Inf ${x.infTot}`+(tipo==="sul"?` · faltam ${LIB_MIN-x.mesas} p/ Lib.`:""),640),160,y+76);
+      g.textAlign="right";g.fillStyle=GR;g.font="800 48px Montserrat, sans-serif";g.fillText(fmtMed(x.med),W-80,y+56);
+      g.fillStyle=MU;g.font="600 18px 'Source Sans 3', sans-serif";g.fillText("MÉDIA",W-80,y+80);g.textAlign="left";
+      y+=RH;});
+    y+=10;};
+  div(lib,"🏆 LIBERTADORES",`${LIB_MIN}+ jogos no mês`,GR,"lib");y+=30;
+  div(sul,"🥈 SUL-AMERICANA",`${SUL_MIN} a ${LIB_MIN-1} jogos`,SU,"sul");
+  if(t.aq.length){g.fillStyle=MU;g.font="700 24px Montserrat, sans-serif";g.fillText(`EM AQUECIMENTO · menos de ${SUL_MIN} jogos`,60,y+40);
+    g.font="400 24px 'Source Sans 3', sans-serif";g.fillStyle=TX;g.fillText(txtFit(g,t.aq.map(x=>`${x.nome} (${x.mesas})`).join(" · "),W-120),60,y+82);y+=150;}
+  y+=10;g.fillStyle=GO;g.fillRect(50,y,W-100,2);
+  g.fillStyle=MU;g.font="400 22px 'Source Sans 3', sans-serif";g.fillText("MÉDIA = pontos ÷ jogos no mês · desempate: pontos, vitórias, especiais, secas, menos infrações",60,y+40);
+  g.fillText("Placar Oficial · Lei nº 0608/2026 · Decreto nº 001/2026",60,y+78);
+  g.textAlign="right";g.fillStyle=GO;g.font="700 26px Cinzel, Georgia, serif";g.fillText("Mão de ferro",W-60,y+78);g.textAlign="left";
+  const HF=Math.min(H,y+130);const out=document.createElement("canvas");out.width=W;out.height=HF;const o=out.getContext("2d");o.drawImage(c,0,0);o.strokeStyle=GO;o.lineWidth=3;o.strokeRect(22,22,W-44,HF-44);
+  imgBlob=await new Promise(r=>out.toBlob(r,"image/png"));
+  openSheet({t:"img",url:out.toDataURL("image/png"),titulo:"CAMPEONATO DO MÊS"});
 }
 
 /* ===================== RESULTADO DA MESA EM IMAGEM ===================== */
