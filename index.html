@@ -344,7 +344,7 @@ function vMesas(){
   const paradas=ativas.filter(p=>horasParada(p)>=PARADA_H);
   const fim=cache.partidas.filter(p=>p.status!=="ativa").slice(0,10);
   let h="";
-  if(paradas.length)h+=`<div class="banner tc" style="text-align:left">⚠️ <b>${paradas.length} mesa(s) parada(s) há mais de ${PARADA_H}h.</b> Mesa sem vencedor não conta no Campeonato do Mês. Abra e encerre se o jogo acabou; se foi aberta por engano, avise o Presidente para excluir.</div>`;
+  if(paradas.length)h+=`<div class="banner tc" style="text-align:left">⚠️ <b>${paradas.length} mesa(s) parada(s) há mais de ${PARADA_H}h.</b> Abra e encerre se o jogo acabou; se foi aberta por engano, avise o Presidente para excluir.</div>`;
   h+=`<h2>MESAS EM ANDAMENTO</h2>`;
   h+=ativas.length?`<div class="card">${ativas.map(linhaPartida).join("")}</div>`:`<div class="card empty">Nenhuma mesa em andamento.</div>`;
   h+=`<div class="row"><button class="btn gold grow" style="min-height:56px;font-size:15px" data-act="mesaRapida">⚡ MESA RÁPIDA</button><button class="btn grow" style="min-height:56px;font-size:15px" data-act="novaMesa">+ NOVA MESA</button></div><p class="muted" style="margin:6px 2px 0">Mesa rápida: começa na hora como Dupla A × Dupla B, sem escolher jogadores.</p>`;
@@ -379,7 +379,7 @@ function vPartida(p){
     <div class="pecas">${x.pecas?Array.from({length:Math.min(x.pecas,8)},()=>'<span class="tile"></span>').join(""):""} ${x.pecas} ${x.pecas===1?"PEÇA":"PEÇAS"}</div></div>`;};
   let h=`<div class="row" style="margin-bottom:10px"><button class="btn ghost sm" data-act="voltar">‹ Mesas</button><div class="grow muted" style="text-align:right">${p.modo==="semfila"?"Sem fila · contagem em peças (Art. 9)":"Com fila · 1 peça vence a mesa"}</div></div>`;
   if(st.winner)h+=`<div class="banner gold">🏆 Vitória de ${esc(p["dupla"+st.winner].nome)}${p.modo==="semfila"?` por ${st[st.winner].pecas} × ${st[other(st.winner)].pecas} peças`:""}!${p.modo==="semfila"?"":" A dupla fica na mesa."}</div>`;
-  else if(!ativa)h+=`<div class="banner gd">Mesa encerrada sem vencedor (não conta no Campeonato do Mês).</div>`;
+  else if(!ativa)h+=`<div class="banner gd">Mesa encerrada.</div>`;
   if(ativa&&!st.winner&&horasParada(p)>=PARADA_H)h+=`<div class="banner tc">⚠️ Mesa parada há ${fmtParada(p)}. Se o jogo acabou, toque em <b>Encerrar mesa</b>. Aberta por engano? Avise o Presidente para excluir.</div>`;
   else if(st.decisiva)h+=`<div class="banner tc">⚡ RODADA DECISIVA: quem vencer leva a mesa. Saída com a bucha de ás (1:1).</div>`;
   else if(st.buchaAs)h+=`<div class="banner gd">Primeira partida: saída obrigatória com a bucha de ás (1:1).</div>`;
@@ -675,7 +675,7 @@ function stats(ini=iniPeriodo(),fim=Infinity,soMesas=false){
   const S={};const em=t=>(t||0)>=ini&&(t||0)<fim;const NADA={b:{},inf:{}};const get=id=>!id?Object.assign(NADA,{mesas:0,vitorias:0,derrotas:0,esp:0,infTot:0,adv:0}):S[id]||(S[id]={id,nome:nomeJog(id),mesas:0,vitorias:0,derrotas:0,b:{},inf:{},esp:0,infTot:0,adv:0});
   for(const p of cache.partidas){
     const st=computeState(p);
-    if(soMesas&&!st.winner)continue;
+    if(soMesas&&!(p.eventos||[]).length)continue;
     for(const j of [p.duplaA.j1,p.duplaA.j2,p.duplaB.j1,p.duplaB.j2])if(em(p.criadoEm))get(j).mesas++;
     if(st.winner&&em(p.criadoEm)){const d=p["dupla"+st.winner];get(d.j1).vitorias++;get(d.j2).vitorias++;const o=p["dupla"+other(st.winner)];get(o.j1).derrotas++;get(o.j2).derrotas++;}
     for(const e of p.eventos||[]){
@@ -796,7 +796,7 @@ function tabelaDiv(lista,tipo,fechado){
 }
 function regMensal(){return `
   <p><b>Art. 1º Temporada.</b> O Campeonato do Mês começa às 00h do dia 1º e termina às 23h59 do último dia do mês (horário da Bahia). Vale a data em que a mesa foi aberta no Placar Oficial. No dia 1º seguinte a tabela recomeça; as mesas continuam no histórico.</p>
-  <p><b>Art. 2º Jogo.</b> Conta como jogo cada mesa registrada no Placar Oficial que termine <b>com vencedor definido</b>, para os 4 jogadores da mesa. Mesa em andamento, abandonada ou encerrada sem vencedor não conta: nem o jogo, nem os pontos lançados nela. Com fila, vence quem fizer a peça; sem fila, quem tiver mais peças ao encerrar.</p>
+  <p><b>Art. 2º Jogo.</b> Conta como jogo cada mesa registrada no Placar Oficial com pelo menos uma jogada lançada, para os 4 jogadores da mesa, tenha ou não terminado com vencedor. Os pontos lançados nela valem normalmente; a vitória (+${PONTO_VIT}) só conta para quem venceu a mesa. Mesa vazia, sem nenhuma jogada, não conta.</p>
   <p><b>Art. 3º Pontos.</b> Valem os pontos da classificação, conforme a Lei nº 0608/2026: vitória na mesa +${PONTO_VIT}; batida especial +2 (lasquinez preso e buchada dobrada +3); batida seca +1; infrações de −1 a −5. Lançamentos avulsos e o Lustrado <b>não</b> contam para o Campeonato do Mês (seguem valendo no ranking geral).</p>
   <p><b>Art. 4º Critério.</b> A classificação é pela <b>média de pontos por jogo (MÉD)</b> = pontos no mês ÷ jogos no mês.</p>
   <p><b>Art. 5º Divisões.</b> I – <b>Libertadores:</b> ${LIB_MIN} jogos ou mais no mês. II – <b>Sul-Americana:</b> de ${SUL_MIN} a ${LIB_MIN-1} jogos. III – <b>Em aquecimento:</b> menos de ${SUL_MIN} jogos; aparece na lista, mas não disputa título.</p>
@@ -1139,7 +1139,7 @@ function textoMes(off){
   s+=`\n*LIBERTADORES* (${LIB_MIN}+ jogos)\n${t.lib.length?t.lib.map(lin).join("\n"):"Ninguém chegou a "+LIB_MIN+" jogos."}\n`;
   s+=`\n*SUL-AMERICANA* (${SUL_MIN} a ${LIB_MIN-1} jogos)\n${t.sul.length?t.sul.map(lin).join("\n"):"Ninguém nessa faixa."}\n`;
   if(t.aq.length)s+=`\n_Em aquecimento:_ ${t.aq.map(x=>`${x.nome} (${x.mesas})`).join(", ")}\n`;
-  s+=`\nMédia = pontos ÷ jogos (mesas com vencedor). Regulamento na aba Camp. do Mês.\n${location.origin+location.pathname}#mes`;
+  s+=`\nMédia = pontos ÷ jogos no mês (só mesas). Regulamento na aba Camp. do Mês.\n${location.origin+location.pathname}#mes`;
   return s;
 }
 async function copiarTextoMes(off){const txt=textoMes(off);try{await navigator.clipboard.writeText(txt);toast("Texto copiado. É só colar no WhatsApp.");}catch(e){openSheet({t:"texto",txt});}}
@@ -1205,7 +1205,7 @@ async function imgMensal(){
   if(t.aq.length){g.fillStyle=MU;g.font="700 24px Montserrat, sans-serif";g.fillText(`EM AQUECIMENTO · menos de ${SUL_MIN} jogos`,60,y+40);
     g.font="400 24px 'Source Sans 3', sans-serif";g.fillStyle=TX;g.fillText(txtFit(g,t.aq.map(x=>`${x.nome} (${x.mesas})`).join(" · "),W-120),60,y+82);y+=150;}
   y+=10;g.fillStyle=GO;g.fillRect(50,y,W-100,2);
-  g.fillStyle=MU;g.font="400 20px 'Source Sans 3', sans-serif";g.fillText("MÉDIA = pontos ÷ jogos no mês (mesas com vencedor) · desempate: pts, vit., esp., secas, infr., confronto direto",60,y+40);
+  g.fillStyle=MU;g.font="400 20px 'Source Sans 3', sans-serif";g.fillText("MÉDIA = pontos ÷ jogos no mês (só mesas) · desempate: pts, vit., esp., secas, infr., confronto direto",60,y+40);
   g.fillText("Placar Oficial · Lei nº 0608/2026 · Decreto nº 001/2026",60,y+78);
   g.textAlign="right";g.fillStyle=GO;g.font="700 26px Cinzel, Georgia, serif";g.fillText("Mão de ferro",W-60,y+78);g.textAlign="left";
   const HF=Math.min(H,y+130);const out=document.createElement("canvas");out.width=W;out.height=HF;const o=out.getContext("2d");o.drawImage(c,0,0);o.strokeStyle=GO;o.lineWidth=3;o.strokeRect(22,22,W-44,HF-44);
