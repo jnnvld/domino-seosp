@@ -308,6 +308,7 @@ function offline(){return !navigator.onLine;}
 function statusRede(){const sync=document.getElementById("sync");if(!sync||!db)return;
   sync.innerHTML=offline()?"📴 sem internet<br><small>lances salvos no celular</small>":live?"● ao vivo":"conectando…";}
 window.addEventListener("offline",()=>{statusRede();toast("Sem internet. Pode continuar lançando: tudo fica salvo no celular.");});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)statusRede();});
 window.addEventListener("online",async()=>{statusRede();if(db){try{await db.waitForPendingWrites();toast("Internet de volta. Lances enviados ✔");}catch(e){}}});
 async function put(col,id,data){
   if(db&&offline()){db.collection(col).doc(id).set(data).catch(e=>console.error(e));return;}
@@ -331,17 +332,20 @@ function sortCache(col){
 const byId=(col,id)=>cache[col].find(x=>x.id===id);
 
 const firebaseConfig={apiKey:"AIzaSyD4DaDR6zGdO2IDKojH7wxzULKKS1dg7xo",authDomain:"domino-seosp.firebaseapp.com",projectId:"domino-seosp",storageBucket:"domino-seosp.firebasestorage.app",messagingSenderId:"813892656659",appId:"1:813892656659:web:b3fb49a3fdc9450777a9e6"};
+const carregado={};
 async function connect(){
   const sync=document.getElementById("sync");
   try{if(!window.firebase)throw new Error("sem firebase");firebase.initializeApp(firebaseConfig);db=firebase.firestore();try{await db.enablePersistence({synchronizeTabs:true});}catch(e){console.warn("persistência offline indisponível",e&&e.code);}
     try{firebase.auth().onAuthStateChanged(u=>{gUser=u;if(u&&u.email&&u.email===presEmail()){admin=true;try{sessionStorage.setItem("seospAdmin","1");}catch(e){}}render();});firebase.auth().getRedirectResult().catch(e=>console.warn(e));}catch(e){console.warn("auth indisponível",e);}}catch(e){db=null;sync.textContent="sem conexão (não salva)";render();return;}
-  const timer=setTimeout(()=>{if(!live)sync.textContent="sem conexão…";},10000);
+  const timer=setTimeout(()=>{if(!live)sync.innerHTML=offline()?"📴 sem internet<br><small>lances salvos no celular</small>":"conectando…";},10000);
   const subs={jogadores:db.collection("jogadores"),duplas:db.collection("duplas"),partidas:db.collection("partidas").orderBy("criadoEm","desc").limit(1000),campeonatos:db.collection("campeonatos").orderBy("criadoEm","desc").limit(200),fila:db.collection("fila"),avulsos:db.collection("avulsos").orderBy("t","desc").limit(1000),lustrados:db.collection("lustrados").orderBy("criadoEm","desc").limit(500)};
   for(const [col,q] of Object.entries(subs)){
-    q.onSnapshot(snap=>{
-      const all=snap.docs.map(d=>({id:d.id,...d.data()}));cache[col]=all.filter(x=>!x.excluido);lixo[col]=all.filter(x=>x.excluido);sortCache(col);
-      if(!snap.metadata.fromCache){live=true;clearTimeout(timer);statusRede();}
-      render();
+    q.onSnapshot({includeMetadataChanges:true},snap=>{
+      const mudou=snap.docChanges().length>0||!carregado[col];carregado[col]=true;
+      if(mudou){const all=snap.docs.map(d=>({id:d.id,...d.data()}));cache[col]=all.filter(x=>!x.excluido);lixo[col]=all.filter(x=>x.excluido);sortCache(col);}
+      const era=live;if(!snap.metadata.fromCache){live=true;clearTimeout(timer);}
+      statusRede();
+      if(mudou||era!==live)render();
     },err=>{clearTimeout(timer);sync.textContent=err&&err.code==="permission-denied"?"sem permissão no banco":"sem conexão";console.error(err);});
   }
 }
