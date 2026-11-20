@@ -151,6 +151,28 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .div.lib .hd{background:linear-gradient(0deg,#1E3A2A,#1E3A2A);border-bottom:3px solid #D9B45A}
 .div.sul .hd{background:#5E7F4F;border-bottom:3px solid #B8892B}
 .div .lider{background:#FFF6DC}
+.howto{background:#E9F0E4;border:1px solid #CADBC1;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.45;margin-bottom:12px;color:var(--tx)}
+.mt-r{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--ln);cursor:pointer}
+.mt-r:last-child{border-bottom:0}.mt-r:active{background:#F6EEDA}
+.mt-p{font-family:Montserrat,sans-serif;font-weight:800;color:var(--mu);min-width:30px;font-size:15px}
+.mt-r.lider .mt-p{color:var(--go)}
+.mt-n{flex:1;min-width:0;display:flex;flex-direction:column}
+.mt-n b{font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt-c{font-size:12.5px;color:var(--gd);font-weight:700}
+.mt-s{font-size:12px;color:var(--mu)}.mt-s em{color:var(--tc);font-style:normal;font-weight:700}
+.mt-m{text-align:right;display:flex;flex-direction:column;align-items:flex-end}
+.mt-m b{font-family:Montserrat,sans-serif;font-size:22px;color:var(--gd);line-height:1}
+.mt-m span{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--mu);font-weight:700}
+.mt-go{color:var(--go);font-size:22px;font-weight:700}
+.ex{background:var(--iv);border:1px solid var(--ln);border-radius:12px;padding:10px 12px}
+.ex-t{font-family:Montserrat,sans-serif;font-size:11px;letter-spacing:1.2px;font-weight:800;color:var(--gd);margin-bottom:6px}
+.ex-l{display:flex;justify-content:space-between;padding:4px 0;font-size:14.5px;border-bottom:1px dotted var(--ln)}
+.ex-l b{font-family:Montserrat,sans-serif;color:var(--gd)}.ex-l.neg b{color:var(--tc)}
+.ex-l.tot{border-top:2px solid var(--gd);border-bottom:0;margin-top:4px;font-weight:700}
+.ex-r{margin-top:8px;background:#F3E3B5;border-radius:10px;padding:10px;text-align:center;font-family:Montserrat,sans-serif;font-size:15px;color:var(--tx)}
+.ex-r b{font-size:20px;color:var(--gd)}
+.ex-c td,.ex-c th{font-size:12.5px}.ex-c .me{background:#FFF6DC;color:var(--gd);font-weight:800}
+.ex-w{background:#F4ECD8;border-left:4px solid var(--go);border-radius:8px;padding:8px 10px;font-size:13.5px;line-height:1.4;margin:8px 0}
 .mesbar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .mesbar .nm{flex:1;text-align:center;font-family:Cinzel,serif;font-size:20px;color:var(--gd)}
 .falta{display:inline-block;font-size:11px;font-weight:700;color:#5E7F4F;background:#E5EFE1;border-radius:999px;padding:1px 7px;margin-top:3px}
@@ -437,6 +459,7 @@ function renderSheet(){
   else if(sheet.t==="renomear")h=shRenomear();
   else if(sheet.t==="avulso")h=shAvulso();
   else if(sheet.t==="ficha")h=fichaJog(sheet.id);
+  else if(sheet.t==="extrato")h=shExtrato();
   else if(sheet.t==="img")h=`<h3>${esc(sheet.titulo||"RANKING EM IMAGEM")}</h3><p class="muted" style="margin:0 0 8px">Use <b>Copiar imagem</b> e cole no WhatsApp, ou abra em <b>tela cheia</b> e tire um print.</p><img src="${sheet.url}" alt="${esc(sheet.titulo||"Ranking do Dominó SEOSP")}" style="width:100%;border-radius:10px;border:1px solid var(--ln)"><div class="row" style="margin-top:12px"><button class="btn gold grow" data-act="copiarImg">📋 Copiar imagem</button><button class="btn grow" data-act="telaCheia">🖼 Tela cheia p/ print</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-act="fecharSheet">Fechar</button>`;
   else if(sheet.t==="merge")h=shMerge();
   else if(sheet.t==="balanco")h=`<h3>BALANÇO DO DIA</h3><p class="muted" style="margin:0 0 8px">Gera uma imagem com o ranking do dia, os destaques e todas as mesas jogadas na data escolhida, até agora.</p><label class="f" for="balDia">Dia</label><input type="date" id="balDia" value="${esc(sheet.dia)}" style="width:100%;padding:11px 12px;border:1.5px solid var(--ln);border-radius:10px;min-height:46px"><div class="row" style="margin-top:14px"><button class="btn ghost grow" data-act="fecharSheet">Cancelar</button><button class="btn gold grow" data-act="gerarBalanco">GERAR</button></div>`;
@@ -535,7 +558,7 @@ document.addEventListener("change",e=>{
   if(t.id==="rankOrdem"){rankOrdem=t.value;render();}
 });
 document.addEventListener("click",async e=>{
-  const el=e.target.closest("[data-ficha],[data-rkc],[data-campaba],[data-mes],[data-lance],[data-lt],[data-slot],[data-cj],[data-cdp],[data-rmdp],[data-ndp],[data-rk],[data-delev],[data-merge],[data-mto],[data-lsel],[data-lmeta],[data-lpts],[data-lopen],[data-lmaoi],[data-lout],[data-avn],[data-avc],[data-avj],[data-rmav],[data-esc],[data-rmfila],[data-act],[data-go],[data-open],[data-ji],[data-tipo],[data-modo],[data-filtro],[data-camp],[data-cdupla],[data-fmt],[data-jogar],[data-ren]");
+  const el=e.target.closest("[data-extrato],[data-ficha],[data-rkc],[data-campaba],[data-mes],[data-lance],[data-lt],[data-slot],[data-cj],[data-cdp],[data-rmdp],[data-ndp],[data-rk],[data-delev],[data-merge],[data-mto],[data-lsel],[data-lmeta],[data-lpts],[data-lopen],[data-lmaoi],[data-lout],[data-avn],[data-avc],[data-avj],[data-rmav],[data-esc],[data-rmfila],[data-act],[data-go],[data-open],[data-ji],[data-tipo],[data-modo],[data-filtro],[data-camp],[data-cdupla],[data-fmt],[data-jogar],[data-ren]");
   if(!el)return;
   if(el.dataset.go){e.preventDefault();curPartida=null;curCamp=null;curLust=null;go(el.dataset.go);return;}
   if(el.dataset.open){curPartida=el.dataset.open;if(sheet){sheet=null;renderSheet();}if(view!=="mesa"){go("mesa");return;}render();window.scrollTo(0,0);return;}
@@ -548,6 +571,7 @@ document.addEventListener("click",async e=>{
   if(el.dataset.cdp&&sheet&&sheet.t==="nova"){const d=byId("duplas",el.dataset.cdp);if(d){const L=(!sheet.A1&&!sheet.A2)?"A":(!sheet.B1&&!sheet.B2)?"B":(sheet.foco&&sheet.foco[0])||"B";sheet[L+"1"]=nomeJog(d.j1);sheet[L+"2"]=nomeJog(d.j2);sheet.foco=null;}keepScroll();return;}
   if(el.dataset.ndp!=null&&sheet&&sheet.t==="novaDupla"){const n=el.dataset.ndp;sheet.sel=sheet.sel||[];sheet.sel=sheet.sel.includes(n)?sheet.sel.filter(x=>x!==n):sheet.sel.length>=2?[sheet.sel[1],n]:[...sheet.sel,n];keepScroll();return;}
   if(el.dataset.rmdp){if(!el.dataset.ok){el.dataset.ok="1";el.textContent="Confirmar";setTimeout(()=>{if(el.isConnected){delete el.dataset.ok;el.textContent="Excluir";}},3000);return;}await del("duplas",el.dataset.rmdp);toast("Dupla excluída.");return;}
+  if(el.dataset.extrato){openSheet({t:"extrato",id:el.dataset.extrato,off:mesOff});return;}
   if(el.dataset.ficha){openSheet({t:"ficha",id:el.dataset.ficha});return;}
   if(el.dataset.rkc){rankCrit=el.dataset.rkc;render();return;}
   if(el.dataset.rk){rankAba=el.dataset.rk;render();return;}
@@ -811,9 +835,51 @@ function tabelaMes(off){
     campLib:lib.filter(x=>x.pos===1),campSul:sul.filter(x=>x.pos===1)};
 }
 const fmtMed=v=>v.toFixed(2).replace(".",",");
+function decompor(x){
+  const bat=Object.entries(x.b||{}).map(([k,n])=>({nome:(BATIDAS[k]||{nome:k}).nome,n,pts:(PONTOS_BAT[k]||0)*n})).filter(r=>r.pts);
+  const inf=Object.entries(x.inf||{}).map(([k,n])=>({nome:(INFR[k]||{nome:k}).nome,n,pts:(PONTOS_INF[k]||0)*n})).filter(r=>r.n);
+  const vit=x.vitorias*PONTO_VIT,sb=bat.reduce((a,r)=>a+r.pts,0),si=inf.reduce((a,r)=>a+r.pts,0);
+  return {vit,bat,inf,sb,si,tot:vit+sb+si};
+}
+const aprov=x=>x.mesas?Math.round(100*x.vitorias/x.mesas)+"%":"–";
 function tabelaDiv(lista,tipo,fechado){
   if(!lista.length)return `<div class="empty" style="padding:14px">${tipo==="lib"?`Ninguém chegou a ${LIB_MIN} jogos ainda.`:`Ninguém nessa faixa ainda.`}</div>`;
-  return `<table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>MÉD</th><th>J</th><th>PTS</th><th>V</th><th>INF</th></tr></thead><tbody>${lista.map((x,i)=>`<tr class="${x.pos===1?"lider":""}" data-ficha="${x.id}" style="cursor:pointer"><td>${x.pos===1?(fechado?"🏆":"👑"):x.pos}</td><td class="n">${esc(x.nome)}${x.empate&&x.cd!=null?`<br><span class="falta">empate · ${x.cd} vit. no confronto direto</span>`:""}${tipo==="sul"?`<br><span class="falta">faltam ${LIB_MIN-x.mesas} p/ Libertadores</span>`:""}</td><td class="p">${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.pts}</td><td>${x.vitorias}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table>`;
+  return `<div class="mt">${lista.map(x=>`<div class="mt-r ${x.pos===1?"lider":""}" data-extrato="${x.id}">
+    <div class="mt-p">${x.pos===1?(fechado?"🏆":"👑"):x.pos+"º"}</div>
+    <div class="mt-n"><b>${esc(x.nome)}</b><span class="mt-c">${x.pts} pts ÷ ${x.mesas} jogos</span><span class="mt-s">V ${x.vitorias} · D ${x.derrotas||0} · aproveit. ${aprov(x)}${x.infTot?` · <em>${x.infTot} infr.</em>`:""}</span>${tipo==="sul"?`<span class="falta">faltam ${LIB_MIN-x.mesas} p/ Libertadores</span>`:""}${x.empate&&x.cd!=null?`<span class="falta" style="background:#F3E3B5;color:#6B4E12">empate · ${x.cd} vit. no confronto direto</span>`:""}</div>
+    <div class="mt-m"><b>${fmtMed(x.med)}</b><span>média</span></div><div class="mt-go">›</div></div>`).join("")}</div>`;
+}
+function motivoPos(a,b){ // por que a (acima) está à frente de b
+  if(a.med!==b.med)return `a média de ${esc(a.nome)} é maior (${fmtMed(a.med)} contra ${fmtMed(b.med)}).`;
+  const c=[["pts","mais pontos no mês"],["vitorias","mais vitórias"],["espN","mais batidas especiais"],["secN","mais batidas secas"]];
+  for(const [k,t] of c)if(a[k]!==b[k])return `a média é igual (${fmtMed(a.med)}) e o desempate é por ${t}: ${a[k]} contra ${b[k]}.`;
+  if(a.infTot!==b.infTot)return `a média é igual e o desempate é por menos infrações: ${a.infTot} contra ${b.infTot}.`;
+  if(a.cd!=null&&a.cd!==b.cd)return `empate em tudo; ${esc(a.nome)} venceu mais mesas no confronto direto (${a.cd} contra ${b.cd}).`;
+  return "empate total: dividem a posição.";
+}
+function shExtrato(){
+  const t=tabelaMes(sheet.off||0);const div=t.lib.some(y=>y.id===sheet.id)?"lib":"sul";const L=t[div];const i=L.findIndex(y=>y.id===sheet.id);const x=L[i];
+  if(!x)return `<p>Jogador não encontrado.</p><button class="btn ghost" data-act="fecharSheet">Fechar</button>`;
+  const d=decompor(x);const ln=(l,v,cls="")=>`<div class="ex-l ${cls}"><span>${l}</span><b>${v>0?"+":""}${v}</b></div>`;
+  let h=`<h3>${esc(x.nome.toUpperCase())}</h3><p class="muted" style="margin:-6px 0 10px">${div==="lib"?"🏆 Libertadores":"🥈 Sul-Americana"} · ${t.w.nome} · ${x.pos}º lugar</p>
+  <div class="ex"><div class="ex-t">DE ONDE VÊM OS PONTOS</div>
+  ${ln(`Vitórias: ${x.vitorias} × ${PONTO_VIT}`,d.vit)}
+  ${d.bat.map(r=>ln(`${r.nome}: ${r.n}`,r.pts)).join("")}
+  ${d.inf.map(r=>ln(`${r.nome}: ${r.n}`,r.pts,"neg")).join("")}
+  <div class="ex-l tot"><span>Total de pontos</span><b>${x.pts}</b></div>
+  <div class="ex-l"><span>Jogos no mês</span><b>${x.mesas}</b></div>
+  <div class="ex-r">MÉDIA = ${x.pts} ÷ ${x.mesas} = <b>${fmtMed(x.med)}</b></div>
+  <p class="muted" style="margin:6px 0 0;font-size:12.5px">Ou seja: ${fmtMed(x.med)} pontos, em média, a cada mesa jogada.</p></div>`;
+  const viz=[];if(i>0)viz.push(["acima",L[i-1],x]);if(i<L.length-1)viz.push(["abaixo",x,L[i+1]]);
+  if(viz.length){h+=`<div class="ex-t" style="margin-top:14px">COMPARAÇÃO COM QUEM ESTÁ ${viz.length>1?"PERTO":viz[0][0]==="acima"?"ACIMA":"ABAIXO"}</div>`;
+    const cols=[x];if(i>0)cols.unshift(L[i-1]);if(i<L.length-1)cols.push(L[i+1]);
+    const row=(l,f)=>`<tr><td class="n">${l}</td>${cols.map(c=>`<td class="${c.id===x.id?"me":""}">${f(c)}</td>`).join("")}</tr>`;
+    h+=`<table class="tb ex-c"><thead><tr><th></th>${cols.map(c=>`<th class="${c.id===x.id?"me":""}">${c.pos}º ${esc(c.nome.split(" ")[0])}</th>`).join("")}</tr></thead><tbody>
+    ${row("Jogos",c=>c.mesas)}${row("Vitórias",c=>c.vitorias)}${row("Aproveitamento",aprov)}${row("Pts de vitórias",c=>decompor(c).vit)}${row("Pts de batidas",c=>"+"+decompor(c).sb)}${row("Infrações",c=>decompor(c).si)}${row("<b>Pontos</b>",c=>`<b>${c.pts}</b>`)}${row("<b>Média</b>",c=>`<b>${fmtMed(c.med)}</b>`)}</tbody></table>`;
+    h+=viz.map(([k,a,b])=>`<p class="ex-w">${k==="acima"?`⬆ <b>${esc(a.nome)}</b> está à frente porque ${motivoPos(a,b)}`:`⬇ <b>${esc(x.nome)}</b> está à frente de ${esc(b.nome)} porque ${motivoPos(a,b)}`}</p>`).join("");
+    h+=`<p class="muted" style="font-size:12.5px">Jogar mais ou vencer mais não basta: conta quanto se faz <b>por jogo</b>. Cada mesa sem pontos baixa a média; batidas e vitórias sobem; infrações descontam.</p>`;}
+  h+=`<div class="row" style="margin-top:12px"><button class="btn ghost grow" data-act="fecharSheet">Fechar</button><button class="btn grow" data-ficha="${x.id}">Ficha completa</button></div>`;
+  return h;
 }
 function regMensal(){return `
   <p><b>Art. 1º Temporada.</b> O Campeonato do Mês começa às 00h do dia 1º e termina às 23h59 do último dia do mês (horário da Bahia). Vale a data em que a mesa foi aberta no Placar Oficial. No dia 1º seguinte a tabela recomeça; as mesas continuam no histórico.</p>
@@ -836,6 +902,7 @@ function vMensal(){
     <div style="font-size:15px;line-height:1.6">🏆 Libertadores: <b>${a.campLib.length?a.campLib.map(x=>esc(x.nome)).join(" e "):"—"}</b><br>🥈 Sul-Americana: <b>${a.campSul.length?a.campSul.map(x=>esc(x.nome)).join(" e "):"—"}</b></div>
     <div class="row" style="margin-top:10px"><button class="btn sm grow" data-mes="-1">Ver tabela final</button><button class="btn gold sm grow" data-act="txtMes" data-off="-1">📋 Texto p/ WhatsApp</button></div></div>`;}
   if(t.lib.length||t.sul.length||t.aq.length)h+=`<div class="row" style="margin-bottom:12px"><button class="btn grow" data-act="imgMensal">📸 Imagem</button><button class="btn ghost grow" data-act="txtMes" data-off="${mesOff}">📋 Texto p/ WhatsApp</button></div>`;
+  h+=`<div class="howto">📊 <b>Quem faz mais pontos POR JOGO fica na frente.</b> A média é <b>pontos ÷ jogos</b>, então quem jogou ou venceu mais não fica automaticamente acima. <b>Toque num jogador</b> para ver a conta e por que ele está naquela posição.</div>`;
   h+=`<div class="div lib"><div class="hd"><b>🏆 LIBERTADORES</b><span>${LIB_MIN}+ jogos no mês</span></div>${tabelaDiv(t.lib,"lib",fechado)}</div>`;
   h+=`<div class="div sul"><div class="hd"><b>🥈 SUL-AMERICANA</b><span>${SUL_MIN} a ${LIB_MIN-1} jogos</span></div>${tabelaDiv(t.sul,"sul",fechado)}</div>`;
   if(t.aq.length)h+=`<div class="card"><div class="grp" style="margin-top:0;color:var(--mu)">EM AQUECIMENTO · menos de ${SUL_MIN} jogos</div><div class="chips">${t.aq.map(x=>`<span class="chip">${esc(x.nome)} · ${x.mesas} jogo(s), faltam ${SUL_MIN-x.mesas}</span>`).join("")}</div></div>`;
@@ -1153,7 +1220,7 @@ function baixarBackup(){
 /* ===================== TEXTO DO MÊS P/ WHATSAPP ===================== */
 function textoMes(off){
   const t=tabelaMes(off);const fechado=Date.now()>=t.w.fim;
-  const lin=(x)=>`${x.pos===1?(fechado?"🏆":"👑"):x.pos+"."} ${x.nome}: média ${fmtMed(x.med)} · ${x.mesas} jogos · ${x.pts} pts`;
+  const lin=(x)=>`${x.pos===1?(fechado?"🏆":"👑"):x.pos+"."} ${x.nome}: *${fmtMed(x.med)}* (${x.pts} pts ÷ ${x.mesas} jogos · V ${x.vitorias} D ${x.derrotas||0})`;
   const camp=l=>l.length?l.map(x=>x.nome).join(" e ")+` (média ${fmtMed(l[0].med)})`:"—";
   let s=`*DOMINÓ SEOSP · CAMPEONATO DO MÊS*\n*${t.w.nome}*${fechado?" · encerrado":" · parcial"}\n`;
   if(fechado)s+=`\n🏆 *Campeão da Libertadores:* ${camp(t.campLib)}\n🥈 *Campeão da Sul-Americana:* ${camp(t.campSul)}\n`;
@@ -1216,7 +1283,7 @@ async function imgMensal(){
       g.textAlign="center";g.fillStyle=lid?"#fff":GR;g.font="800 28px Montserrat, sans-serif";g.fillText(lid&&fechado?"🏆":String(x.pos),108,y+57);g.textAlign="left";
       g.fillStyle=TX;g.font="700 34px 'Source Sans 3', sans-serif";g.fillText(txtFit(g,x.nome,560),160,y+42);
       g.fillStyle=MU;g.font="400 23px 'Source Sans 3', sans-serif";
-      g.fillText(txtFit(g,`J ${x.mesas} · PTS ${x.pts} · V ${x.vitorias} · Esp ${x.espN} · Inf ${x.infTot}`+(x.empate&&x.cd!=null?` · C.D. ${x.cd}`:"")+(tipo==="sul"?` · faltam ${LIB_MIN-x.mesas} p/ Lib.`:""),640),160,y+76);
+      g.fillText(txtFit(g,`${x.pts} pts ÷ ${x.mesas} jogos · V ${x.vitorias} · D ${x.derrotas||0}`+(x.infTot?` · Inf ${x.infTot}`:"")+(x.empate&&x.cd!=null?` · C.D. ${x.cd}`:"")+(tipo==="sul"?` · faltam ${LIB_MIN-x.mesas} p/ Lib.`:""),640),160,y+76);
       g.textAlign="right";g.fillStyle=GR;g.font="800 48px Montserrat, sans-serif";g.fillText(fmtMed(x.med),W-80,y+56);
       g.fillStyle=MU;g.font="600 18px 'Source Sans 3', sans-serif";g.fillText("MÉDIA",W-80,y+80);g.textAlign="left";
       y+=RH;});
