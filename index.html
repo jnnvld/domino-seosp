@@ -655,9 +655,10 @@ async function proxima(){
 }
 
 /* ===================== RANKING ===================== */
-function stats(ini=iniPeriodo(),fim=Infinity){
+function stats(ini=iniPeriodo(),fim=Infinity,soMesas=false){
   const S={};const em=t=>(t||0)>=ini&&(t||0)<fim;const NADA={b:{},inf:{}};const get=id=>!id?Object.assign(NADA,{mesas:0,vitorias:0,derrotas:0,esp:0,infTot:0,adv:0}):S[id]||(S[id]={id,nome:nomeJog(id),mesas:0,vitorias:0,derrotas:0,b:{},inf:{},esp:0,infTot:0,adv:0});
   for(const p of cache.partidas){
+    if(soMesas&&!(p.eventos||[]).length)continue;
     for(const j of [p.duplaA.j1,p.duplaA.j2,p.duplaB.j1,p.duplaB.j2])if(em(p.criadoEm))get(j).mesas++;
     const st=computeState(p);
     if(st.winner&&em(p.criadoEm)){const d=p["dupla"+st.winner];get(d.j1).vitorias++;get(d.j2).vitorias++;const o=p["dupla"+other(st.winner)];get(o.j1).derrotas++;get(o.j2).derrotas++;}
@@ -668,7 +669,7 @@ function stats(ini=iniPeriodo(),fim=Infinity){
     }
   }
   for(const a of cache.avulsos){
-    if(!em(a.t)||!a.jog)continue;const x=get(a.jog);
+    if(soMesas||!em(a.t)||!a.jog)continue;const x=get(a.jog);
     if(a.k==="vitoria")x.vitorias++;
     else if(a.k==="batida"){x.b[a.tipo]=(x.b[a.tipo]||0)+1;if(BATIDAS[a.tipo]&&BATIDAS[a.tipo].esp)x.esp++;}
     else if(a.k==="infr"){x.inf[a.tipo]=(x.inf[a.tipo]||0)+1;x.infTot++;if(INFR[a.tipo]&&INFR[a.tipo].adv)x.adv++;}
@@ -747,17 +748,43 @@ const LIB_MIN=20,SUL_MIN=5;
 let campAba="mensal",mesOff=0;
 const MESES=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 function janelaMes(off){const d=new Date();const a=new Date(d.getFullYear(),d.getMonth()+off,1);const b=new Date(a.getFullYear(),a.getMonth()+1,1);return {ini:a.getTime(),fim:b.getTime(),nome:MESES[a.getMonth()]+" "+a.getFullYear(),mes:a.getMonth(),ano:a.getFullYear()};}
+function confronto(grupo,w){
+  const ids=new Set(grupo.map(x=>x.id));const v={};grupo.forEach(x=>v[x.id]=0);
+  for(const p of cache.partidas){if(!(p.criadoEm>=w.ini&&p.criadoEm<w.fim)||!(p.eventos||[]).length)continue;
+    const st=computeState(p);if(!st.winner)continue;const W=p["dupla"+st.winner],L=p["dupla"+other(st.winner)];
+    for(const a of [W.j1,W.j2])if(ids.has(a))for(const b of [L.j1,L.j2])if(ids.has(b))v[a]++;}
+  return v;
+}
 function tabelaMes(off){
   const w=janelaMes(off);
-  const L=stats(w.ini,w.fim).filter(x=>x.mesas>0).map(x=>({...x,med:x.pts/x.mesas}));
-  const ord=(a,b)=>b.med-a.med||b.pts-a.pts||b.vitorias-a.vitorias||b.espN-a.espN||b.secN-a.secN||a.infTot-b.infTot||a.nome.localeCompare(b.nome,"pt-BR");
-  return {w,lib:L.filter(x=>x.mesas>=LIB_MIN).sort(ord),sul:L.filter(x=>x.mesas>=SUL_MIN&&x.mesas<LIB_MIN).sort(ord),aq:L.filter(x=>x.mesas<SUL_MIN).sort((a,b)=>b.mesas-a.mesas||ord(a,b))};
+  const L=stats(w.ini,w.fim,true).filter(x=>x.mesas>0).map(x=>({...x,med:x.pts/x.mesas}));
+  const ord=(a,b)=>b.med-a.med||b.pts-a.pts||b.vitorias-a.vitorias||b.espN-a.espN||b.secN-a.secN||a.infTot-b.infTot;
+  const classif=lista=>{lista.sort((a,b)=>ord(a,b)||a.nome.localeCompare(b.nome,"pt-BR"));const out=[];
+    for(let i=0;i<lista.length;){let j=i+1;while(j<lista.length&&ord(lista[i],lista[j])===0)j++;
+      const g=lista.slice(i,j);if(g.length>1){const v=confronto(g,w);g.forEach(x=>x.cd=v[x.id]);g.sort((a,b)=>b.cd-a.cd||a.nome.localeCompare(b.nome,"pt-BR"));}
+      g.forEach((x,k)=>{x.pos=(k>0&&g.length>1&&x.cd===g[k-1].cd)?g[k-1].pos:out.length+k+1;x.empate=g.length>1;});
+      out.push(...g);i=j;}
+    return out;};
+  const lib=classif(L.filter(x=>x.mesas>=LIB_MIN)),sul=classif(L.filter(x=>x.mesas>=SUL_MIN&&x.mesas<LIB_MIN));
+  return {w,lib,sul,aq:L.filter(x=>x.mesas<SUL_MIN).sort((a,b)=>b.mesas-a.mesas||ord(a,b)||a.nome.localeCompare(b.nome,"pt-BR")),
+    campLib:lib.filter(x=>x.pos===1),campSul:sul.filter(x=>x.pos===1)};
 }
 const fmtMed=v=>v.toFixed(2).replace(".",",");
 function tabelaDiv(lista,tipo,fechado){
   if(!lista.length)return `<div class="empty" style="padding:14px">${tipo==="lib"?`Ninguém chegou a ${LIB_MIN} jogos ainda.`:`Ninguém nessa faixa ainda.`}</div>`;
-  return `<table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>MÉD</th><th>J</th><th>PTS</th><th>V</th><th>INF</th></tr></thead><tbody>${lista.map((x,i)=>`<tr class="${i===0?"lider":""}"><td>${i===0?(fechado?"🏆":"👑"):i+1}</td><td class="n">${esc(x.nome)}${tipo==="sul"?`<br><span class="falta">faltam ${LIB_MIN-x.mesas} p/ Libertadores</span>`:""}</td><td class="p">${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.pts}</td><td>${x.vitorias}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table>`;
+  return `<table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>MÉD</th><th>J</th><th>PTS</th><th>V</th><th>INF</th></tr></thead><tbody>${lista.map((x,i)=>`<tr class="${x.pos===1?"lider":""}"><td>${x.pos===1?(fechado?"🏆":"👑"):x.pos}</td><td class="n">${esc(x.nome)}${x.empate&&x.cd!=null?`<br><span class="falta">empate · ${x.cd} vit. no confronto direto</span>`:""}${tipo==="sul"?`<br><span class="falta">faltam ${LIB_MIN-x.mesas} p/ Libertadores</span>`:""}</td><td class="p">${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.pts}</td><td>${x.vitorias}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table>`;
 }
+function regMensal(){return `
+  <p><b>Art. 1º Temporada.</b> O Campeonato do Mês começa às 00h do dia 1º e termina às 23h59 do último dia do mês (horário da Bahia). Vale a data em que a mesa foi aberta no Placar Oficial. No dia 1º seguinte a tabela recomeça; as mesas continuam no histórico.</p>
+  <p><b>Art. 2º Jogo.</b> Conta como jogo cada mesa registrada no Placar Oficial com pelo menos uma jogada lançada, para os 4 jogadores da mesa. Mesa vazia não conta.</p>
+  <p><b>Art. 3º Pontos.</b> Valem os pontos da classificação, conforme a Lei nº 0608/2026: vitória na mesa +${PONTO_VIT}; batida especial +2 (lasquinez preso e buchada dobrada +3); batida seca +1; infrações de −1 a −5. Lançamentos avulsos e o Lustrado <b>não</b> contam para o Campeonato do Mês (seguem valendo no ranking geral).</p>
+  <p><b>Art. 4º Critério.</b> A classificação é pela <b>média de pontos por jogo (MÉD)</b> = pontos no mês ÷ jogos no mês.</p>
+  <p><b>Art. 5º Divisões.</b> I – <b>Libertadores:</b> ${LIB_MIN} jogos ou mais no mês. II – <b>Sul-Americana:</b> de ${SUL_MIN} a ${LIB_MIN-1} jogos. III – <b>Em aquecimento:</b> menos de ${SUL_MIN} jogos; aparece na lista, mas não disputa título.</p>
+  <p><b>Art. 6º Acesso.</b> Ao completar ${LIB_MIN} jogos, o jogador passa na hora para a Libertadores, levando a média que tem. A divisão final é definida pelo total de jogos no encerramento do mês.</p>
+  <p><b>Art. 7º Campeões.</b> O 1º colocado de cada divisão no encerramento do mês é o Campeão da Libertadores e o Campeão da Sul-Americana, registrados na Galeria de Campeões.</p>
+  <p><b>Art. 8º Desempate</b>, nesta ordem: I – mais pontos no mês; II – mais vitórias; III – mais batidas especiais; IV – mais batidas secas; V – menos infrações; VI – <b>confronto direto</b>: mais mesas vencidas contra o(s) empatado(s) no mês, jogando em duplas adversárias. Persistindo o empate, o título é dividido.</p>
+  <p><b>Art. 9º Registro e correções.</b> Só vale o que estiver lançado no Placar Oficial. Erros de lançamento são corrigidos pelo Presidente, que pode excluir mesas ou jogadas lançadas indevidamente; a tabela é recalculada automaticamente.</p>
+  <p><b>Art. 10. Casos omissos</b> são decididos pela maioria dos presentes, mínimo de 3 (Art. 26 da Lei nº 0608/2026).</p>`;}
 function vMensal(){
   const t=tabelaMes(mesOff);const agora=Date.now();const fechado=agora>=t.w.fim;
   const dias=Math.ceil((t.w.fim-agora)/86400000);
@@ -768,17 +795,9 @@ function vMensal(){
   h+=`<div class="div lib"><div class="hd"><b>🏆 LIBERTADORES</b><span>${LIB_MIN}+ jogos no mês</span></div>${tabelaDiv(t.lib,"lib",fechado)}</div>`;
   h+=`<div class="div sul"><div class="hd"><b>🥈 SUL-AMERICANA</b><span>${SUL_MIN} a ${LIB_MIN-1} jogos</span></div>${tabelaDiv(t.sul,"sul",fechado)}</div>`;
   if(t.aq.length)h+=`<div class="card"><div class="grp" style="margin-top:0;color:var(--mu)">EM AQUECIMENTO · menos de ${SUL_MIN} jogos</div><div class="chips">${t.aq.map(x=>`<span class="chip">${esc(x.nome)} · ${x.mesas} jogo(s), faltam ${SUL_MIN-x.mesas}</span>`).join("")}</div></div>`;
-  h+=`<details class="card" style="padding:10px 14px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📜 Como funciona</summary><div class="rules" style="margin-top:6px">
-  <p><b>Temporada mensal:</b> começa no dia 1º e termina no último dia do mês. No dia 1º seguinte, a tabela zera e começa um novo campeonato. As mesas continuam todas guardadas no histórico.</p>
-  <p><b>Libertadores (${LIB_MIN} jogos ou mais):</b> divisão principal. O 1º colocado no fim do mês é o <b>Campeão da Libertadores</b>.</p>
-  <p><b>Sul-Americana (${SUL_MIN} a ${LIB_MIN-1} jogos):</b> para quem joga menos, como o pessoal que vai para campo ou só joga depois das 16h. O 1º colocado é o <b>Campeão da Sul-Americana</b>.</p>
-  <p><b>Acesso:</b> quem passa de ${LIB_MIN-1} para ${LIB_MIN} jogos sobe na hora para a Libertadores, levando a média que tem.</p>
-  <p><b>Em aquecimento:</b> com menos de ${SUL_MIN} jogos, o jogador aparece na lista, mas ainda não disputa título.</p>
-  <p><b>Critério (MÉD):</b> média de pontos por jogo = pontos da classificação ÷ jogos no mês. Assim quem joga menos não fica para trás só por jogar menos, e quem joga mais não ganha só pelo volume. As infrações da lei descontam pontos e derrubam a média.</p>
-  <p><b>Desempate:</b> pontos totais → vitórias → batidas especiais → batidas secas → menos infrações.</p>
-  <p><b>Pontos de cada lance:</b> os mesmos da classificação (vitória +3; especiais +2 ou +3; seca +1; infrações −1 a −5). Lançamentos avulsos contam pontos, mas só mesas contam como jogo.</p></div></details>`;
+  h+=`<details class="card" style="padding:10px 14px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📜 Regulamento do Campeonato do Mês</summary><div class="rules" style="margin-top:6px">${regMensal()}</div></details>`;
   const galeria=[];for(let o=-1;o>=-12;o--){const g=tabelaMes(o);if(g.lib.length||g.sul.length)galeria.push(g);}
-  h+=`<h2>GALERIA DE CAMPEÕES</h2><div class="card">${galeria.length?galeria.map(g=>`<div class="match"><div class="grow"><b>${g.w.nome}</b><div class="muted">🏆 Libertadores: ${g.lib[0]?esc(g.lib[0].nome)+" ("+fmtMed(g.lib[0].med)+")":"—"}<br>🥈 Sul-Americana: ${g.sul[0]?esc(g.sul[0].nome)+" ("+fmtMed(g.sul[0].med)+")":"—"}</div></div></div>`).join(""):`<div class="empty" style="padding:12px">Os campeões aparecem aqui quando o primeiro mês terminar.</div>`}</div>`;
+  h+=`<h2>GALERIA DE CAMPEÕES</h2><div class="card">${galeria.length?galeria.map(g=>`<div class="match"><div class="grow"><b>${g.w.nome}</b><div class="muted">🏆 Libertadores: ${g.campLib.length?g.campLib.map(x=>esc(x.nome)).join(" e ")+" ("+fmtMed(g.campLib[0].med)+")":"—"}<br>🥈 Sul-Americana: ${g.campSul.length?g.campSul.map(x=>esc(x.nome)).join(" e ")+" ("+fmtMed(g.campSul[0].med)+")":"—"}</div></div></div>`).join(""):`<div class="empty" style="padding:12px">Os campeões aparecem aqui quando o primeiro mês terminar.</div>`}</div>`;
   return h;
 }
 function vCamps(){
@@ -1102,13 +1121,14 @@ async function imgMensal(){
     y+=100;
     if(!lista.length){g.fillStyle=MU;g.font="400 28px 'Source Sans 3', sans-serif";g.fillText(tipo==="lib"?`Ninguém chegou a ${LIB_MIN} jogos ainda.`:"Ninguém nessa faixa ainda.",80,y+60);y+=RH+10;return;}
     lista.forEach((x,i)=>{
-      g.fillStyle=i===0?"#F3E3B5":(i%2?CR:IV);rr(g,50,y,W-100,RH-12,16);g.fill();
-      if(i===0){g.strokeStyle=GO;g.lineWidth=3;rr(g,50,y,W-100,RH-12,16);g.stroke();}
-      g.beginPath();g.arc(108,y+46,30,0,Math.PI*2);g.fillStyle=i===0?GO:"#E3D3AE";g.fill();
-      g.textAlign="center";g.fillStyle=i===0?"#fff":GR;g.font="800 28px Montserrat, sans-serif";g.fillText(i===0?(fechado?"🏆":"1"):String(i+1),108,y+57);g.textAlign="left";
+      const lid=x.pos===1;
+      g.fillStyle=lid?"#F3E3B5":(i%2?CR:IV);rr(g,50,y,W-100,RH-12,16);g.fill();
+      if(lid){g.strokeStyle=GO;g.lineWidth=3;rr(g,50,y,W-100,RH-12,16);g.stroke();}
+      g.beginPath();g.arc(108,y+46,30,0,Math.PI*2);g.fillStyle=lid?GO:"#E3D3AE";g.fill();
+      g.textAlign="center";g.fillStyle=lid?"#fff":GR;g.font="800 28px Montserrat, sans-serif";g.fillText(lid&&fechado?"🏆":String(x.pos),108,y+57);g.textAlign="left";
       g.fillStyle=TX;g.font="700 34px 'Source Sans 3', sans-serif";g.fillText(txtFit(g,x.nome,560),160,y+42);
       g.fillStyle=MU;g.font="400 23px 'Source Sans 3', sans-serif";
-      g.fillText(txtFit(g,`J ${x.mesas} · PTS ${x.pts} · V ${x.vitorias} · Esp ${x.espN} · Inf ${x.infTot}`+(tipo==="sul"?` · faltam ${LIB_MIN-x.mesas} p/ Lib.`:""),640),160,y+76);
+      g.fillText(txtFit(g,`J ${x.mesas} · PTS ${x.pts} · V ${x.vitorias} · Esp ${x.espN} · Inf ${x.infTot}`+(x.empate&&x.cd!=null?` · C.D. ${x.cd}`:"")+(tipo==="sul"?` · faltam ${LIB_MIN-x.mesas} p/ Lib.`:""),640),160,y+76);
       g.textAlign="right";g.fillStyle=GR;g.font="800 48px Montserrat, sans-serif";g.fillText(fmtMed(x.med),W-80,y+56);
       g.fillStyle=MU;g.font="600 18px 'Source Sans 3', sans-serif";g.fillText("MÉDIA",W-80,y+80);g.textAlign="left";
       y+=RH;});
@@ -1118,7 +1138,7 @@ async function imgMensal(){
   if(t.aq.length){g.fillStyle=MU;g.font="700 24px Montserrat, sans-serif";g.fillText(`EM AQUECIMENTO · menos de ${SUL_MIN} jogos`,60,y+40);
     g.font="400 24px 'Source Sans 3', sans-serif";g.fillStyle=TX;g.fillText(txtFit(g,t.aq.map(x=>`${x.nome} (${x.mesas})`).join(" · "),W-120),60,y+82);y+=150;}
   y+=10;g.fillStyle=GO;g.fillRect(50,y,W-100,2);
-  g.fillStyle=MU;g.font="400 22px 'Source Sans 3', sans-serif";g.fillText("MÉDIA = pontos ÷ jogos no mês · desempate: pontos, vitórias, especiais, secas, menos infrações",60,y+40);
+  g.fillStyle=MU;g.font="400 20px 'Source Sans 3', sans-serif";g.fillText("MÉDIA = pontos ÷ jogos no mês (só mesas) · desempate: pts, vit., esp., secas, infr., confronto direto",60,y+40);
   g.fillText("Placar Oficial · Lei nº 0608/2026 · Decreto nº 001/2026",60,y+78);
   g.textAlign="right";g.fillStyle=GO;g.font="700 26px Cinzel, Georgia, serif";g.fillText("Mão de ferro",W-60,y+78);g.textAlign="left";
   const HF=Math.min(H,y+130);const out=document.createElement("canvas");out.width=W;out.height=HF;const o=out.getContext("2d");o.drawImage(c,0,0);o.strokeStyle=GO;o.lineWidth=3;o.strokeRect(22,22,W-44,HF-44);
@@ -1426,7 +1446,7 @@ function vRegras(){
   <p>Infrações tiram pontos: fraude <b>−5</b>; passar com pedra, gato, fingir <b>−3</b>; colagem irregular, esqueceu de jogar, sinais <b>−2</b>; pedra marcada no sorteio <b>−1</b>.</p>
   <p>Desempate, nesta ordem: vitórias → batidas especiais → batidas secas → menos infrações → menos derrotas. Duplas: mesmos critérios, e depois peças.</p>
   <h4>CAMPEONATO DO MÊS</h4>
-  <p>Todo mês, pela média de pontos por jogo. <b>Libertadores:</b> ${LIB_MIN} jogos ou mais. <b>Sul-Americana:</b> de ${SUL_MIN} a ${LIB_MIN-1} jogos. Com menos de ${SUL_MIN}, o jogador fica em aquecimento. O 1º de cada divisão no fim do mês é o campeão. Os detalhes estão na aba Campeonato.</p>
+  ${regMensal()}
   <h4>INFRAÇÕES</h4>
   <p><b>Derrota imediata</b> (1 peça ao adversário; sem fila, passar com pedra vale 2): passar com pedra na mão (22), gato (23), fingir que não tem e jogar (24), fraude (24-D).</p>
   <p><b>3 pontos ao adversário</b>, contados como uma vitória simples dele: colagem irregular (24-A, com advertência), esqueceu de jogar ou “passei” errado (24-B), sinais ao parceiro (24 §4).</p>
