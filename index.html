@@ -6,6 +6,7 @@
 <title>Dominó SEOSP — Placar Oficial</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <meta name="theme-color" content="#1E3A2A">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
@@ -98,6 +99,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));background:var(--tx);color:var(--iv);padding:10px 16px;border-radius:10px;font-size:14px;z-index:30;max-width:90vw}
 .match{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--ln)}
 .match:last-child{border-bottom:0}
+.gprot{margin-top:12px;padding-top:10px;border-top:1px solid var(--ln)}
 .doc{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--ln);color:var(--tx);text-decoration:none;font-size:20px}.doc:last-child{border-bottom:0}
 .doc span{flex:1;display:flex;flex-direction:column;font-size:15px}.doc small{font-size:12.5px;color:var(--mu)}
 .hx{padding:8px 0;border-bottom:1px dashed var(--ln);font-size:14px}.hx:last-child{border-bottom:0}
@@ -317,7 +319,8 @@ const byId=(col,id)=>cache[col].find(x=>x.id===id);
 const firebaseConfig={apiKey:"AIzaSyD4DaDR6zGdO2IDKojH7wxzULKKS1dg7xo",authDomain:"domino-seosp.firebaseapp.com",projectId:"domino-seosp",storageBucket:"domino-seosp.firebasestorage.app",messagingSenderId:"813892656659",appId:"1:813892656659:web:b3fb49a3fdc9450777a9e6"};
 async function connect(){
   const sync=document.getElementById("sync");
-  try{if(!window.firebase)throw new Error("sem firebase");firebase.initializeApp(firebaseConfig);db=firebase.firestore();try{await db.enablePersistence({synchronizeTabs:true});}catch(e){console.warn("persistência offline indisponível",e&&e.code);}}catch(e){db=null;sync.textContent="sem conexão (não salva)";render();return;}
+  try{if(!window.firebase)throw new Error("sem firebase");firebase.initializeApp(firebaseConfig);db=firebase.firestore();try{await db.enablePersistence({synchronizeTabs:true});}catch(e){console.warn("persistência offline indisponível",e&&e.code);}
+    try{firebase.auth().onAuthStateChanged(u=>{gUser=u;if(u&&u.email&&u.email===presEmail()){admin=true;try{sessionStorage.setItem("seospAdmin","1");}catch(e){}}render();});firebase.auth().getRedirectResult().catch(e=>console.warn(e));}catch(e){console.warn("auth indisponível",e);}}catch(e){db=null;sync.textContent="sem conexão (não salva)";render();return;}
   const timer=setTimeout(()=>{if(!live)sync.textContent="sem conexão…";},10000);
   const subs={jogadores:db.collection("jogadores"),duplas:db.collection("duplas"),partidas:db.collection("partidas").orderBy("criadoEm","desc").limit(1000),campeonatos:db.collection("campeonatos").orderBy("criadoEm","desc").limit(200),fila:db.collection("fila"),avulsos:db.collection("avulsos").orderBy("t","desc").limit(1000),lustrados:db.collection("lustrados").orderBy("criadoEm","desc").limit(500)};
   for(const [col,q] of Object.entries(subs)){
@@ -365,12 +368,14 @@ async function confirmarMotivo(){
   const m=((document.getElementById("motivo")||{}).value||"").trim();if(m.length<3){toast("Escreva o motivo.");return;}
   const s=sheet;closeSheet();motivoAtual=m;
   try{
-    if(s.acao==="jogada"){const p=byId("partidas",s.pid);if(!p)return;const evs=p.eventos||[];const ev=evs[s.i];
+    if(false){}
+    else if(s.acao==="jogada"){const p=byId("partidas",s.pid);if(!p)return;const evs=p.eventos||[];const ev=evs[s.i];
       await salvarPartida({...p,eventos:evs.filter((_,k)=>k!==s.i),desfeitos:[...(p.desfeitos||[]).slice(-30),{ev,acao:"excluído pelo Presidente",motivo:m,por:"Presidente"+(autor()?" ("+autor()+")":""),em:Date.now()}]});toast("Jogada excluída (registrada no histórico).");}
     else if(s.acao==="avulso"){await del("avulsos",s.id);toast("Lançamento apagado (registrado no histórico).");}
     else if(s.acao==="torneio"){await del("campeonatos",s.id);curCamp=null;render();toast("Torneio excluído (registrado no histórico).");}
     else if(s.acao==="mesa"||s.acao==="lustrado"){await excluirMesaLust(s.acao,s.id);}
-  }finally{motivoAtual="";}
+  }catch(e){toast(e&&e.code==="permission-denied"?"Sem permissão: entre com Google no Modo presidente (aba Regras).":"Erro: "+(e&&e.message||e));}
+  finally{motivoAtual="";}
 }
 function historicoExclusoes(){
   const it=[];const nomeEv=e=>e?((e.k==="batida"?BATIDAS[e.tipo]:e.k==="infr"?INFR[e.tipo]:null)||{nome:e.tipo||"lance"}).nome+(e.jog?" de "+nomeJog(e.jog):""):"lance";
@@ -416,6 +421,40 @@ const svg=(n,c="currentColor")=>`<svg viewBox="0 0 24 24" fill="none" stroke="${
 let curLust=null;
 const ADMIN_HASH="a38f3bbd6c8cb33bb0c4641ec511d51f17ee744471a1d9e0a1a766b4385533f3";
 let admin=false;try{admin=sessionStorage.getItem("seospAdmin")==="1";}catch(e){}
+let gUser=null;
+function presEmail(){try{return localStorage.getItem("seosp_pres_email")||"";}catch(e){return "";}}
+async function entrarGoogle(){
+  if(!window.firebase||!firebase.auth){toast("Login indisponível agora.");return;}
+  const prov=new firebase.auth.GoogleAuthProvider();prov.setCustomParameters({prompt:"select_account"});
+  try{const r=await firebase.auth().signInWithPopup(prov);gUser=r.user;}
+  catch(e){if(e&&(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment"||e.code==="auth/popup-closed-by-user")){if(e.code!=="auth/popup-closed-by-user")return firebase.auth().signInWithRedirect(prov);return;}
+    if(e&&e.code==="auth/unauthorized-domain"){toast("Falta autorizar o domínio no Firebase (passo 2).");return;}
+    if(e&&e.code==="auth/operation-not-allowed"){toast("Falta ativar o login Google no Firebase (passo 1).");return;}
+    toast("Não deu para entrar: "+(e&&e.code||e));return;}
+  if(admin&&gUser&&gUser.email){try{localStorage.setItem("seosp_pres_email",gUser.email);}catch(e){}}
+  render();toast("Conectado como "+(gUser&&gUser.email));
+}
+function regrasProtegidas(email){return `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function colOk(col) {
+      return col in ['jogadores','duplas','partidas','campeonatos','fila','avulsos','lustrados'];
+    }
+    function presidente() {
+      return request.auth != null && request.auth.token.email == '${email}'
+             && request.auth.token.email_verified == true;
+    }
+    match /{col}/{id} {
+      allow read: if colOk(col);
+      allow create: if colOk(col) && request.resource.data.size() < 40
+                    && !('excluido' in request.resource.data);
+      allow update: if colOk(col) && request.resource.data.size() < 40
+                    && (presidente()
+                        || (!('excluido' in request.resource.data) && !('excluido' in resource.data)));
+      allow delete: if col in ['fila','duplas'];
+    }
+  }
+}`;}
 async function adminEntrar(){
   const i=document.getElementById("pin");const pin=(i&&i.value||"").trim();if(!pin)return;
   let hex="";try{const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode("seosp:"+pin));hex=[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");}catch(e){toast("Este aparelho não conseguiu conferir a senha.");return;}
@@ -644,7 +683,7 @@ document.addEventListener("click",async e=>{
   if(el.dataset.rkc){rankCrit=el.dataset.rkc;render();return;}
   if(el.dataset.rk){rankAba=el.dataset.rk;render();return;}
   if(el.dataset.delev!=null){if(!admin)return;openSheet({t:"motivo",acao:"jogada",i:+el.dataset.delev,pid:curPartida});return;}
-  if(el.dataset.merge){openSheet({t:"merge",de:el.dataset.merge,para:null});return;}
+  if(el.dataset.merge){if(!admin)return;openSheet({t:"merge",de:el.dataset.merge,para:null});return;}
   if(el.dataset.mto&&sheet){sheet.para=el.dataset.mto;keepScroll();return;}
   if(el.dataset.lsel!=null&&sheet){const n=el.dataset.lsel;sheet.sel=sheet.sel||[];sheet.sel=sheet.sel.includes(n)?sheet.sel.filter(x=>x!==n):sheet.sel.length>=4?(toast("Máximo de 4 jogadores."),sheet.sel):[...sheet.sel,n];keepScroll();return;}
   if(el.dataset.lmeta!=null&&sheet){sheet.meta=+el.dataset.lmeta;keepScroll();return;}
@@ -701,7 +740,10 @@ document.addEventListener("click",async e=>{
   if(a==="copiarImg")return copiarImg();
   if(a==="telaCheia")return telaCheia();
   if(a==="adminEntrar")return adminEntrar();
-  if(a==="adminSair"){admin=false;try{sessionStorage.removeItem("seospAdmin");}catch(e){}render();toast("Modo presidente desligado.");return;}
+  if(a==="entrarGoogle")return entrarGoogle();
+  if(a==="sairGoogle"){try{await firebase.auth().signOut();}catch(e){}gUser=null;render();return;}
+  if(a==="copiarRegras"){if(!gUser)return;const t=regrasProtegidas(gUser.email);try{await navigator.clipboard.writeText(t);toast("Regras copiadas. Cole no Firebase › Firestore › Rules.");}catch(e){openSheet({t:"texto",txt:t});}return;}
+  if(a==="adminSair"){admin=false;try{localStorage.removeItem("seosp_pres_email");}catch(e){}try{sessionStorage.removeItem("seospAdmin");}catch(e){}render();toast("Modo presidente desligado.");return;}
   if(a==="delMesa"||a==="delLust"){if(!admin)return;openSheet({t:"motivo",acao:a==="delMesa"?"mesa":"lustrado",id:a==="delMesa"?curPartida:curLust});return;}
   if(a==="baixarImg")return baixarImg();
   if(a==="fazerMerge")return fazerMerge();
@@ -854,7 +896,7 @@ function vRank(){
   if(L.length)h+=`<details class="card" style="padding:10px 12px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📊 Estatísticas detalhadas por jogador</summary><div style="margin-top:10px">${L.map((x,i)=>cardJog(x,i,"Pontos",y=>y.pts)).join("")}</div></details>`;
   const av=cache.avulsos.slice(0,15);
   h+=`<h2>LANÇAMENTOS AVULSOS</h2><div class="card">${av.length?`<ul class="log">${av.map(a=>{const d=a.k==="batida"?BATIDAS[a.tipo]:a.k==="infr"?INFR[a.tipo]:{nome:"Vitória de mesa"};return `<li style="align-items:center"><span class="dot" style="background:${a.k==="infr"?"var(--tc)":"var(--gd)"};margin-top:0"></span><span class="grow"><b>${esc(nomeJog(a.jog))}</b> · ${esc(d?d.nome:a.tipo)}<br><span class="muted">${fmtData(a.t)}${a.obs?" · "+esc(a.obs):""}</span></span>${admin?`<button class="btn ghost sm" data-rmav="${a.id}">Apagar</button>`:""}</li>`;}).join("")}</ul>`:`<div class="empty" style="padding:12px">Nada lançado fora das mesas.</div>`}</div>`;
-  h+=`<h2>JOGADORES</h2><div class="card">${cache.jogadores.length?cache.jogadores.map(j=>`<div class="match"><div class="grow"><b>${esc(j.nome)}</b>${(j.apelidos||[]).length?`<div class="muted" style="font-size:12px">também: ${esc(j.apelidos.join(", "))}</div>`:""}</div><button class="btn ghost sm" data-ren="jogadores:${j.id}">Renomear</button><button class="btn ghost sm" data-merge="${j.id}">Juntar</button></div>`).join(""):`<div class="empty">Nenhum jogador.</div>`}</div>`;
+  h+=`<h2>JOGADORES</h2><div class="card">${cache.jogadores.length?cache.jogadores.map(j=>`<div class="match"><div class="grow"><b>${esc(j.nome)}</b>${(j.apelidos||[]).length?`<div class="muted" style="font-size:12px">também: ${esc(j.apelidos.join(", "))}</div>`:""}</div><button class="btn ghost sm" data-ren="jogadores:${j.id}">Renomear</button>${admin?`<button class="btn ghost sm" data-merge="${j.id}">Juntar</button>`:""}</div>`).join(""):`<div class="empty">Nenhum jogador.</div>`}</div>`;
   return h;
 }
 function chipsJog(x){
@@ -1697,7 +1739,14 @@ function vRegras(){
   <details style="margin-top:10px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">🗂 Histórico de exclusões e desfeitos (${historicoExclusoes().length})</summary>
   <div style="margin-top:8px">${(()=>{const H=historicoExclusoes().slice(0,60);return H.length?H.map(x=>`<div class="hx"><div><b>${esc(x.o)}</b></div>${x.ctx?`<div class="muted">${esc(x.ctx)}</div>`:""}<div class="muted" style="font-size:12px">${x.em?fmtData(x.em):""}${x.por?" · por "+esc(x.por):""}${x.lancou?" · lançado por "+esc(x.lancou):""}</div>${x.mot?`<div style="font-size:13px">Motivo: ${esc(x.mot)}</div>`:""}</div>`).join(""):`<p class="muted">Nada foi excluído ou desfeito.</p>`;})()}</div></details></div>
   <h2>INSTALAR NO CELULAR</h2><div class="card"><p style="margin:0 0 8px">${instalado()?"✔ O placar já está instalado neste celular.":"Instale o placar na tela inicial: abre como aplicativo e <b>funciona sem internet</b> (os lances ficam salvos e sobem quando a conexão voltar)."}</p>${instalado()?"":`<button class="btn gold sm" data-act="instalar">📲 Instalar app</button>`}</div>
-  <h2>MODO PRESIDENTE</h2><div class="card">${admin?`<p style="margin:0 0 10px"><b>🔓 Ativo neste aparelho.</b> Aparecem os botões de excluir mesas, jogadas, lustrados, lançamentos avulsos e campeonatos.</p><button class="btn ghost" data-act="adminSair">Sair do modo presidente</button><button class="btn sm" style="margin-left:8px;background:#8A6A1F" data-act="importar">Importar dados do placar antigo</button><button class="btn gold sm" style="width:100%;margin-top:10px" data-act="backup">💾 Baixar backup completo (faça todo dia 1º)</button>`:`<p class="muted" style="margin:0 0 8px">Exclusão de resultados, só para a Presidência.</p><div class="row"><input type="password" inputmode="numeric" id="pin" placeholder="Senha" maxlength="12" class="grow" autocomplete="off"><button class="btn" data-act="adminEntrar">Entrar</button></div>`}</div>`;
+  <h2>MODO PRESIDENTE</h2><div class="card">${admin?`<p style="margin:0 0 10px"><b>🔓 Ativo neste aparelho.</b> Aparecem os botões de excluir mesas, jogadas, lustrados, lançamentos avulsos e campeonatos.</p><button class="btn ghost" data-act="adminSair">Sair do modo presidente</button><button class="btn sm" style="margin-left:8px;background:#8A6A1F" data-act="importar">Importar dados do placar antigo</button><button class="btn gold sm" style="width:100%;margin-top:10px" data-act="backup">💾 Baixar backup completo (faça todo dia 1º)</button>
+  <div class="gprot"><div class="ex-t">🔐 PROTEÇÃO COM GOOGLE</div>${gUser?`<p style="margin:4px 0">Conectado como <b>${esc(gUser.email)}</b>. ${presEmail()===gUser.email?"Este é o e-mail do Presidente.":""}</p><button class="btn ghost sm" data-act="sairGoogle">Desconectar Google</button>
+  <details style="margin-top:8px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">Passo a passo para ativar a proteção (uma vez)</summary><div class="rules" style="margin-top:6px">
+  <p><b>1.</b> No Firebase (console.firebase.google.com) › projeto <b>domino-seosp</b> › <b>Authentication</b> › <b>Sign-in method</b> › ative <b>Google</b>.</p>
+  <p><b>2.</b> Em <b>Authentication › Settings › Authorized domains</b>, adicione <b>jnnvld.github.io</b>.</p>
+  <p><b>3.</b> Em <b>Firestore Database › Rules</b>, apague tudo, cole as regras abaixo e toque em <b>Publish</b>.</p>
+  <button class="btn gold sm" data-act="copiarRegras">📋 Copiar regras com ${esc(gUser.email)}</button>
+  <p class="muted" style="margin-top:8px">Depois disso, só quem entrar com este Google consegue excluir mesas, lançamentos, torneios e juntar jogadores. Lançar jogadas continua livre para todos.</p></div></details>`:`<p class="muted" style="margin:4px 0 8px">Entre com o seu Google para que as exclusões fiquem protegidas de verdade no banco de dados.</p><button class="btn sm" data-act="entrarGoogle">Entrar com Google</button>`}</div>`:`<p class="muted" style="margin:0 0 8px">Exclusão de resultados, só para a Presidência.</p><div class="row"><input type="password" inputmode="numeric" id="pin" placeholder="Senha" maxlength="12" class="grow" autocomplete="off"><button class="btn" data-act="adminEntrar">Entrar</button></div>`}</div>`;
 }
 
 /* ===================== INÍCIO ===================== */
