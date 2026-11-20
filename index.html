@@ -335,10 +335,17 @@ function render(){
 }
 
 /* ===================== MESA ===================== */
+const PARADA_H=3;
+function ultimaAtiv(p){let t=p.criadoEm||0;for(const e of p.eventos||[])if((e.t||0)>t)t=e.t;return t;}
+function horasParada(p){return (Date.now()-ultimaAtiv(p))/3600000;}
+function fmtParada(p){const h=horasParada(p);return h>=48?Math.floor(h/24)+" dias":Math.floor(h)+"h";}
 function vMesas(){
   const ativas=cache.partidas.filter(p=>p.status==="ativa");
+  const paradas=ativas.filter(p=>horasParada(p)>=PARADA_H);
   const fim=cache.partidas.filter(p=>p.status!=="ativa").slice(0,10);
-  let h=`<h2>MESAS EM ANDAMENTO</h2>`;
+  let h="";
+  if(paradas.length)h+=`<div class="banner tc" style="text-align:left">⚠️ <b>${paradas.length} mesa(s) parada(s) há mais de ${PARADA_H}h.</b> Mesa sem vencedor não conta no Campeonato do Mês. Abra e encerre se o jogo acabou; se foi aberta por engano, avise o Presidente para excluir.</div>`;
+  h+=`<h2>MESAS EM ANDAMENTO</h2>`;
   h+=ativas.length?`<div class="card">${ativas.map(linhaPartida).join("")}</div>`:`<div class="card empty">Nenhuma mesa em andamento.</div>`;
   h+=`<div class="row"><button class="btn gold grow" style="min-height:56px;font-size:15px" data-act="mesaRapida">⚡ MESA RÁPIDA</button><button class="btn grow" style="min-height:56px;font-size:15px" data-act="novaMesa">+ NOVA MESA</button></div><p class="muted" style="margin:6px 2px 0">Mesa rápida: começa na hora como Dupla A × Dupla B, sem escolher jogadores.</p>`;
   h+=`<button class="btn" style="width:100%;min-height:56px;margin-top:10px;background:#5E7F4F;font-size:15px" data-act="novoLust">🎯 LUSTRADO · INDIVIDUAL, PONTOS DE 5 EM 5</button>`;
@@ -357,6 +364,7 @@ function linhaPartida(p){
   return `<div class="match" data-open="${p.id}" style="cursor:pointer">
   <div class="grow"><b>${esc(p.duplaA.nome)}</b> <span class="vs">×</span> <b>${esc(p.duplaB.nome)}</b>
   <div class="muted">${fmtData(p.criadoEm)}${p.modo==="semfila"?" · sem fila":""}${p.campId?" · campeonato":""}</div></div>
+  ${p.status==="ativa"&&horasParada(p)>=PARADA_H?`<span class="pill" style="background:#F2D9C9;color:var(--tc)">⚠ parada ${fmtParada(p)}</span>`:""}
   ${p.status==="ativa"?`<span class="pill" style="background:#DCE8DA;color:var(--gd)">${p.modo==="semfila"?st.A.pecas+"×"+st.B.pecas+" peças":PTS[st.A.s]+"–"+PTS[st.B.s]}</span>`:wn?`<span class="pill" style="background:#F3E2B5;color:#5B4310">🏆 ${esc(wn)}</span>`:`<span class="pill" style="background:#EEE">encerrada</span>`}
   </div>`;
 }
@@ -371,7 +379,8 @@ function vPartida(p){
     <div class="pecas">${x.pecas?Array.from({length:Math.min(x.pecas,8)},()=>'<span class="tile"></span>').join(""):""} ${x.pecas} ${x.pecas===1?"PEÇA":"PEÇAS"}</div></div>`;};
   let h=`<div class="row" style="margin-bottom:10px"><button class="btn ghost sm" data-act="voltar">‹ Mesas</button><div class="grow muted" style="text-align:right">${p.modo==="semfila"?"Sem fila · contagem em peças (Art. 9)":"Com fila · 1 peça vence a mesa"}</div></div>`;
   if(st.winner)h+=`<div class="banner gold">🏆 Vitória de ${esc(p["dupla"+st.winner].nome)}${p.modo==="semfila"?` por ${st[st.winner].pecas} × ${st[other(st.winner)].pecas} peças`:""}!${p.modo==="semfila"?"":" A dupla fica na mesa."}</div>`;
-  else if(!ativa)h+=`<div class="banner gd">Mesa encerrada.</div>`;
+  else if(!ativa)h+=`<div class="banner gd">Mesa encerrada sem vencedor (não conta no Campeonato do Mês).</div>`;
+  if(ativa&&!st.winner&&horasParada(p)>=PARADA_H)h+=`<div class="banner tc">⚠️ Mesa parada há ${fmtParada(p)}. Se o jogo acabou, toque em <b>Encerrar mesa</b>. Aberta por engano? Avise o Presidente para excluir.</div>`;
   else if(st.decisiva)h+=`<div class="banner tc">⚡ RODADA DECISIVA: quem vencer leva a mesa. Saída com a bucha de ás (1:1).</div>`;
   else if(st.buchaAs)h+=`<div class="banner gd">Primeira partida: saída obrigatória com a bucha de ás (1:1).</div>`;
   h+=`<div class="board">${lado("A")}${lado("B")}</div>`;
@@ -408,6 +417,7 @@ function renderSheet(){
   else if(sheet.t==="camp")h=shCamp();
   else if(sheet.t==="renomear")h=shRenomear();
   else if(sheet.t==="avulso")h=shAvulso();
+  else if(sheet.t==="ficha")h=fichaJog(sheet.id);
   else if(sheet.t==="img")h=`<h3>${esc(sheet.titulo||"RANKING EM IMAGEM")}</h3><p class="muted" style="margin:0 0 8px">Use <b>Copiar imagem</b> e cole no WhatsApp, ou abra em <b>tela cheia</b> e tire um print.</p><img src="${sheet.url}" alt="${esc(sheet.titulo||"Ranking do Dominó SEOSP")}" style="width:100%;border-radius:10px;border:1px solid var(--ln)"><div class="row" style="margin-top:12px"><button class="btn gold grow" data-act="copiarImg">📋 Copiar imagem</button><button class="btn grow" data-act="telaCheia">🖼 Tela cheia p/ print</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-act="fecharSheet">Fechar</button>`;
   else if(sheet.t==="merge")h=shMerge();
   else if(sheet.t==="balanco")h=`<h3>BALANÇO DO DIA</h3><p class="muted" style="margin:0 0 8px">Gera uma imagem com o ranking do dia, os destaques e todas as mesas jogadas na data escolhida, até agora.</p><label class="f" for="balDia">Dia</label><input type="date" id="balDia" value="${esc(sheet.dia)}" style="width:100%;padding:11px 12px;border:1.5px solid var(--ln);border-radius:10px;min-height:46px"><div class="row" style="margin-top:14px"><button class="btn ghost grow" data-act="fecharSheet">Cancelar</button><button class="btn gold grow" data-act="gerarBalanco">GERAR</button></div>`;
@@ -506,10 +516,10 @@ document.addEventListener("change",e=>{
   if(t.id==="rankOrdem"){rankOrdem=t.value;render();}
 });
 document.addEventListener("click",async e=>{
-  const el=e.target.closest("[data-rkc],[data-campaba],[data-mes],[data-lance],[data-lt],[data-slot],[data-cj],[data-cdp],[data-rmdp],[data-ndp],[data-rk],[data-delev],[data-merge],[data-mto],[data-lsel],[data-lmeta],[data-lpts],[data-lopen],[data-lmaoi],[data-lout],[data-avn],[data-avc],[data-avj],[data-rmav],[data-esc],[data-rmfila],[data-act],[data-go],[data-open],[data-ji],[data-tipo],[data-modo],[data-filtro],[data-camp],[data-cdupla],[data-fmt],[data-jogar],[data-ren]");
+  const el=e.target.closest("[data-ficha],[data-rkc],[data-campaba],[data-mes],[data-lance],[data-lt],[data-slot],[data-cj],[data-cdp],[data-rmdp],[data-ndp],[data-rk],[data-delev],[data-merge],[data-mto],[data-lsel],[data-lmeta],[data-lpts],[data-lopen],[data-lmaoi],[data-lout],[data-avn],[data-avc],[data-avj],[data-rmav],[data-esc],[data-rmfila],[data-act],[data-go],[data-open],[data-ji],[data-tipo],[data-modo],[data-filtro],[data-camp],[data-cdupla],[data-fmt],[data-jogar],[data-ren]");
   if(!el)return;
   if(el.dataset.go){e.preventDefault();curPartida=null;curCamp=null;curLust=null;go(el.dataset.go);return;}
-  if(el.dataset.open){curPartida=el.dataset.open;render();window.scrollTo(0,0);return;}
+  if(el.dataset.open){curPartida=el.dataset.open;if(sheet){sheet=null;renderSheet();}if(view!=="mesa"){go("mesa");return;}render();window.scrollTo(0,0);return;}
   if(el.dataset.campaba){campAba=el.dataset.campaba;render();return;}
   if(el.dataset.mes){mesOff=Math.min(0,mesOff+(+el.dataset.mes));render();return;}
   if(el.dataset.lance!=null){openSheet({t:"lance",ji:+el.dataset.lance});return;}
@@ -519,6 +529,7 @@ document.addEventListener("click",async e=>{
   if(el.dataset.cdp&&sheet&&sheet.t==="nova"){const d=byId("duplas",el.dataset.cdp);if(d){const L=(!sheet.A1&&!sheet.A2)?"A":(!sheet.B1&&!sheet.B2)?"B":(sheet.foco&&sheet.foco[0])||"B";sheet[L+"1"]=nomeJog(d.j1);sheet[L+"2"]=nomeJog(d.j2);sheet.foco=null;}keepScroll();return;}
   if(el.dataset.ndp!=null&&sheet&&sheet.t==="novaDupla"){const n=el.dataset.ndp;sheet.sel=sheet.sel||[];sheet.sel=sheet.sel.includes(n)?sheet.sel.filter(x=>x!==n):sheet.sel.length>=2?[sheet.sel[1],n]:[...sheet.sel,n];keepScroll();return;}
   if(el.dataset.rmdp){if(!el.dataset.ok){el.dataset.ok="1";el.textContent="Confirmar";setTimeout(()=>{if(el.isConnected){delete el.dataset.ok;el.textContent="Excluir";}},3000);return;}await del("duplas",el.dataset.rmdp);toast("Dupla excluída.");return;}
+  if(el.dataset.ficha){openSheet({t:"ficha",id:el.dataset.ficha});return;}
   if(el.dataset.rkc){rankCrit=el.dataset.rkc;render();return;}
   if(el.dataset.rk){rankAba=el.dataset.rk;render();return;}
   if(el.dataset.delev!=null){if(!admin)return;const i=+el.dataset.delev;if(!el.dataset.ok){el.dataset.ok="1";el.textContent="Excluir?";setTimeout(()=>{if(el.isConnected){delete el.dataset.ok;el.textContent="🗑";}},3000);return;}
@@ -567,6 +578,8 @@ document.addEventListener("click",async e=>{
   if(a==="imgRank")return imgRank();
   if(a==="imgMensal")return imgMensal();
   if(a==="importar"){if(!admin)return;return importarDados();}
+  if(a==="backup"){if(!admin)return;return baixarBackup();}
+  if(a==="txtMes")return copiarTextoMes(+(el.dataset.off||0));
   if(a==="imgMesa")return imgMesa();
   if(a==="balanco"){const d=new Date();const iso=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);return openSheet({t:"balanco",dia:iso});}
   if(a==="gerarBalanco"){const i=document.getElementById("balDia");return imgBalanco(i&&i.value||sheet.dia);}
@@ -661,9 +674,9 @@ async function proxima(){
 function stats(ini=iniPeriodo(),fim=Infinity,soMesas=false){
   const S={};const em=t=>(t||0)>=ini&&(t||0)<fim;const NADA={b:{},inf:{}};const get=id=>!id?Object.assign(NADA,{mesas:0,vitorias:0,derrotas:0,esp:0,infTot:0,adv:0}):S[id]||(S[id]={id,nome:nomeJog(id),mesas:0,vitorias:0,derrotas:0,b:{},inf:{},esp:0,infTot:0,adv:0});
   for(const p of cache.partidas){
-    if(soMesas&&!(p.eventos||[]).length)continue;
-    for(const j of [p.duplaA.j1,p.duplaA.j2,p.duplaB.j1,p.duplaB.j2])if(em(p.criadoEm))get(j).mesas++;
     const st=computeState(p);
+    if(soMesas&&!st.winner)continue;
+    for(const j of [p.duplaA.j1,p.duplaA.j2,p.duplaB.j1,p.duplaB.j2])if(em(p.criadoEm))get(j).mesas++;
     if(st.winner&&em(p.criadoEm)){const d=p["dupla"+st.winner];get(d.j1).vitorias++;get(d.j2).vitorias++;const o=p["dupla"+other(st.winner)];get(o.j1).derrotas++;get(o.j2).derrotas++;}
     for(const e of p.eventos||[]){
       if(!em(e.t))continue;const x=get(e.jog);
@@ -721,7 +734,7 @@ function vRank(){
     return h;
   }
   const L0=stats().filter(x=>x.mesas||x.pts||x.infTot||Object.keys(x.b).length).map(comMed).sort(ordemCamp);const R=aplica(L0,ordemCamp);const L=R.lista;
-  h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>PTS</th><th>MÉD</th><th>J</th><th>V</th><th>D</th><th>ESP</th><th>SEC</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""}" data-avj="${esc(x.nome)}" style="cursor:pointer"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas||0}</td><td>${x.espN}</td><td>${x.secN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+notaMed(R.fora)+leg:`<div class="card empty">${porMed?`Ninguém com ${LIB_MIN} jogos ou mais nesse período.`:"Nenhum registro nesse período."}</div>`;
+  h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>PTS</th><th>MÉD</th><th>J</th><th>V</th><th>D</th><th>ESP</th><th>SEC</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""}" data-ficha="${x.id}" style="cursor:pointer"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas||0}</td><td>${x.espN}</td><td>${x.secN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+notaMed(R.fora)+leg:`<div class="card empty">${porMed?`Ninguém com ${LIB_MIN} jogos ou mais nesse período.`:"Nenhum registro nesse período."}</div>`;
   h+=`<div class="row" style="margin:12px 0 6px"><button class="btn tc sm grow" data-act="avulso">+ Lançamento avulso</button><button class="btn sm grow" data-act="novoJog">+ Novo jogador</button></div>
   <div class="row" style="margin-bottom:6px"><button class="btn sm grow" style="background:#8A6A1F" data-act="balanco">📅 Balanço do dia</button><button class="btn gold sm grow" data-act="imgRank">📷 Imagem</button><button class="btn ghost sm" data-act="copiarRank">Texto</button></div>`;
   if(L.length)h+=`<details class="card" style="padding:10px 12px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📊 Estatísticas detalhadas por jogador</summary><div style="margin-top:10px">${L.map((x,i)=>cardJog(x,i,"Pontos",y=>y.pts)).join("")}</div></details>`;
@@ -779,11 +792,11 @@ function tabelaMes(off){
 const fmtMed=v=>v.toFixed(2).replace(".",",");
 function tabelaDiv(lista,tipo,fechado){
   if(!lista.length)return `<div class="empty" style="padding:14px">${tipo==="lib"?`Ninguém chegou a ${LIB_MIN} jogos ainda.`:`Ninguém nessa faixa ainda.`}</div>`;
-  return `<table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>MÉD</th><th>J</th><th>PTS</th><th>V</th><th>INF</th></tr></thead><tbody>${lista.map((x,i)=>`<tr class="${x.pos===1?"lider":""}"><td>${x.pos===1?(fechado?"🏆":"👑"):x.pos}</td><td class="n">${esc(x.nome)}${x.empate&&x.cd!=null?`<br><span class="falta">empate · ${x.cd} vit. no confronto direto</span>`:""}${tipo==="sul"?`<br><span class="falta">faltam ${LIB_MIN-x.mesas} p/ Libertadores</span>`:""}</td><td class="p">${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.pts}</td><td>${x.vitorias}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table>`;
+  return `<table class="tb"><thead><tr><th>#</th><th>Jogador</th><th>MÉD</th><th>J</th><th>PTS</th><th>V</th><th>INF</th></tr></thead><tbody>${lista.map((x,i)=>`<tr class="${x.pos===1?"lider":""}" data-ficha="${x.id}" style="cursor:pointer"><td>${x.pos===1?(fechado?"🏆":"👑"):x.pos}</td><td class="n">${esc(x.nome)}${x.empate&&x.cd!=null?`<br><span class="falta">empate · ${x.cd} vit. no confronto direto</span>`:""}${tipo==="sul"?`<br><span class="falta">faltam ${LIB_MIN-x.mesas} p/ Libertadores</span>`:""}</td><td class="p">${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.pts}</td><td>${x.vitorias}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table>`;
 }
 function regMensal(){return `
   <p><b>Art. 1º Temporada.</b> O Campeonato do Mês começa às 00h do dia 1º e termina às 23h59 do último dia do mês (horário da Bahia). Vale a data em que a mesa foi aberta no Placar Oficial. No dia 1º seguinte a tabela recomeça; as mesas continuam no histórico.</p>
-  <p><b>Art. 2º Jogo.</b> Conta como jogo cada mesa registrada no Placar Oficial com pelo menos uma jogada lançada, para os 4 jogadores da mesa. Mesa vazia não conta.</p>
+  <p><b>Art. 2º Jogo.</b> Conta como jogo cada mesa registrada no Placar Oficial que termine <b>com vencedor definido</b>, para os 4 jogadores da mesa. Mesa em andamento, abandonada ou encerrada sem vencedor não conta: nem o jogo, nem os pontos lançados nela. Com fila, vence quem fizer a peça; sem fila, quem tiver mais peças ao encerrar.</p>
   <p><b>Art. 3º Pontos.</b> Valem os pontos da classificação, conforme a Lei nº 0608/2026: vitória na mesa +${PONTO_VIT}; batida especial +2 (lasquinez preso e buchada dobrada +3); batida seca +1; infrações de −1 a −5. Lançamentos avulsos e o Lustrado <b>não</b> contam para o Campeonato do Mês (seguem valendo no ranking geral).</p>
   <p><b>Art. 4º Critério.</b> A classificação é pela <b>média de pontos por jogo (MÉD)</b> = pontos no mês ÷ jogos no mês.</p>
   <p><b>Art. 5º Divisões.</b> I – <b>Libertadores:</b> ${LIB_MIN} jogos ou mais no mês. II – <b>Sul-Americana:</b> de ${SUL_MIN} a ${LIB_MIN-1} jogos. III – <b>Em aquecimento:</b> menos de ${SUL_MIN} jogos; aparece na lista, mas não disputa título.</p>
@@ -798,7 +811,10 @@ function vMensal(){
   let h=`<h2>CAMPEONATO DO MÊS</h2>
   <div class="mesbar"><button class="btn ghost sm" data-mes="-1" aria-label="Mês anterior">‹</button><div class="nm">${t.w.nome}</div><button class="btn ghost sm" data-mes="1" ${mesOff>=0?"disabled":""} aria-label="Próximo mês">›</button></div>
   <p class="muted" style="text-align:center;margin:-4px 0 12px">${fechado?"Mês encerrado · campeões definidos":mesOff===0?`Em disputa · termina em ${dias} dia(s)`:""}</p>`;
-  if(t.lib.length||t.sul.length||t.aq.length)h+=`<button class="btn" data-act="imgMensal" style="width:100%;margin-bottom:12px">📸 Imagem do campeonato do mês</button>`;
+  if(mesOff===0&&new Date().getDate()<=7){const a=tabelaMes(-1);if(a.campLib.length||a.campSul.length)h+=`<div class="card" style="border:2px solid var(--go,#B8892B);background:#F3E3B5"><div class="grp" style="margin-top:0;color:var(--gd)">🏆 CAMPEÕES DE ${a.w.nome.toUpperCase()}</div>
+    <div style="font-size:15px;line-height:1.6">🏆 Libertadores: <b>${a.campLib.length?a.campLib.map(x=>esc(x.nome)).join(" e "):"—"}</b><br>🥈 Sul-Americana: <b>${a.campSul.length?a.campSul.map(x=>esc(x.nome)).join(" e "):"—"}</b></div>
+    <div class="row" style="margin-top:10px"><button class="btn sm grow" data-mes="-1">Ver tabela final</button><button class="btn gold sm grow" data-act="txtMes" data-off="-1">📋 Texto p/ WhatsApp</button></div></div>`;}
+  if(t.lib.length||t.sul.length||t.aq.length)h+=`<div class="row" style="margin-bottom:12px"><button class="btn grow" data-act="imgMensal">📸 Imagem</button><button class="btn ghost grow" data-act="txtMes" data-off="${mesOff}">📋 Texto p/ WhatsApp</button></div>`;
   h+=`<div class="div lib"><div class="hd"><b>🏆 LIBERTADORES</b><span>${LIB_MIN}+ jogos no mês</span></div>${tabelaDiv(t.lib,"lib",fechado)}</div>`;
   h+=`<div class="div sul"><div class="hd"><b>🥈 SUL-AMERICANA</b><span>${SUL_MIN} a ${LIB_MIN-1} jogos</span></div>${tabelaDiv(t.sul,"sul",fechado)}</div>`;
   if(t.aq.length)h+=`<div class="card"><div class="grp" style="margin-top:0;color:var(--mu)">EM AQUECIMENTO · menos de ${SUL_MIN} jogos</div><div class="chips">${t.aq.map(x=>`<span class="chip">${esc(x.nome)} · ${x.mesas} jogo(s), faltam ${SUL_MIN-x.mesas}</span>`).join("")}</div></div>`;
@@ -1054,7 +1070,7 @@ function cardJog(x,i,lab,fn){
   const bat=Object.entries(BATIDAS).map(([k,d])=>lin(d.nome,v(k))).join("");
   const inf=Object.entries(INFR).map(([k,d])=>lin(d.nome,f(k))).join("")+lin("Advertências",x.adv);
   const lus=lin("Lustrado: vitórias",x.lust||0)+lin("Lustrado: pontos",x.lustPts||0);
-  return `<div class="pc"><div class="hd" data-avj="${esc(x.nome)}" style="cursor:pointer"><div class="pos ${i<3?"g"+(i+1):""}">${i+1}</div><div><div class="nm">${esc(x.nome)}</div><div class="muted" style="font-size:12.5px">${(()=>{const j=byId("jogadores",x.id);return j&&(j.apelidos||[]).length?"também: "+esc(j.apelidos.join(", "))+" · ":"";})()}${x.mesas} mesa(s) · toque para lançar</div></div><div class="big">${fn(x)}<small>${esc(lab).toUpperCase()}</small></div></div>
+  return `<div class="pc"><div class="hd" data-ficha="${x.id}" style="cursor:pointer"><div class="pos ${i<3?"g"+(i+1):""}">${i+1}</div><div><div class="nm">${esc(x.nome)}</div><div class="muted" style="font-size:12.5px">${(()=>{const j=byId("jogadores",x.id);return j&&(j.apelidos||[]).length?"também: "+esc(j.apelidos.join(", "))+" · ":"";})()}${x.mesas} mesa(s) · toque para lançar</div></div><div class="big">${fn(x)}<small>${esc(lab).toUpperCase()}</small></div></div>
   <div class="sg">${tile(x.vitorias,"Vitórias")}${tile(f("gato"),"Gatos",1)}${tile(f("passar"),"Passou",1)}${tile(x.infTot,"Infrações",1)}${tile(v("buchada")+v("buch_dobrada"),"Buchadas")}${tile(v("lasquinez")+v("lasq_preso"),"Lasquinez")}${tile(v("seca"),"Secas")}${tile(x.esp,"Especiais")}</div>
   ${bat||inf||lus?`<details class="dt"><summary>▸ Ver detalhes</summary><div class="dl">${bat?`<span class="t" style="color:var(--gd)">BATIDAS</span>${bat}`:""}${inf?`<span class="t" style="color:var(--tc)">INFRAÇÕES</span>${inf}`:""}${lus?`<span class="t" style="color:#5E7F4F">LUSTRADO</span>${lus}`:""}</div></details>`:""}</div>`;
 }
@@ -1104,6 +1120,49 @@ async function baixarImg(){
   try{await d.save({filename:nome,data:imgBlob});}catch(e){if(e&&e.code==="declined")return;toast("Não deu para salvar aqui. Toque e segure a imagem.");}
 }
 
+/* ===================== BACKUP ===================== */
+function baixarBackup(){
+  const cols=Object.keys(cache);const dados={app:"Placar Oficial Dominó SEOSP",exportadoEm:new Date().toISOString()};
+  for(const c of cols)dados[c]=cache[c];
+  const blob=new Blob([JSON.stringify(dados,null,1)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`backup-domino-seosp-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);
+  toast(`Backup gerado: ${cols.map(c=>cache[c].length).reduce((x,y)=>x+y,0)} registros.`);
+}
+/* ===================== TEXTO DO MÊS P/ WHATSAPP ===================== */
+function textoMes(off){
+  const t=tabelaMes(off);const fechado=Date.now()>=t.w.fim;
+  const lin=(x)=>`${x.pos===1?(fechado?"🏆":"👑"):x.pos+"."} ${x.nome}: média ${fmtMed(x.med)} · ${x.mesas} jogos · ${x.pts} pts`;
+  const camp=l=>l.length?l.map(x=>x.nome).join(" e ")+` (média ${fmtMed(l[0].med)})`:"—";
+  let s=`*DOMINÓ SEOSP · CAMPEONATO DO MÊS*\n*${t.w.nome}*${fechado?" · encerrado":" · parcial"}\n`;
+  if(fechado)s+=`\n🏆 *Campeão da Libertadores:* ${camp(t.campLib)}\n🥈 *Campeão da Sul-Americana:* ${camp(t.campSul)}\n`;
+  s+=`\n*LIBERTADORES* (${LIB_MIN}+ jogos)\n${t.lib.length?t.lib.map(lin).join("\n"):"Ninguém chegou a "+LIB_MIN+" jogos."}\n`;
+  s+=`\n*SUL-AMERICANA* (${SUL_MIN} a ${LIB_MIN-1} jogos)\n${t.sul.length?t.sul.map(lin).join("\n"):"Ninguém nessa faixa."}\n`;
+  if(t.aq.length)s+=`\n_Em aquecimento:_ ${t.aq.map(x=>`${x.nome} (${x.mesas})`).join(", ")}\n`;
+  s+=`\nMédia = pontos ÷ jogos (mesas com vencedor). Regulamento na aba Camp. do Mês.\n${location.origin+location.pathname}#mes`;
+  return s;
+}
+async function copiarTextoMes(off){const txt=textoMes(off);try{await navigator.clipboard.writeText(txt);toast("Texto copiado. É só colar no WhatsApp.");}catch(e){openSheet({t:"texto",txt});}}
+/* ===================== FICHA DO JOGADOR ===================== */
+function fichaJog(id){
+  const j=byId("jogadores",id);const nome=j?j.nome:nomeJog(id);
+  const x=stats(0,Infinity).find(y=>y.id===id)||{mesas:0,vitorias:0,derrotas:0,pts:0,espN:0,secN:0,infTot:0,b:{},inf:{}};
+  const meses=[];for(let o=0;o>=-5;o--){const t=tabelaMes(o);const L=t.lib.find(y=>y.id===id),S=t.sul.find(y=>y.id===id),A=t.aq.find(y=>y.id===id);if(L||S||A)meses.push({t,o,div:L?"Libertadores":S?"Sul-Americana":"Aquecimento",y:L||S||A});}
+  const titulos=[];for(let o=-1;o>=-24;o--){const t=tabelaMes(o);if(t.campLib.some(y=>y.id===id))titulos.push("🏆 Libertadores · "+t.w.nome);if(t.campSul.some(y=>y.id===id))titulos.push("🥈 Sul-Americana · "+t.w.nome);}
+  const mesas=cache.partidas.filter(p=>[p.duplaA.j1,p.duplaA.j2,p.duplaB.j1,p.duplaB.j2].includes(id)).sort((a,b)=>b.criadoEm-a.criadoEm).slice(0,10);
+  const linhaM=p=>{const L=[p.duplaA.j1,p.duplaA.j2].includes(id)?"A":"B";const O=other(L);const st=computeState(p);const d=p["dupla"+L],o=p["dupla"+O];
+    const parc=[d.j1,d.j2].find(z=>z&&z!==id);const res=st.winner?(st.winner===L?`<span class="pill" style="background:#DCE8DA;color:var(--gd)">V</span>`:`<span class="pill" style="background:#F2D9C9;color:var(--tc)">D</span>`):`<span class="pill" style="background:#EEE">${p.status==="ativa"?"em jogo":"s/ venc."}</span>`;
+    return `<div class="match" data-open="${p.id}" style="cursor:pointer"><div class="grow"><b>${parc?"c/ "+esc(nomeJog(parc)):"—"}</b> × ${esc([o.j1,o.j2].filter(Boolean).map(nomeJog).join(" & ")||o.nome)}<div class="muted">${fmtData(p.criadoEm)} · ${st[L].pecas}×${st[O].pecas} peças</div></div>${res}</div>`;};
+  const chips=[];for(const [k,d] of Object.entries(BATIDAS))if(x.b[k])chips.push(`<span class="chip">${d.nome} ${x.b[k]}</span>`);
+  for(const [k,d] of Object.entries(INFR))if(x.inf[k])chips.push(`<span class="chip" style="color:var(--tc)"><b>${d.nome} ${x.inf[k]}</b></span>`);
+  return `<h3>${esc(nome.toUpperCase())}</h3>
+  <div class="sg" style="margin-bottom:10px"><div><b>${x.mesas}</b><span>Jogos</span></div><div><b>${x.vitorias}</b><span>Vitórias</span></div><div><b>${x.derrotas||0}</b><span>Derrotas</span></div><div><b>${x.pts}</b><span>Pontos</span></div><div><b>${x.mesas?fmtMed(x.pts/x.mesas):"–"}</b><span>Média</span></div><div><b>${x.mesas?Math.round(100*x.vitorias/x.mesas)+"%":"–"}</b><span>Aproveit.</span></div><div><b>${x.espN}</b><span>Especiais</span></div><div class="${x.infTot?"bad":""}"><b>${x.infTot}</b><span>Infrações</span></div></div>
+  <div class="grp" style="color:var(--gd)">TÍTULOS</div><div style="margin-bottom:10px">${titulos.length?titulos.map(t=>`<div>${esc(t)}</div>`).join(""):`<span class="muted">Nenhum título ainda.</span>`}</div>
+  <div class="grp" style="color:var(--gd)">CAMPEONATO DO MÊS</div>${meses.length?`<table class="tb" style="margin-bottom:10px"><thead><tr><th>Mês</th><th>Divisão</th><th>Pos.</th><th>J</th><th>MÉD</th></tr></thead><tbody>${meses.map(m=>`<tr><td class="n">${esc(m.t.w.nome)}</td><td>${m.div}</td><td>${m.y.pos?m.y.pos+"º":"–"}</td><td>${m.y.mesas}</td><td class="p">${fmtMed(m.y.med)}</td></tr>`).join("")}</tbody></table>`:`<p class="muted">Sem jogos válidos nos últimos meses.</p>`}
+  <div class="grp" style="color:var(--gd)">BATIDAS E INFRAÇÕES (HISTÓRICO)</div><div class="chips" style="margin-bottom:10px">${chips.join("")||`<span class="muted">Nada registrado.</span>`}</div>
+  <div class="grp" style="color:var(--gd)">ÚLTIMAS MESAS</div><div>${mesas.length?mesas.map(linhaM).join(""):`<p class="muted">Nenhuma mesa.</p>`}</div>
+  <div class="row" style="margin-top:14px"><button class="btn ghost grow" data-act="fecharSheet">Fechar</button><button class="btn tc grow" data-avj="${esc(nome)}">+ Lançamento avulso</button></div>`;
+}
 /* ===================== CAMPEONATO DO MÊS EM IMAGEM ===================== */
 async function imgMensal(){
   try{await document.fonts.ready;}catch(e){}
@@ -1146,7 +1205,7 @@ async function imgMensal(){
   if(t.aq.length){g.fillStyle=MU;g.font="700 24px Montserrat, sans-serif";g.fillText(`EM AQUECIMENTO · menos de ${SUL_MIN} jogos`,60,y+40);
     g.font="400 24px 'Source Sans 3', sans-serif";g.fillStyle=TX;g.fillText(txtFit(g,t.aq.map(x=>`${x.nome} (${x.mesas})`).join(" · "),W-120),60,y+82);y+=150;}
   y+=10;g.fillStyle=GO;g.fillRect(50,y,W-100,2);
-  g.fillStyle=MU;g.font="400 20px 'Source Sans 3', sans-serif";g.fillText("MÉDIA = pontos ÷ jogos no mês (só mesas) · desempate: pts, vit., esp., secas, infr., confronto direto",60,y+40);
+  g.fillStyle=MU;g.font="400 20px 'Source Sans 3', sans-serif";g.fillText("MÉDIA = pontos ÷ jogos no mês (mesas com vencedor) · desempate: pts, vit., esp., secas, infr., confronto direto",60,y+40);
   g.fillText("Placar Oficial · Lei nº 0608/2026 · Decreto nº 001/2026",60,y+78);
   g.textAlign="right";g.fillStyle=GO;g.font="700 26px Cinzel, Georgia, serif";g.fillText("Mão de ferro",W-60,y+78);g.textAlign="left";
   const HF=Math.min(H,y+130);const out=document.createElement("canvas");out.width=W;out.height=HF;const o=out.getContext("2d");o.drawImage(c,0,0);o.strokeStyle=GO;o.lineWidth=3;o.strokeRect(22,22,W-44,HF-44);
@@ -1463,7 +1522,7 @@ function vRegras(){
   <h4>LUSTRADO (MODO INDIVIDUAL)</h4><p>Cada um joga por si, normalmente em 3. Na sua vez, se a soma das pontas da mesa der <b>5 ou múltiplo de 5</b>, você marca esse valor (5, 10, 15…). Quem bate, ou vence o fechamento, soma os pontos que sobraram na mão dos adversários, <b>arredondados para baixo ao múltiplo de 5</b>. Vence quem atingir a meta primeiro ou, sem meta, quem tiver mais pontos ao encerrar. Regras do lustrado variam de mesa para mesa: combinem antes.</p>
   <h4>BOAS PRÁTICAS</h4><p>Registre cada mesa de um aparelho por vez. Errou? Use “Desfazer último”. Casos omissos: maioria dos presentes, mínimo de 3 (Art. 26).</p>
   </div>
-  <h2>MODO PRESIDENTE</h2><div class="card">${admin?`<p style="margin:0 0 10px"><b>🔓 Ativo neste aparelho.</b> Aparecem os botões de excluir mesas, jogadas, lustrados, lançamentos avulsos e campeonatos.</p><button class="btn ghost" data-act="adminSair">Sair do modo presidente</button><button class="btn sm" style="margin-left:8px;background:#8A6A1F" data-act="importar">Importar dados do placar antigo</button>`:`<p class="muted" style="margin:0 0 8px">Exclusão de resultados, só para a Presidência.</p><div class="row"><input type="password" inputmode="numeric" id="pin" placeholder="Senha" maxlength="12" class="grow" autocomplete="off"><button class="btn" data-act="adminEntrar">Entrar</button></div>`}</div>`;
+  <h2>MODO PRESIDENTE</h2><div class="card">${admin?`<p style="margin:0 0 10px"><b>🔓 Ativo neste aparelho.</b> Aparecem os botões de excluir mesas, jogadas, lustrados, lançamentos avulsos e campeonatos.</p><button class="btn ghost" data-act="adminSair">Sair do modo presidente</button><button class="btn sm" style="margin-left:8px;background:#8A6A1F" data-act="importar">Importar dados do placar antigo</button><button class="btn gold sm" style="width:100%;margin-top:10px" data-act="backup">💾 Baixar backup completo (faça todo dia 1º)</button>`:`<p class="muted" style="margin:0 0 8px">Exclusão de resultados, só para a Presidência.</p><div class="row"><input type="password" inputmode="numeric" id="pin" placeholder="Senha" maxlength="12" class="grow" autocomplete="off"><button class="btn" data-act="adminEntrar">Entrar</button></div>`}</div>`;
 }
 
 /* ===================== INÍCIO ===================== */
