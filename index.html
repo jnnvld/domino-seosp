@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--gd:#1E3A2A;--gd2:#2A4D38;--go:#B8892B;--gl:#D9B45A;--iv:#FBF6EA;--pn:#F4ECD8;--tc:#A84B2A;--oc:#C9962B;--tx:#2E2218;--mu:#6B5A48;--ln:#E3D3AE}
+:root{--got:#7A5A14;--og:#B8892B;--gd:#1E3A2A;--gd2:#2A4D38;--go:#B8892B;--gl:#D9B45A;--iv:#FBF6EA;--pn:#F4ECD8;--tc:#A84B2A;--oc:#C9962B;--tx:#2E2218;--mu:#6B5A48;--ln:#E3D3AE}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--pn);color:var(--tx);font-family:'Source Sans 3',system-ui,sans-serif;font-size:16px}
 button,input,select{font:inherit;color:inherit}
@@ -28,7 +28,7 @@ header .t2{font-family:Montserrat,sans-serif;font-size:10.5px;letter-spacing:2.5
 #sync{margin-left:auto;font-size:12px;color:var(--gl);text-align:right}
 main{max-width:720px;margin:0 auto;padding:14px 14px calc(96px + env(safe-area-inset-bottom))}
 nav{position:fixed;left:0;right:0;bottom:0;background:var(--gd);border-top:3px solid var(--go);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:6}
-nav a{flex:1;min-width:0;text-align:center;color:#CFC3A5;text-decoration:none;padding:9px 1px 8px;font-family:Montserrat,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.3px;line-height:1.15;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:56px}
+nav a{flex:1;min-width:0;text-align:center;color:#CFC3A5;text-decoration:none;padding:9px 1px 8px;font-family:Montserrat,sans-serif;font-size:11.5px;font-weight:700;letter-spacing:.2px;line-height:1.15;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:56px}
 nav a svg{width:22px;height:22px}
 nav a.on{color:var(--gl)}
 h2{font-family:Montserrat,sans-serif;font-size:13px;letter-spacing:2.5px;color:var(--gd);margin:18px 0 10px;display:flex;align-items:center;gap:10px}
@@ -36,17 +36,21 @@ h2::after{content:"";flex:1;height:1px;background:var(--go)}
 h2:first-child{margin-top:4px}
 .card{background:var(--iv);border:1px solid var(--ln);border-radius:12px;padding:14px;margin-bottom:12px}
 .btn{border:0;border-radius:10px;padding:12px 16px;min-height:46px;font-family:Montserrat,sans-serif;font-weight:700;font-size:14px;letter-spacing:.5px;cursor:pointer;background:var(--gd);color:var(--iv)}
-.btn.gold{background:var(--go);color:#fff}
+.btn.gold{background:var(--og);color:#2E2218}
 .btn.tc{background:var(--tc);color:#fff}
 .btn.ghost{background:transparent;color:var(--gd);border:1.5px solid var(--gd)}
-.btn.sm{min-height:38px;padding:8px 12px;font-size:12.5px}
+.btn.sm{min-height:44px;padding:8px 14px;font-size:13.5px}
 .btn:disabled{opacity:.45}
 .row{display:flex;gap:10px;align-items:center}
 .wrap{flex-wrap:wrap}
 .grow{flex:1;min-width:0}
 label.f{display:block;font-size:13px;font-weight:700;color:var(--mu);margin:10px 0 4px}
 input[type=text],select{width:100%;padding:11px 12px;border:1.5px solid var(--ln);border-radius:10px;background:#fff;min-height:46px}
-input:focus,select:focus{outline:2px solid var(--go);border-color:var(--go)}
+input:focus,select:focus{outline:2px solid var(--og);border-color:var(--og)}
+summary{padding:10px 0;min-height:24px;cursor:pointer}
+input,select{min-height:44px;box-sizing:border-box}
+.btn.sm{min-width:44px}
+button:focus-visible,a:focus-visible,summary:focus-visible,[data-ficha]:focus-visible,[data-extrato]:focus-visible{outline:3px solid var(--og);outline-offset:2px}
 .muted{color:var(--mu);font-size:13.5px}
 .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:700;font-family:Montserrat,sans-serif;letter-spacing:.3px}
 .banner{border-radius:10px;padding:10px 12px;font-weight:700;margin-bottom:12px;display:flex;gap:8px;align-items:center}
@@ -74,7 +78,7 @@ input:focus,select:focus{outline:2px solid var(--go);border-color:var(--go)}
 .log{list-style:none;margin:0;padding:0}
 .log li{display:flex;gap:10px;padding:9px 0;border-bottom:1px dotted #D9C9A8;font-size:14px;align-items:flex-start}
 .log li:last-child{border-bottom:0}
-.log .n{font-family:Montserrat,sans-serif;font-weight:800;color:var(--go);min-width:24px}
+.log .n{font-family:Montserrat,sans-serif;font-weight:800;color:var(--got);min-width:24px}
 .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto;margin-top:5px}
 /* sheet */
 .ov{position:fixed;inset:0;background:rgba(30,30,20,.5);z-index:20;display:flex;align-items:flex-end;justify-content:center}
@@ -84,14 +88,14 @@ input:focus,select:focus{outline:2px solid var(--go);border-color:var(--go)}
 .opt{border:1.5px solid var(--ln);background:#fff;border-radius:12px;padding:10px 12px;text-align:left;min-height:58px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
 .opt b{font-size:14.5px}
 .opt span{font-size:12px;color:var(--mu)}
-.opt.sel{border-color:var(--go);box-shadow:0 0 0 2px var(--go);background:#FFF9EA}
+.opt.sel{border-color:var(--got);box-shadow:0 0 0 2px var(--go);background:#FFF9EA}
 .opt.full{grid-column:1/-1}
 .grp{font-family:Montserrat,sans-serif;font-size:11.5px;font-weight:700;letter-spacing:1.5px;margin-top:12px}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th{font-family:Montserrat,sans-serif;font-size:11px;letter-spacing:1px;text-align:left;color:var(--gd);border-bottom:2px solid var(--gd);padding:7px 6px}
 td{padding:9px 6px;border-bottom:1px solid var(--ln)}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-.rank{font-family:Montserrat,sans-serif;font-weight:800;color:var(--go)}
+.rank{font-family:Montserrat,sans-serif;font-weight:800;color:var(--got)}
 .scroll{overflow-x:auto}
 .seg{display:flex;background:#E9DEC4;border-radius:10px;padding:3px;gap:3px}
 .seg button{flex:1;border:0;background:transparent;border-radius:8px;padding:9px 6px;font-weight:700;font-size:13px;min-height:40px;cursor:pointer}
@@ -99,7 +103,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));background:var(--tx);color:var(--iv);padding:10px 16px;border-radius:10px;font-size:14px;z-index:30;max-width:90vw}
 .match{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--ln)}
 .match:last-child{border-bottom:0}
-.rg{padding:0;margin-bottom:8px}.rg summary{padding:12px 14px;font-weight:700;color:var(--gd);cursor:pointer;list-style:none}.rg summary::after{content:"▸";float:right;color:var(--go)}.rg[open] summary::after{content:"▾"}.rg .rules{padding:0 14px 10px}
+.rg{padding:0;margin-bottom:8px}.rg summary{padding:12px 14px;font-weight:700;color:var(--gd);cursor:pointer;list-style:none}.rg summary::after{content:"▸";float:right;color:var(--got)}.rg[open] summary::after{content:"▾"}.rg .rules{padding:0 14px 10px}
 .gl p{margin:5px 0;font-size:14px}
 .gprot{margin-top:12px;padding-top:10px;border-top:1px solid var(--ln)}
 .doc{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--ln);color:var(--tx);text-decoration:none;font-size:20px}.doc:last-child{border-bottom:0}
@@ -118,7 +122,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .mc-row .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:15px;font-weight:600;color:var(--tx)}
 .mc-row.win .nm{font-weight:800;color:var(--gd)}
 .mc-row .sc{font-family:Montserrat,sans-serif;font-weight:800;font-size:20px;min-width:30px;text-align:right;color:var(--mu)}
-.mc-row.win .sc{color:var(--go)}
+.mc-row.win .sc{color:var(--got)}
 .dv{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:1px}
 .dv.lib{background:#1E3A2A;box-shadow:0 0 0 2px #D9B45A}
 .dv.sul{background:#5E7F4F}
@@ -129,7 +133,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .dvleg{display:flex;gap:14px;align-items:center;font-size:12.5px;margin:0 2px 8px;flex-wrap:wrap}
 .tb tr.rlib td:first-child{box-shadow:inset 4px 0 #D9B45A}
 .tb tr.rsul td:first-child{box-shadow:inset 4px 0 #5E7F4F}
-.vs{font-family:Montserrat,sans-serif;font-weight:800;font-size:12px;color:var(--go)}
+.vs{font-family:Montserrat,sans-serif;font-weight:800;font-size:12px;color:var(--got)}
 .rules p{margin:6px 0;font-size:14.5px;line-height:1.45}
 .rules h4{font-family:Montserrat,sans-serif;font-size:12px;letter-spacing:1.5px;margin:14px 0 4px;color:var(--gd)}
 .empty{text-align:center;padding:22px 10px;color:var(--mu)}
@@ -154,9 +158,9 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .pbtn b{font-size:16px;line-height:1.15}.pbtn span{font-size:11.5px;opacity:.85;font-family:Montserrat,sans-serif;font-weight:700;letter-spacing:1px}
 .pbtn.A{background:var(--gd)}.pbtn.B{background:var(--tc)}
 .tb{width:100%;border-collapse:collapse;font-size:13.5px}
-.tb th{font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:.5px;color:var(--mu);text-align:center;padding:6px 2px;border-bottom:2px solid var(--gd)}
+.tb th{font-family:Montserrat,sans-serif;font-size:11.5px;letter-spacing:.5px;color:var(--mu);text-align:center;padding:6px 2px;border-bottom:2px solid var(--gd)}
 .tb th:nth-child(2){text-align:left}
-.tb td{padding:9px 2px;border-bottom:1px solid var(--ln);text-align:center;font-variant-numeric:tabular-nums}
+.tb td{padding:12px 2px;border-bottom:1px solid var(--ln);text-align:center;font-variant-numeric:tabular-nums}
 .tb td.n{text-align:left;font-weight:700;line-height:1.2}
 .tb td.p{font-family:Montserrat,sans-serif;font-weight:800;font-size:15px;color:var(--gd)}
 .tb td.neg{color:var(--tc);font-weight:700}
@@ -170,9 +174,9 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .div.sul .hd{background:#5E7F4F;border-bottom:3px solid #B8892B}
 .div .lider{background:#FFF6DC}
 .div.br .hd{background:#2A4D38;border-bottom:3px solid #D9B45A}
-.aviso{position:relative;padding-right:38px!important}
+.aviso{position:relative;padding-right:48px!important}
 .segc button{font-size:12.5px;padding-left:4px;padding-right:4px;white-space:nowrap}
-.xbtn{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(46,34,24,.08);color:var(--mu);font-size:13px;cursor:pointer;line-height:26px;padding:0}
+.xbtn{position:absolute;top:2px;right:2px;width:44px;height:44px;border-radius:50%;border:0;background:transparent;color:var(--mu);font-size:16px;cursor:pointer;line-height:44px;padding:0}
 .mt-r.zg{box-shadow:inset 4px 0 #D9B45A}.mt-r.zint{box-shadow:inset 4px 0 #5E7F4F}.mt-r.zmeio{box-shadow:inset 4px 0 #D8CBAA}.mt-r.zlan{box-shadow:inset 4px 0 #C9704A;background:#F7E1D5}
 .mt-r.zg+.mt-r.zint,.mt-r.zint+.mt-r.zmeio,.mt-r.zmeio+.mt-r.zlan,.mt-r.zg+.mt-r.zmeio,.mt-r.zint+.mt-r.zlan,.mt-r.zg+.mt-r.zlan{border-top:2px dashed #CDBB8F}
 .selos{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
@@ -183,7 +187,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .mt-r{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--ln);cursor:pointer}
 .mt-r:last-child{border-bottom:0}.mt-r:active{background:#F6EEDA}
 .mt-p{font-family:Montserrat,sans-serif;font-weight:800;color:var(--mu);min-width:30px;font-size:15px}
-.mt-r.lider .mt-p{color:var(--go)}
+.mt-r.lider .mt-p{color:var(--got)}
 .mt-n{flex:1;min-width:0;display:flex;flex-direction:column}
 .mt-n b{font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mt-c{font-size:12.5px;color:var(--gd);font-weight:700}
@@ -191,7 +195,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .mt-m{text-align:right;display:flex;flex-direction:column;align-items:flex-end}
 .mt-m b{font-family:Montserrat,sans-serif;font-size:22px;color:var(--gd);line-height:1}
 .mt-m span{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--mu);font-weight:700}
-.mt-go{color:var(--go);font-size:22px;font-weight:700}
+.mt-go{color:var(--got);font-size:22px;font-weight:700}
 .ex{background:var(--iv);border:1px solid var(--ln);border-radius:12px;padding:10px 12px}
 .ex-t{font-family:Montserrat,sans-serif;font-size:11px;letter-spacing:1.2px;font-weight:800;color:var(--gd);margin-bottom:6px}
 .ex-l{display:flex;justify-content:space-between;padding:4px 0;font-size:14.5px;border-bottom:1px dotted var(--ln)}
@@ -262,7 +266,9 @@ const DECRETO=new Date("2026-11-18T00:00:00-03:00").getTime();
 const PTS=[0,3,5];
 const other=s=>s==="A"?"B":"A";
 
-function computeState(p){
+const _csMemo=new WeakMap();
+function computeState(p){if(p&&typeof p==="object"){let r=_csMemo.get(p);if(!r){r=_computeState(p);_csMemo.set(p,r);}return r;}return _computeState(p);}
+function _computeState(p){
   // Regras (18/11/2026, revisadas): peça ganha com vitória DIRETA (ou por infração) mantém os pontos;
   // peça ganha com vitória SIMPLES (5 pts + seca, ou decisiva 3×3 vencida na seca) zera o jogo.
   // p.regra==="v1": mesa encerrada antes da revisão, mantida como foi homologada.
@@ -338,7 +344,7 @@ async function connect(){
   try{if(!window.firebase)throw new Error("sem firebase");firebase.initializeApp(firebaseConfig);db=firebase.firestore();try{await db.enablePersistence({synchronizeTabs:true});}catch(e){console.warn("persistência offline indisponível",e&&e.code);}
     try{firebase.auth().onAuthStateChanged(u=>{gUser=u;if(u&&u.email&&u.email===presEmail()){admin=true;try{sessionStorage.setItem("seospAdmin","1");}catch(e){}}render();});firebase.auth().getRedirectResult().catch(e=>console.warn(e));}catch(e){console.warn("auth indisponível",e);}}catch(e){db=null;sync.textContent="sem conexão (não salva)";render();return;}
   const timer=setTimeout(()=>{if(!live)sync.innerHTML=offline()?"📴 sem internet<br><small>lances salvos no celular</small>":"conectando…";},10000);
-  const subs={jogadores:db.collection("jogadores"),duplas:db.collection("duplas"),partidas:db.collection("partidas").orderBy("criadoEm","desc").limit(1000),campeonatos:db.collection("campeonatos").orderBy("criadoEm","desc").limit(200),fila:db.collection("fila"),avulsos:db.collection("avulsos").orderBy("t","desc").limit(1000),lustrados:db.collection("lustrados").orderBy("criadoEm","desc").limit(500)};
+  const subs={jogadores:db.collection("jogadores"),duplas:db.collection("duplas"),partidas:db.collection("partidas").orderBy("criadoEm","desc"),campeonatos:db.collection("campeonatos").orderBy("criadoEm","desc"),fila:db.collection("fila"),avulsos:db.collection("avulsos").orderBy("t","desc"),lustrados:db.collection("lustrados").orderBy("criadoEm","desc")};
   for(const [col,q] of Object.entries(subs)){
     q.onSnapshot({includeMetadataChanges:true},snap=>{
       const mudou=snap.docChanges().length>0||!carregado[col];carregado[col]=true;
@@ -479,7 +485,7 @@ async function adminEntrar(){
   if(hex!==ADMIN_HASH){toast("Senha incorreta.");if(i)i.value="";return;}
   admin=true;try{sessionStorage.setItem("seospAdmin","1");}catch(e){}render();toast("Modo presidente ativo.");
 }let view="mesa",curPartida=null,sheet=null,rankFiltro="decreto",rankOrdem="pts",rankCrit="pts",curCamp=null;
-const VIEWS=[["mesa","MESA"],["mes","CAMP. DO MÊS"],["rank","ESTATÍSTICAS"],["camp","TORNEIOS"],["regras","REGRAS"]];
+const VIEWS=[["mesa","MESA"],["mes","MÊS"],["rank","RANKING"],["camp","TORNEIOS"],["regras","REGRAS"]];
 function go(v){view=v;sheet=null;if(location.hash!=="#"+v)history.replaceState(null,"","#"+v);render();window.scrollTo(0,0);}
 window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(VIEWS.some(x=>x[0]===h)&&h!==view){view=h;render();}});
 
@@ -487,11 +493,15 @@ function render(){
   normalizar();
   document.getElementById("nav").innerHTML=VIEWS.map(([k,l])=>`<a href="#${k}" class="${view===k?"on":""}" data-go="${k}">${svg(k)}${l}</a>`).join("");
   const app=document.getElementById("app");
+  const keep={};app.querySelectorAll("input[id],textarea[id],select[id]").forEach(i=>{if(i.type!=="checkbox"&&i.type!=="radio")keep[i.id]=i.value;});
+  const ae=document.activeElement;const foco=ae&&app.contains(ae)&&ae.id?{id:ae.id,a:ae.selectionStart,b:ae.selectionEnd}:null;
   if(view==="mesa")app.innerHTML=curLust&&byId("lustrados",curLust)?vLust(byId("lustrados",curLust)):curPartida&&byId("partidas",curPartida)?vPartida(byId("partidas",curPartida)):vMesas();
   else if(view==="rank")app.innerHTML=vRank();
   else if(view==="mes")app.innerHTML=vMensal();
   else if(view==="camp")app.innerHTML=curCamp&&byId("campeonatos",curCamp)?vCampDet(byId("campeonatos",curCamp)):vCamps();
   else app.innerHTML=vRegras();
+  for(const [id,v] of Object.entries(keep)){const i=document.getElementById(id);if(i&&app.contains(i)&&v&&!i.value)i.value=v;}
+  if(foco){const i=document.getElementById(foco.id);if(i&&app.contains(i)){i.focus({preventScroll:true});try{if(foco.a!=null)i.setSelectionRange(foco.a,foco.b);}catch(e){}}}
   renderSheet();
 }
 
@@ -650,19 +660,32 @@ async function salvarEvento(){
   const p=byId("partidas",curPartida);const s=sheet;if(!p||s.ji==null||!s.tipo)return;
   const jogs=opcoesEvento(p);if(!jogs[s.ji])return;
   const [lado,jog]=jogs[s.ji];
-  const ev={k:s.t==="batida"?"batida":"infr",tipo:s.tipo,lado,jog,t:Date.now()};
+  const ev={k:s.t==="batida"?"batida":"infr",tipo:s.tipo,lado,jog,t:Date.now(),por:autor()||"?"};
   const eventos=[...(p.eventos||[]),ev];
   closeSheet();
   await salvarPartida({...p,eventos});
   const d=ev.k==="batida"?BATIDAS[ev.tipo]:INFR[ev.tipo];
   toast(`${d.nome} registrado.`);
 }
+const canon=o=>JSON.stringify(o,Object.keys(o||{}).sort());
 async function salvarPartida(p){
   const st=computeState(p);
   const out={...p};delete out.id;
   out.vencedor=st.winner||null;
   out.placar={A:{s:st.A.s,pecas:st.A.pecas},B:{s:st.B.s,pecas:st.B.pecas}};
-  await put("partidas",p.id,out);
+  const old=byId("partidas",p.id);
+  if(!db||!old)return put("partidas",p.id,out);
+  // Atualização atômica: só os lances novos/removidos são enviados (dois celulares na mesma mesa não se apagam)
+  const FV=firebase.firestore.FieldValue;const kOld=new Set((old.eventos||[]).map(canon)),kNew=new Set((p.eventos||[]).map(canon));
+  const add=(p.eventos||[]).filter(e=>!kOld.has(canon(e))),rem=(old.eventos||[]).filter(e=>!kNew.has(canon(e)));
+  const dOld=new Set((old.desfeitos||[]).map(canon)),dAdd=(p.desfeitos||[]).filter(e=>!dOld.has(canon(e)));
+  const campos={...out};delete campos.eventos;delete campos.desfeitos;
+  if(add.length)campos.eventos=FV.arrayUnion(...add);
+  if(dAdd.length)campos.desfeitos=FV.arrayUnion(...dAdd);
+  const ref=db.collection("partidas").doc(p.id);
+  const run=async()=>{if(rem.length)await ref.update({eventos:FV.arrayRemove(...rem)});await ref.update(campos);};
+  if(offline()){run().catch(e=>console.error(e));return;}
+  return enqueue("partidas/"+p.id,async()=>{try{await run();}catch(e){if(e&&e.code==="unavailable"){await new Promise(r=>setTimeout(r,800));await run();}else throw e;}});
 }
 
 /* ===================== AÇÕES ===================== */
@@ -905,14 +928,15 @@ function zonasBR(N){
   return {faixas:F,de:i=>{for(const f of F)if(f.n&&i+1>=f.ini&&i+1<=f.fim)return f.k;return "";}};
 }
 function vRank(){
-  let h=`<h2>ESTATÍSTICAS</h2><p class="muted" style="margin:-4px 2px 10px;font-size:13px">Histórico geral, sem disputa de título. As competições estão em Camp. do Mês.</p>
+  let h=`<h2>RANKING GERAL</h2><p class="muted" style="margin:-4px 2px 10px;font-size:13px">Histórico, sem disputa de título. As competições do mês estão na aba Mês.</p>
   <div class="seg" style="margin-bottom:8px"><button data-rk="jog" class="${rankAba==="jog"?"on":""}">👤 Jogadores</button><button data-rk="dup" class="${rankAba==="dup"?"on":""}">👥 Duplas</button></div>
   <div class="seg" style="margin-bottom:8px"><button data-filtro="hoje" class="${rankFiltro==="hoje"?"on":""}">Hoje</button><button data-filtro="decreto" class="${rankFiltro==="decreto"?"on":""}">Desde 18/11</button><button data-filtro="tudo" class="${rankFiltro==="tudo"?"on":""}">Tudo</button></div>
-`;
-  rankCrit="pts";const porMed=false;const comMed=x=>({...x,med:x.mesas?x.pts/x.mesas:0});
+
+  <div class="seg" style="margin-bottom:8px"><button data-rkc="pts" class="${rankCrit==="pts"?"on":""}">Por pontos</button><button data-rkc="med" class="${rankCrit==="med"?"on":""}">Por média (${LIB_MIN}+ mesas)</button></div>`;
+  const porMed=rankCrit==="med";const comMed=x=>({...x,med:x.mesas?x.pts/x.mesas:0});
   const aplica=(lista,ordBase)=>{if(!porMed)return {lista,fora:0};const ok=lista.filter(x=>x.mesas>=LIB_MIN).sort((a,b)=>b.med-a.med||ordBase(a,b));return {lista:ok,fora:lista.length-ok.length};};
   const notaMed=f=>porMed?`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">Ordenado pela média (pontos ÷ jogos), só com ${LIB_MIN} jogos ou mais no período.${f?` ${f} fora por ter menos jogos.`:""} Empate na média: critérios normais.</p>`:"";
-  const leg=`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">M: mesas. PTS: pontos do campeonato (mesa vencida +${PONTO_VIT}; batida especial +2/+3; seca +1; assistência +${PONTO_ASS}; infração −1 a −5). ASS: assistências. MÉD: pts ÷ mesas. Inclui avulsos. <a href="#regras" data-go="regras">Tabela completa</a></p>`;
+  const leg=`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">M: mesas. PTS: pontos do campeonato (mesa vencida +${PONTO_VIT}; batida especial +2/+3; seca +1; assistência +${PONTO_ASS}; infração −1 a −5). ASS: assistências. MÉD: pts ÷ mesas. Inclui avulsos. <a href="#regras" data-go="regras" style="display:inline-block;padding:12px 4px">Tabela completa</a></p>`;
   if(rankAba==="dup"){
     const R=aplica(statsDuplas().map(comMed),(a,b)=>ordemCamp(a,b)||b.pecas-a.pecas);const L=R.lista;
     h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Dupla</th><th>PTS</th><th>MÉD</th><th>M</th><th>V</th><th>D</th><th>PÇ</th><th>ESP</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""}"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas}</td><td>${x.pecas}</td><td>${x.espN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+notaMed(R.fora)+leg:`<div class="card empty">${porMed?`Nenhuma dupla com ${LIB_MIN} jogos ou mais nesse período.`:"Nenhuma dupla completa jogou nesse período."}</div>`;
@@ -1048,7 +1072,7 @@ function regMensal(){return `
   <p><b>Art. 1º Temporada.</b> O Campeonato do Mês começa às 00h do dia 1º e termina às 23h59 do último dia do mês (horário da Bahia). Vale a data em que a mesa foi aberta no Placar Oficial. No dia 1º seguinte as tabelas recomeçam; as mesas continuam no histórico.</p>
   <p><b>Art. 2º Competições.</b> São disputadas três competições no mês: I – <b>Brasileirão</b>, com todos os jogadores, pelo total de pontos; II – <b>Libertadores</b>, com quem tem ${LIB_MIN} mesas ou mais, pela média; III – <b>Sul-Americana</b>, com quem tem de ${SUL_MIN} a ${LIB_MIN-1} mesas, pela média. Com menos de ${SUL_MIN} mesas, o jogador fica <b>em aquecimento</b> na Libertadores/Sul-Americana, mas disputa o Brasileirão.</p>
   <p><b>Art. 3º Mesa que conta.</b> I – No Brasileirão: toda mesa com pelo menos uma jogada lançada, com ou sem peça. II – Na Libertadores e na Sul-Americana: só a mesa em que <b>pelo menos uma peça</b> foi conquistada (por vitória direta, batida seca a partir de 5, rodada decisiva ou infração), mesmo que ninguém a encerre; a mesa que parou antes da primeira peça não conta, nem os pontos lançados nela.</p>
-  <p><b>Art. 4º Pontos do campeonato (PTS).</b> Não se confundem com os pontos do placar da mesa (3 e 5, Art. 3º da Lei). Valem: mesa vencida +${PONTO_VIT}; batida especial +2 (lasquinez preso e buchada dobrada +3); batida seca +1; <b>assistência +${PONTO_ASS}</b> para o parceiro de quem bateu, em qualquer batida, exceto Fechou–Chorou; infrações de −1 a −5. Lançamentos avulsos e o Lustrado <b>não</b> contam no Campeonato do Mês (aparecem só em Estatísticas).</p>
+  <p><b>Art. 4º Pontos do campeonato (PTS).</b> Não se confundem com os pontos do placar da mesa (3 e 5, Art. 3º da Lei). Valem: mesa vencida +${PONTO_VIT}; batida especial +2 (lasquinez preso e buchada dobrada +3); batida seca +1; <b>assistência +${PONTO_ASS}</b> para o parceiro de quem bateu, em qualquer batida, exceto Fechou–Chorou; infrações de −1 a −5. Lançamentos avulsos e o Lustrado <b>não</b> contam no Campeonato do Mês (aparecem só no Ranking geral).</p>
   <p><b>Art. 5º Média.</b> Na Libertadores e na Sul-Americana, a classificação é pela <b>média = pts ÷ mesas</b> no mês.</p>
   <p><b>Art. 6º Acesso.</b> Ao completar ${LIB_MIN} mesas, o jogador passa na hora para a Libertadores, levando a média que tem. A divisão final é a do encerramento do mês.</p>
   <p><b>Art. 7º Zonas do Brasileirão.</b> A tabela é dividida em proporção ao número de jogadores (a partir de 5): G (40% de cima; com 10 jogadores, G4 = 1º ao 4º), Intermediário (20% seguintes), Meio de tabela (o restante) e Lanterna (20% de baixo).</p>
@@ -1195,7 +1219,7 @@ function vFila(){
   const f=cache.fila;
   return `<h2>FILA DO “ZEROU”</h2><div class="card">
   <p class="muted" style="margin:0 0 8px">Quem já almoçou e pediu o “zerou”, por ordem de chegada. Os dois primeiros entram na próxima mesa.</p>
-  ${datalist()}<div class="row"><input type="text" id="filaNome" list="dlj" placeholder="Nome do jogador" maxlength="30" class="grow"><button class="btn sm" data-act="addFila">Entrar</button></div>
+  ${datalist()}<div class="row"><input type="text" id="filaNome" aria-label="Nome do jogador para a fila" list="dlj" placeholder="Nome do jogador" maxlength="30" class="grow"><button class="btn sm" data-act="addFila">Entrar</button></div>
   ${f.length?`<ul class="log" style="margin-top:8px">${f.map((x,i)=>`<li style="align-items:center"><span class="n">${i+1}º</span><span class="grow"><b>${esc(x.nome)}</b> <span class="muted">${new Date(x.t).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</span></span><button class="btn ghost sm" data-rmfila="${x.id}" aria-label="Tirar ${esc(x.nome)} da fila">Sair</button></li>`).join("")}</ul>`:`<div class="empty" style="padding:12px">Ninguém na fila.</div>`}</div>`;
 }
 async function addFila(){
@@ -1404,7 +1428,7 @@ function textoMes(off){
   s+=`\n*🏆 LIBERTADORES* (${LIB_MIN}+ mesas, média)\n${t.lib.length?t.lib.map(linM).join("\n"):"Ninguém chegou a "+LIB_MIN+" mesas."}\n`;
   s+=`\n*🥈 SUL-AMERICANA* (${SUL_MIN} a ${LIB_MIN-1} mesas, média)\n${t.sul.length?t.sul.map(linM).join("\n"):"Ninguém nessa faixa."}\n`;
   const SL=selosMes(off);if(SL.length)s+=`\n*SELOS DO MÊS*\n${SL.map(x=>`${x.ic} ${x.nome}: ${listaNomes(x.quem.map(q=>q.nome))} (${x.info})`).join("\n")}\n`;
-  s+=`\nPTS = pontos do campeonato. Média = pts ÷ mesas. Regulamento na aba Camp. do Mês.\n${location.origin+location.pathname}#mes`;
+  s+=`\nPTS = pontos do campeonato. Média = pts ÷ mesas. Regulamento na aba Mês.\n${location.origin+location.pathname}#mes`;
   return s;
 }
 async function copiarTextoMes(off){const txt=textoMes(off);try{await navigator.clipboard.writeText(txt);toast("Texto copiado. É só colar no WhatsApp.");}catch(e){openSheet({t:"texto",txt});}}
@@ -1821,7 +1845,7 @@ function vRegras(){
   <details class="card rg"><summary>⚠️ Infrações (Arts. 22 a 24-D)</summary><div class="rules"><p><b>Derrota imediata</b> (1 peça ao adversário; sem fila, passar com pedra vale 2 peças): passar com pedra na mão (22), gato (23), fingir que não tem e jogar (24), fraude (24-D).</p><p><b>3 pontos ao adversário</b> no placar da mesa, como uma vitória simples dele: colagem irregular (24-A, com advertência), esqueceu de jogar ou “passei” errado (24-B), sinais ao parceiro (24 §4).</p><p><b>Pedra marcada no sorteio</b> (24-C): o infrator perde o sorteio. Fica registrado, sem efeito no placar.</p><p><b>Registro oficial (Decreto nº 001/2026):</b> desde 18/11/2026 as infrações contam por jogador.</p></div></details>
   <details class="card rg"><summary>📊 Pontos do campeonato (PTS)</summary><div class="rules"><p>Mesa vencida <b>+${PONTO_VIT}</b> · Lasquinez, Buchada, Fechou com menor ponto, Folgando bucha <b>+2</b> · Lasquinez preso e Buchada dobrada <b>+3</b> · Batida seca e Fechamento forçado <b>+1</b> · Fechou–Chorou <b>−1</b>.</p><p><b>Assistência +${PONTO_ASS}:</b> em toda batida (exceto Fechou–Chorou), o parceiro de quem bateu ganha +${PONTO_ASS}, como a assistência no futebol. Vale para todo o histórico.</p><p><b>Vitória de mesa +${PONTO_VIT}</b> desde 20/11/2026 (antes +3), para que vencer a mesa seja a maior parte dos pontos. O histórico inteiro foi recalculado.</p><p>Infrações: fraude <b>−5</b>; passar com pedra, gato, fingir <b>−3</b>; colagem irregular, esqueceu de jogar, sinais <b>−2</b>; pedra marcada no sorteio <b>−1</b>.</p></div></details>
   <details class="card rg"><summary>🏆 Campeonato do Mês (Brasileirão, Libertadores, Sul-Americana)</summary><div class="rules">${regMensal()}</div></details>
-  <details class="card rg"><summary>📈 Estatísticas</summary><div class="rules"><p>Histórico geral, sem disputa de título, nos períodos Hoje, Desde 18/11 ou Tudo. Inclui lançamentos avulsos. Desempate: vitórias → especiais → secas → menos infrações → menos derrotas. Duplas: mesmos critérios e depois peças.</p></div></details>
+  <details class="card rg"><summary>📈 Ranking geral</summary><div class="rules"><p>Histórico geral, sem disputa de título, nos períodos Hoje, Desde 18/11 ou Tudo. Inclui lançamentos avulsos. Desempate: vitórias → especiais → secas → menos infrações → menos derrotas. Duplas: mesmos critérios e depois peças.</p></div></details>
   <details class="card rg"><summary>🎯 Lustrado (modo individual)</summary><div class="rules"><p>Cada um joga por si, normalmente em 3. Na sua vez, se a soma das pontas da mesa der <b>5 ou múltiplo de 5</b>, você marca esse valor (5, 10, 15…). Quem bate, ou vence o fechamento, soma os pontos que sobraram na mão dos adversários, <b>arredondados para baixo ao múltiplo de 5</b>. Vence quem atingir a meta primeiro ou, sem meta, quem tiver mais pontos ao encerrar. Regras do lustrado variam de mesa para mesa: combinem antes.</p></div></details>
   <details class="card rg"><summary>✅ Boas práticas</summary><div class="rules"><p>Registre cada mesa de um celular por vez. Errou? Use “Desfazer último” (fica registrado). Casos omissos: maioria dos presentes, mínimo de 3 (Art. 26).</p></div></details>
   <h2>DOCUMENTOS OFICIAIS</h2><div class="card docs">
@@ -1842,7 +1866,7 @@ function vRegras(){
   <p><b>2.</b> Em <b>Authentication › Settings › Authorized domains</b>, adicione <b>jnnvld.github.io</b>.</p>
   <p><b>3.</b> Em <b>Firestore Database › Rules</b>, apague tudo, cole as regras abaixo e toque em <b>Publish</b>.</p>
   <button class="btn gold sm" data-act="copiarRegras">📋 Copiar regras com ${esc(gUser.email)}</button>
-  <p class="muted" style="margin-top:8px">Depois disso, só quem entrar com este Google consegue excluir mesas, lançamentos, torneios e juntar jogadores. Lançar jogadas continua livre para todos.</p></div></details>`:`<p class="muted" style="margin:4px 0 8px">Entre com o seu Google para que as exclusões fiquem protegidas de verdade no banco de dados.</p><button class="btn sm" data-act="entrarGoogle">Entrar com Google</button>`}</div>`:`<p class="muted" style="margin:0 0 8px">Exclusão de resultados, só para a Presidência.</p><div class="row"><input type="password" inputmode="numeric" id="pin" placeholder="Senha" maxlength="12" class="grow" autocomplete="off"><button class="btn" data-act="adminEntrar">Entrar</button></div>`}</div>
+  <p class="muted" style="margin-top:8px">Depois disso, só quem entrar com este Google consegue excluir mesas, lançamentos, torneios e juntar jogadores. Lançar jogadas continua livre para todos.</p></div></details>`:`<p class="muted" style="margin:4px 0 8px">Entre com o seu Google para que as exclusões fiquem protegidas de verdade no banco de dados.</p><button class="btn sm" data-act="entrarGoogle">Entrar com Google</button>`}</div>`:`<p class="muted" style="margin:0 0 8px">Exclusão de resultados, só para a Presidência.</p><div class="row"><input type="password" inputmode="numeric" id="pin" aria-label="Senha do Presidente" placeholder="Senha" maxlength="12" class="grow" autocomplete="off"><button class="btn" data-act="adminEntrar">Entrar</button></div>`}</div>
   ${admin?`<h2>JOGADORES (CADASTRO)</h2><div class="card"><button class="btn sm" style="width:100%;margin-bottom:8px" data-act="novoJog">+ Novo jogador</button>${cache.jogadores.length?cache.jogadores.map(j=>`<div class="match"><div class="grow"><b>${esc(j.nome)}</b>${(j.apelidos||[]).length?`<div class="muted" style="font-size:12px">também: ${esc(j.apelidos.join(", "))}</div>`:""}</div><button class="btn ghost sm" data-ren="jogadores:${j.id}">Renomear</button><button class="btn ghost sm" data-merge="${j.id}">Juntar</button></div>`).join(""):`<div class="empty">Nenhum jogador.</div>`}<p class="muted" style="font-size:12.5px;margin:8px 0 0">Jogador novo também pode ser cadastrado por qualquer um na hora de montar a mesa.</p></div>`:""}`;
 }
 
