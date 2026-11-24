@@ -745,8 +745,10 @@ document.addEventListener("change",e=>{
   if(t.id==="rankOrdem"){rankOrdem=t.value;render();}
 });
 document.addEventListener("click",async e=>{
-  const el=e.target.closest("[data-fx],[data-comp-aba],[data-autor],[data-extrato],[data-ficha],[data-rkc],[data-campaba],[data-mes],[data-lance],[data-lt],[data-slot],[data-cj],[data-cdp],[data-rmdp],[data-ndp],[data-rk],[data-delev],[data-merge],[data-mto],[data-lsel],[data-lmeta],[data-lpts],[data-lopen],[data-lmaoi],[data-lout],[data-avn],[data-avc],[data-avj],[data-rmav],[data-esc],[data-rmfila],[data-act],[data-go],[data-open],[data-ji],[data-tipo],[data-modo],[data-filtro],[data-camp],[data-cdupla],[data-fmt],[data-jogar],[data-ren]");
+  const el=e.target.closest("[data-selo],[data-fx],[data-comp-aba],[data-autor],[data-extrato],[data-ficha],[data-rkc],[data-campaba],[data-mes],[data-lance],[data-lt],[data-slot],[data-cj],[data-cdp],[data-rmdp],[data-ndp],[data-rk],[data-delev],[data-merge],[data-mto],[data-lsel],[data-lmeta],[data-lpts],[data-lopen],[data-lmaoi],[data-lout],[data-avn],[data-avc],[data-avj],[data-rmav],[data-esc],[data-rmfila],[data-act],[data-go],[data-open],[data-ji],[data-tipo],[data-modo],[data-filtro],[data-camp],[data-cdupla],[data-fmt],[data-jogar],[data-ren]");
   if(!el)return;
+  if(el.dataset.selo!=null){const x=selosMes(mesOff)[+el.dataset.selo];if(!x)return;const ids=new Set(x.quem.map(q=>q.id));const rk=(x.rk||[]).slice(0,Math.max(5,ids.size+3));
+    openSheet({t:"info",titulo:x.ic+" "+x.nome.toUpperCase(),html:`<p><b>Recebeu:</b> ${listaNomes(x.quem.map(q=>esc(q.nome)))} — ${x.info}</p><p><b>Como funciona:</b> ${x.why||""}</p>${rk.length?`<p><b>Comparativo do mês:</b></p><ol style="padding-left:20px">${rk.map(r=>`<li style="margin:4px 0">${ids.has(r.id)?"🏆 <b>"+esc(r.nome)+"</b>":esc(r.nome)} — ${r.t}</li>`).join("")}</ol>`:""}`});return;}
   if(el.dataset.go){e.preventDefault();curPartida=null;curCamp=null;curLust=null;go(el.dataset.go);return;}
   if(el.dataset.open){curPartida=el.dataset.open;if(sheet){sheet=null;renderSheet();}if(view!=="mesa"){go("mesa");return;}render();window.scrollTo(0,0);return;}
   if(el.dataset.campaba){campAba=el.dataset.campaba;render();return;}
@@ -1177,7 +1179,7 @@ function vMensal(){
     h+=painel(t.lib,"lib",fechado);
     if(t.aq.length)h+=`<div class="card"><div class="grp" style="margin-top:0;color:var(--mu)">EM AQUECIMENTO · menos de ${SUL_MIN} mesas</div><div class="chips">${t.aq.map(x=>`<span class="chip">${esc(x.nome)} · ${x.mesas}, faltam ${SUL_MIN-x.mesas}</span>`).join("")}</div></div>`;}
   const SL=selosMes(mesOff);
-  if(SL.length)h+=`<h2>SELOS DO MÊS</h2><div class="selos">${SL.map(x=>`<div class="selo ${x.neg?"neg":""}"><div class="ic">${x.ic}</div><div><b>${x.nome}</b><span>${listaNomes(x.quem.map(q=>esc(q.nome)))}</span><small>${x.info}</small></div></div>`).join("")}</div>`;
+  if(SL.length)h+=`<h2>SELOS DO MÊS</h2><div class="selos">${SL.map((x,i)=>`<div class="selo ${x.neg?"neg":""}" data-selo="${i}" role="button" tabindex="0" style="cursor:pointer"><div class="ic">${x.ic}</div><div><b>${x.nome}</b><span>${listaNomes(x.quem.map(q=>esc(q.nome)))}</span><small>${x.info}</small><small style="color:var(--gd);font-weight:700">Toque para ver o porquê ›</small></div></div>`).join("")}</div>`;
   h+=`<details class="card" style="padding:10px 14px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📜 Regulamento do Campeonato do Mês</summary><div class="rules" style="margin-top:6px">${regMensal()}</div></details>`;
   const galeria=[];for(let o=-1;o>=-12;o--){const g=tabelaMes(o);if(g.br.length||g.lib.length||g.sul.length)galeria.push(g);}
   const cmp=(g,k)=>{const c=g["camp"+k[0].toUpperCase()+k.slice(1)];return c.length?c.map(x=>esc(x.nome)).join(" e ")+` (${k==="br"?c[0].pts+" pts":fmtMed(c[0].med)})`:"—";};
@@ -1542,25 +1544,25 @@ const listaNomes=a=>a.length<2?a.join(""):a.slice(0,-1).join(", ")+" e "+a[a.len
 function selosMes(off){
   const w=janelaMes(off);const L=stats(w.ini,w.fim,"jogada").filter(x=>x.mesas>0);const out=[];
   const top=(f,min=1)=>{const m=Math.max(0,...L.map(f));return m>=min?{m,quem:L.filter(x=>f(x)===m)}:null;};
-  const buch=top(x=>(x.b.buchada||0)+(x.b.buch_dobrada||0));if(buch)out.push({ic:"👑",nome:"Rei da Buchada",quem:buch.quem,info:buch.m+" buchada(s)"});
-  const elig=L.filter(x=>x.mesas>=SUL_MIN);if(elig.length){const mi=Math.min(...elig.map(x=>x.infTot));const g=elig.filter(x=>x.infTot===mi);const mj=Math.max(...g.map(x=>x.mesas));out.push({ic:"🧼",nome:"Mão Limpa",quem:g.filter(x=>x.mesas===mj),info:`${mi} infração(ões) em ${mj} mesas`});}
+  const buch=top(x=>(x.b.buchada||0)+(x.b.buch_dobrada||0));if(buch)out.push({ic:"👑",nome:"Rei da Buchada",quem:buch.quem,info:buch.m+" buchada(s)",why:"Quem mais bateu de buchada (simples ou dobrada) no mês.",rk:L.map(x=>({id:x.id,nome:x.nome,v:(x.b.buchada||0)+(x.b.buch_dobrada||0)})).sort((a,b)=>b.v-a.v).map(x=>({...x,t:x.v+" buchada(s)"}))});
+  const elig=L.filter(x=>x.mesas>=SUL_MIN);if(elig.length){const mi=Math.min(...elig.map(x=>x.infTot));const g=elig.filter(x=>x.infTot===mi);const mj=Math.max(...g.map(x=>x.mesas));out.push({ic:"🧼",nome:"Mão Limpa",quem:g.filter(x=>x.mesas===mj),info:`${mi} infração(ões) em ${mj} mesas`,why:`Menos infrações entre quem jogou ${SUL_MIN}+ mesas. Empate: quem jogou mais mesas.`,rk:[...elig].sort((a,b)=>a.infTot-b.infTot||b.mesas-a.mesas).map(x=>({id:x.id,nome:x.nome,t:`${x.infTot} infração(ões) · ${x.mesas} mesas`}))});}
   // maior sequência de vitórias (mesas com peça, em ordem)
   const seq={},best={};const ms=cache.partidas.filter(p=>p.criadoEm>=w.ini&&p.criadoEm<w.fim).sort((a,b)=>a.criadoEm-b.criadoEm);
   for(const p of ms){const st=computeState(p);if(!st.winner)continue;for(const L2 of ["A","B"])for(const j of [p["dupla"+L2].j1,p["dupla"+L2].j2]){if(!j)continue;seq[j]=L2===st.winner?(seq[j]||0)+1:0;best[j]=Math.max(best[j]||0,seq[j]);}}
-  const mb=Math.max(0,...Object.values(best));if(mb>=2)out.push({ic:"🔥",nome:"Maior Sequência",quem:Object.keys(best).filter(j=>best[j]===mb).map(j=>({id:j,nome:nomeJog(j)})),info:mb+" vitórias seguidas"});
+  const mb=Math.max(0,...Object.values(best));if(mb>=2)out.push({ic:"🔥",nome:"Maior Sequência",quem:Object.keys(best).filter(j=>best[j]===mb).map(j=>({id:j,nome:nomeJog(j)})),info:mb+" vitórias seguidas",why:"Maior número de mesas vencidas em seguida no mês, sem derrota no meio.",rk:Object.keys(best).sort((a,b)=>best[b]-best[a]).map(j=>({id:j,nome:nomeJog(j),t:best[j]+" vitória(s) seguida(s)"}))});
   // Assistente Nato: vitórias em que o parceiro deu a batida que fechou a mesa
   {const an={};for(const p of ms){const st=computeState(p);if(!st.winner)continue;const D=p["dupla"+st.winner];let prev=0,closer=null;
     (p.eventos||[]).forEach((e,i)=>{const tr=st.trace[i];if(!tr)return;const up=tr[st.winner].pecas>prev;prev=tr[st.winner].pecas;if(up&&e.k==="batida"&&(e.jog===D.j1||e.jog===D.j2))closer=e.jog;});
     if(!closer)continue;const a=closer===D.j1?D.j2:D.j1;if(!a)continue;const r=an[a]||(an[a]={v:0,parc:new Set()});r.v++;r.parc.add(closer);}
    const el=L.filter(x=>x.mesas>=LIB_MIN&&an[x.id]).map(x=>({id:x.id,nome:x.nome,v:an[x.id].v,np:an[x.id].parc.size,tx:an[x.id].v/x.mesas,mesas:x.mesas}));
    if(el.length){el.sort((a,b)=>b.tx-a.tx||b.np-a.np||b.v-a.v);const t=el[0];const g=el.filter(x=>Math.abs(x.tx-t.tx)<1e-9&&x.np===t.np&&x.v===t.v);
-    out.push({ic:"🤝",nome:"Assistente Nato",quem:g,info:`parceria que levou a dupla à vitória em ${t.v} de ${t.mesas} mesas (${Math.round(t.tx*100)}%) · com ${t.np} parceiro(s) diferente(s)`});}}
+    out.push({ic:"🤝",nome:"Assistente Nato",why:`Proporção de mesas em que a parceria levou a dupla à vitória (o parceiro deu a batida final), entre quem jogou ${LIB_MIN}+ mesas. Empate: mais parceiros diferentes, depois mais vitórias.`,rk:el.map(x=>({id:x.id,nome:x.nome,t:`${x.v} de ${x.mesas} mesas (${Math.round(x.tx*100)}%) · ${x.np} parceiro(s)`})),quem:g,info:`parceria que levou a dupla à vitória em ${t.v} de ${t.mesas} mesas (${Math.round(t.tx*100)}%) · com ${t.np} parceiro(s) diferente(s)`});}}
   // Rendimento de Ouro: metade % de vitórias, metade média de pontos (relativa ao melhor)
   {const el=L.filter(x=>x.mesas>=LIB_MIN&&!(x.inf.fraude>0)).map(x=>({...x,pv:x.vitorias/x.mesas*100,mp:pontuar(x)/x.mesas}));
    if(el.length){const mx=Math.max(...el.map(x=>x.mp));el.forEach(x=>x.nota=(x.pv+(mx>0?Math.max(0,x.mp)/mx*100:0))/2);
     el.sort((a,b)=>b.nota-a.nota||a.infTot-b.infTot||b.mesas-a.mesas);const t=el[0];const g=el.filter(x=>Math.abs(x.nota-t.nota)<1e-9&&x.infTot===t.infTot&&x.mesas===t.mesas);
-    out.push({ic:"🏅",nome:"Rendimento de Ouro",quem:g,info:`nota ${Math.round(t.nota)} · ${Math.round(t.pv)}% de vitórias · média ${t.mp.toFixed(2).replace(".",",")} pts/mesa`});}}
-  const gato=top(x=>x.inf.gato||0);if(gato)out.push({ic:"🐈",nome:"Gato do Mês",quem:gato.quem,info:gato.m+" gato(s)",neg:true});
+    out.push({ic:"🏅",nome:"Rendimento de Ouro",why:`Nota de 0 a 100: metade é a % de vitórias, metade é a média de pontos por mesa comparada à melhor do mês (a melhor vale 100). Só concorre quem jogou ${LIB_MIN}+ mesas e não teve fraude. Empate: menos infrações, depois mais mesas.`,rk:el.map(x=>({id:x.id,nome:x.nome,t:`nota ${Math.round(x.nota)} · ${Math.round(x.pv)}% vit. · ${x.mp.toFixed(2).replace(".",",")} pts/mesa`})),quem:g,info:`nota ${Math.round(t.nota)} · ${Math.round(t.pv)}% de vitórias · média ${t.mp.toFixed(2).replace(".",",")} pts/mesa`});}}
+  const gato=top(x=>x.inf.gato||0);if(gato)out.push({ic:"🐈",nome:"Gato do Mês",quem:gato.quem,info:gato.m+" gato(s)",neg:true,why:"Quem mais cometeu gato no mês.",rk:L.filter(x=>x.inf.gato).sort((a,b)=>b.inf.gato-a.inf.gato).map(x=>({id:x.id,nome:x.nome,t:x.inf.gato+" gato(s)"}))});
   return out;
 }
 /* ===================== CAMPEONATO DO MÊS EM IMAGEM ===================== */
