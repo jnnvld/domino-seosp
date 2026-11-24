@@ -15,7 +15,7 @@
 <meta name="apple-mobile-web-app-title" content="Dominó SEOSP">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Great+Vibes&family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--got:#7A6111;--og:#C9A227;--gd:#0E3B2E;--gd2:#1F6F54;--go:#C9A227;--gl:#E0C25A;--iv:#F8F1E4;--pn:#F2E8D8;--tc:#A84B2A;--oc:#C9A227;--tx:#15291F;--mu:#5F5646;--ln:#E2D5BC}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -48,6 +48,9 @@ header .t1{font-family:Cinzel,serif;font-size:20px;letter-spacing:2px;line-heigh
 .pn-lib .pn-r.lid{background:linear-gradient(90deg,rgba(224,194,90,.22),rgba(224,194,90,.04));border-radius:10px}.pn-sul .pn-r.lid{background:rgba(242,232,216,.12);border-radius:10px}
 .pn-v{padding:14px 6px;color:#D5E2D9}
 
+.pres{font-family:"Great Vibes",cursive!important;font-weight:400!important;font-size:1.45em!important;line-height:1;letter-spacing:.3px;background:linear-gradient(105deg,#6E5710,#B8921C 35%,#7A6111 60%,#A8861A);-webkit-background-clip:text;background-clip:text;color:transparent!important;padding-right:2px}
+.cbf-r .n b.pres,.pn-r .n b.pres,.tb .pres{font-size:1.28em!important}
+.pn .pres,.cbf-h .pres,header .pres{background:linear-gradient(105deg,#C9A227,#F6E7A8 45%,#E0C25A 70%,#C9A227);-webkit-background-clip:text;background-clip:text}
 .foil{background:linear-gradient(105deg,#9C7D14 0%,#E8CF6E 28%,#C9A227 46%,#F6E7A8 60%,#B8921C 78%,#E0C25A 100%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
 @media (prefers-reduced-motion:no-preference){.foil{animation:brilho 6s ease-in-out infinite}@keyframes brilho{0%,100%{background-position:0% 0}50%{background-position:100% 0}}}
 header{background:radial-gradient(120% 140% at 10% 0%,#1F6F54 0%,#0E3B2E 55%,#0A2E24 100%)!important;border-bottom:0!important;box-shadow:inset 0 -2px 0 #C9A227,0 6px 18px rgba(14,59,46,.18)}
@@ -535,6 +538,7 @@ function render(){
   else if(view==="camp")app.innerHTML=curCamp&&byId("campeonatos",curCamp)?vCampDet(byId("campeonatos",curCamp)):vCamps();
   else app.innerHTML=vRegras();
   for(const [id,v] of Object.entries(keep)){const i=document.getElementById(id);if(i&&app.contains(i)&&v&&!i.value)i.value=v;}
+  marcaPresidente(app);
   if(foco){const i=document.getElementById(foco.id);if(i&&app.contains(i)){i.focus({preventScroll:true});try{if(foco.a!=null)i.setSelectionRange(foco.a,foco.b);}catch(e){}}}
   renderSheet();
 }
@@ -639,6 +643,7 @@ function renderSheet(){
   else if(sheet.t==="info")h=`<h3>${esc(sheet.titulo||"")}</h3><div class="rules">${sheet.html}</div><button class="btn ghost" style="width:100%;margin-top:10px" data-act="fecharSheet">Fechar</button>`;
   else if(sheet.t==="texto")h=`<h3>COPIE O TEXTO</h3><textarea readonly style="width:100%;min-height:260px;border-radius:10px;border:1.5px solid var(--ln);padding:10px;font:inherit">${esc(sheet.txt)}</textarea><button class="btn ghost" style="width:100%;margin-top:10px" data-act="fecharSheet">Fechar</button>`;
   ov.innerHTML=`<div class="ov" data-act="fecharOv"><div class="sheet" role="dialog" aria-modal="true">${h}</div></div>`;
+  marcaPresidente(ov);
 }
 function datalist(){return `<datalist id="dlj">${cache.jogadores.map(j=>`<option value="${esc(j.nome)}">`).join("")}</datalist>`;}
 function escalar(n){const s=sheet;const k=SLOTS.find(k=>low(s[k])===low(n));if(k){s[k]="";s.foco=k;return;}
@@ -786,7 +791,7 @@ document.addEventListener("click",async e=>{
   if(el.dataset.fmt&&sheet){sheet.fmt=el.dataset.fmt;renderSheet();return;}
   if(el.dataset.cdupla&&sheet){const id=el.dataset.cdupla;sheet.sel=sheet.sel||[];sheet.sel=sheet.sel.includes(id)?sheet.sel.filter(x=>x!==id):[...sheet.sel,id];renderSheet();return;}
   if(el.dataset.jogar){jogarCamp(el.dataset.jogar);return;}
-  if(el.dataset.ren){const [col,id]=el.dataset.ren.split(":");const o=byId(col,id);openSheet({t:"renomear",col,id,nome:o?o.nome:""});return;}
+  if(el.dataset.ren){const [col,id]=el.dataset.ren.split(":");if(col==="jogadores"&&id===PRESIDENTE_ID&&!admin){toast("Só o Presidente pode alterar este nome (Modo presidente).");return;}const o=byId(col,id);openSheet({t:"renomear",col,id,nome:o?o.nome:""});return;}
   const a=el.dataset.act;
   if(a==="fecharOv"){if(e.target===el)closeSheet();return;}
   if(a==="fecharSheet")return closeSheet();
@@ -977,7 +982,7 @@ function vRank(){
   const porMed=rankCrit==="med";const comMed=x=>({...x,med:x.mesas?x.pts/x.mesas:0});
   const aplica=(lista,ordBase)=>{if(!porMed)return {lista,fora:0};const ok=lista.filter(x=>x.mesas>=LIB_MIN).sort((a,b)=>b.med-a.med||ordBase(a,b));return {lista:ok,fora:lista.length-ok.length};};
   const notaMed=f=>porMed?`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">Ordenado pela média (pontos ÷ jogos), só com ${LIB_MIN} jogos ou mais no período.${f?` ${f} fora por ter menos jogos.`:""} Empate na média: critérios normais.</p>`:"";
-  const leg=`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">M: mesas. PTS: pontos do campeonato (mesa vencida +${PONTO_VIT}; batida especial +2/+3; seca +1; assistência +${PONTO_ASS}; infração −1 a −5). ASS: assistências. MÉD: pts ÷ mesas. Inclui avulsos. <a href="#regras" data-go="regras" style="display:inline-block;padding:12px 4px">Tabela completa</a></p>`;
+  const leg=`<p class="muted" style="margin:6px 2px 0;font-size:12.5px">M: mesas. PTS: pontos do campeonato (mesa vencida +${PONTO_VIT}; seca que não fecha +1; especial +3, dobrada/preso +4; infração −1 a −5). ASS: assistências (só registro). MÉD: pts ÷ mesas. Inclui avulsos. <a href="#regras" data-go="regras" style="display:inline-block;padding:12px 4px">Tabela completa</a></p>`;
   if(rankAba==="dup"){
     const R=aplica(statsDuplas().map(comMed),(a,b)=>ordemCamp(a,b)||b.pecas-a.pecas);const L=R.lista;
     h+=L.length?`<div class="card" style="padding:4px 8px"><table class="tb"><thead><tr><th>#</th><th>Dupla</th><th>PTS</th><th>MÉD</th><th>M</th><th>V</th><th>D</th><th>PÇ</th><th>ESP</th><th>INF</th></tr></thead><tbody>${L.map((x,i)=>`<tr class="${i===0?"g1":""}"><td>${i+1}</td><td class="n">${esc(x.nome)}</td><td class="p">${x.pts}</td><td>${fmtMed(x.med)}</td><td>${x.mesas}</td><td>${x.vitorias}</td><td>${x.derrotas}</td><td>${x.pecas}</td><td>${x.espN}</td><td class="${x.infTot?"neg":""}">${x.infTot}</td></tr>`).join("")}</tbody></table></div>`+notaMed(R.fora)+leg:`<div class="card empty">${porMed?`Nenhuma dupla com ${LIB_MIN} jogos ou mais nesse período.`:"Nenhuma dupla completa jogou nesse período."}</div>`;
@@ -992,7 +997,7 @@ function vRank(){
   if(L.length)h+=`<details class="card" style="padding:10px 12px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📊 Estatísticas detalhadas por jogador</summary><div style="margin-top:10px">${L.map((x,i)=>cardJog(x,i,"Pontos",y=>y.pts)).join("")}</div></details>`;
   const av=cache.avulsos.slice(0,15);
   h+=`<h2>LANÇAMENTOS AVULSOS</h2><div class="card">${av.length?`<ul class="log">${av.map(a=>{const d=a.k==="batida"?BATIDAS[a.tipo]:a.k==="infr"?INFR[a.tipo]:{nome:"Vitória de mesa"};return `<li style="align-items:center"><span class="dot" style="background:${a.k==="infr"?"var(--tc)":"var(--gd)"};margin-top:0"></span><span class="grow"><b>${esc(nomeJog(a.jog))}</b> · ${esc(d?d.nome:a.tipo)}<br><span class="muted">${fmtData(a.t)}${a.obs?" · "+esc(a.obs):""}</span></span>${admin?`<button class="btn ghost sm" data-rmav="${a.id}">Apagar</button>`:""}</li>`;}).join("")}</ul>`:`<div class="empty" style="padding:12px">Nada lançado fora das mesas.</div>`}</div>`;
-  h+=`<details class="card" style="padding:4px 14px"><summary style="font-weight:700;color:var(--gd)">✏️ Jogadores · renomear</summary>${cache.jogadores.map(j=>`<div class="match"><div class="grow"><b>${esc(j.nome)}</b>${(j.apelidos||[]).length?`<div class="muted" style="font-size:12px">também: ${esc(j.apelidos.join(", "))}</div>`:""}</div><button class="btn ghost sm" data-ren="jogadores:${j.id}">Renomear</button></div>`).join("")}<p class="muted" style="font-size:12.5px;margin:8px 0">Qualquer um pode corrigir o nome. O nome antigo fica guardado como apelido. Juntar jogadores repetidos continua com o Presidente.</p></details>`;
+  h+=`<details class="card" style="padding:4px 14px"><summary style="font-weight:700;color:var(--gd)">✏️ Jogadores · renomear</summary>${cache.jogadores.map(j=>`<div class="match"><div class="grow"><b>${esc(j.nome)}</b>${(j.apelidos||[]).length?`<div class="muted" style="font-size:12px">também: ${esc(j.apelidos.join(", "))}</div>`:""}</div>${j.id===PRESIDENTE_ID&&!admin?`<span class="muted" style="font-size:13px;padding:0 6px" title="Só o Presidente altera">🔒 Presidente</span>`:`<button class="btn ghost sm" data-ren="jogadores:${j.id}">Renomear</button>`}</div>`).join("")}<p class="muted" style="font-size:12.5px;margin:8px 0">Qualquer um pode corrigir o nome. O nome antigo fica guardado como apelido. Juntar jogadores repetidos continua com o Presidente.</p></details>`;
   return h;
 }
 function chipsJog(x){
@@ -1005,9 +1010,13 @@ function chipsJog(x){
   return c.join("")||`<span class="muted">${x.mesas} mesa(s)</span>`;
 }
 function shRenomear(){return `<h3>RENOMEAR</h3><label class="f" for="rNome">Novo nome</label><input type="text" id="rNome" value="${esc(sheet.nome)}" maxlength="40"><div class="row" style="margin-top:14px"><button class="btn ghost grow" data-act="fecharSheet">Cancelar</button><button class="btn gold grow" data-act="salvarNome">SALVAR</button></div>`;}
+const PRESIDENTE_ID="mwl0h3q836bq76"; // Jonni Canetada: nome em fonte de assinatura; só ele (Modo presidente) altera
+function marcaPresidente(root){if(!root)return;const nm=nomeJog(PRESIDENTE_ID);if(!nm)return;
+  root.querySelectorAll("b,strong,span,td,div,small,li,a,option").forEach(el=>{if(el.children.length===0&&el.textContent.trim()===nm&&!el.classList.contains("pres")){el.classList.add("pres");el.title="Presidente";}});}
 async function salvarNome(){
   const s=sheet;const nome=(s.nome||"").trim();if(!nome){toast("Digite um nome.");return;}
   const o=byId(s.col,s.id);if(!o)return closeSheet();
+  if(s.col==="jogadores"&&s.id===PRESIDENTE_ID&&!admin){toast("Só o Presidente pode alterar este nome.");return closeSheet();}
   const out={...o,nome};delete out.id;
   if(s.col==="jogadores"&&o.nome&&low(o.nome)!==low(nome)){const ap=new Set([...(o.apelidos||[]),o.nome].filter(a=>low(a)!==low(nome)));out.apelidos=[...ap];}
   closeSheet();await put(s.col,s.id,out);
@@ -1122,7 +1131,7 @@ function tabelaBR(lista,fechado){
     h+=`<button class="cbf-r ${x.pos===1?"lid":""} ${z==="lan"?"lan":""} ${sep?"sep":""}" style="box-shadow:inset 4px 0 ${ZC[z]||"transparent"}" data-extrato="${x.id}" data-comp="br" aria-label="${esc(x.nome)}, ${x.pos}º, ${x.pts} pontos. Ver a conta">
     <span class="ps">${x.pos===1?(fechado?"🏆":x.pos):x.pos}</span><span class="n"><i class="av" style="background:${corJog(x.id)}" aria-hidden="true">${esc(iniciais(x.nome))}</i><b>${esc(x.nome)}</b></span><b class="pt">${x.pts}</b><span>${x.mesas}</span><span>${x.vitorias}</span><span>${x.derrotas||0}</span><span class="mu">${x.mesas?Math.round(100*x.vitorias/x.mesas):0}</span>${bolinhas(x.forma||[])}</button>`;});
   h+=`</div><div class="cbf-leg">${Z?Z.faixas.filter(f=>f.n).map(f=>`<span><i style="background:${ZC[f.k]}"></i>${f.nome} <span class="mu">${f.ini===f.fim?f.ini+"º":f.ini+"º–"+f.fim+"º"}</span></span>`).join(""):""}<span>${bolinhas(["V"])} vitória ${bolinhas(["D"])} derrota</span></div>
-  <p class="muted" style="margin:6px 4px 0;font-size:12.5px">PTS: pontos do campeonato (vitória +${PONTO_VIT}, batidas, assistências +${PONTO_ASS}, infrações). Toque no jogador para ver a conta.</p>`;
+  <p class="muted" style="margin:6px 4px 0;font-size:12.5px">PTS: pontos do campeonato (vitória +${PONTO_VIT}, batidas e bônus das especiais, infrações). Toque no jogador para ver a conta.</p>`;
   return h;
 }
 const t0G=l=>l.length&&l[0].G!=null?` (grupo ${fmtMed(l[0].G)})`:"";
@@ -1894,7 +1903,7 @@ function vRegras(){
   <p><b>Peça</b> — a conquista que vence a mesa: 3ª vitória simples ou qualquer vitória direta (Art. 3º, III e IV).</p>
   <p><b>Vitória simples</b> — batida seca, fechamento folgando bucha, fechamento forçado (Art. 8º). <b>Vitória direta</b> — lasquinez, lasquinez preso, buchada, buchada dobrada, fechou com menor ponto (Art. 7º).</p>
   <p><b>Rodada decisiva</b> — após 3×3 ou fechamento forçado: quem vencer leva a peça (Arts. 6º e 21).</p>
-  <p><b>Pontos do campeonato (PTS)</b> — o que soma nas tabelas (mesa vencida +${PONTO_VIT}, batidas, assistências, infrações). Não se confunde com os pontos 3 e 5 da mesa.</p>
+  <p><b>Pontos do campeonato (PTS)</b> — o que soma nas tabelas (mesa vencida +${PONTO_VIT}, batidas e bônus das especiais, infrações). Não se confunde com os pontos 3 e 5 da mesa.</p>
   <p><b>Média ponderada</b> — (pontos + ${PESO_POND} × média do grupo) ÷ (mesas + ${PESO_POND}), usada na Libertadores.</p></div>
   <details class="card rg"><summary>🁢 Como se ganha a mesa (Arts. 3º a 8º e 21)</summary><div class="rules"><p>1ª vitória simples = <b>3 pontos</b> · 2ª = <b>5 pontos</b> · 3ª = <b>1 peça</b>. Vitória direta = <b>1 peça na hora</b>. <b>Fechou–Chorou</b>: a peça vai para a dupla adversária.</p><p>Com 3×3, ou depois de um fechamento forçado, a próxima rodada é <b>decisiva</b>, com saída na bucha de ás.</p></div></details>
   <details class="card rg"><summary>🔁 Sem fila (Art. 9º)</summary><div class="rules"><p>Sem ninguém esperando e sem “zerou”, conta-se em peças: Lasquinez 1, preso 2, Buchada 1, dobrada 2, Fechamento 1, Fechou–Chorou 2 (para o adversário), Folgando bucha 1. Vitórias simples seguem 3 → 5 → 1 peça. A mesa só termina quando alguém encerra; vence quem tiver mais peças.</p></div></details>
