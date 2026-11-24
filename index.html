@@ -1548,6 +1548,13 @@ function selosMes(off){
   const seq={},best={};const ms=cache.partidas.filter(p=>p.criadoEm>=w.ini&&p.criadoEm<w.fim).sort((a,b)=>a.criadoEm-b.criadoEm);
   for(const p of ms){const st=computeState(p);if(!st.winner)continue;for(const L2 of ["A","B"])for(const j of [p["dupla"+L2].j1,p["dupla"+L2].j2]){if(!j)continue;seq[j]=L2===st.winner?(seq[j]||0)+1:0;best[j]=Math.max(best[j]||0,seq[j]);}}
   const mb=Math.max(0,...Object.values(best));if(mb>=2)out.push({ic:"🔥",nome:"Maior Sequência",quem:Object.keys(best).filter(j=>best[j]===mb).map(j=>({id:j,nome:nomeJog(j)})),info:mb+" vitórias seguidas"});
+  // Assistente Nato: vitórias em que o parceiro deu a batida que fechou a mesa
+  {const an={};for(const p of ms){const st=computeState(p);if(!st.winner)continue;const D=p["dupla"+st.winner];let prev=0,closer=null;
+    (p.eventos||[]).forEach((e,i)=>{const tr=st.trace[i];if(!tr)return;const up=tr[st.winner].pecas>prev;prev=tr[st.winner].pecas;if(up&&e.k==="batida"&&(e.jog===D.j1||e.jog===D.j2))closer=e.jog;});
+    if(!closer)continue;const a=closer===D.j1?D.j2:D.j1;if(!a)continue;const r=an[a]||(an[a]={v:0,parc:new Set()});r.v++;r.parc.add(closer);}
+   const el=L.filter(x=>x.mesas>=LIB_MIN&&an[x.id]).map(x=>({id:x.id,nome:x.nome,v:an[x.id].v,np:an[x.id].parc.size,tx:an[x.id].v/x.mesas,mesas:x.mesas}));
+   if(el.length){el.sort((a,b)=>b.tx-a.tx||b.np-a.np||b.v-a.v);const t=el[0];const g=el.filter(x=>Math.abs(x.tx-t.tx)<1e-9&&x.np===t.np&&x.v===t.v);
+    out.push({ic:"🤝",nome:"Assistente Nato",quem:g,info:`${t.v} vitórias sem bater em ${t.mesas} mesas (${Math.round(t.tx*100)}%) · com ${t.np} parceiro(s) diferente(s)`});}}
   const gato=top(x=>x.inf.gato||0);if(gato)out.push({ic:"🐈",nome:"Gato do Mês",quem:gato.quem,info:gato.m+" gato(s)",neg:true});
   return out;
 }
