@@ -305,6 +305,11 @@ const other=s=>s==="A"?"B":"A";
 
 const _csMemo=new WeakMap();
 function computeState(p){if(p&&typeof p==="object"){let r=_csMemo.get(p);if(!r){r=_computeState(p);_csMemo.set(p,r);}return r;}return _computeState(p);}
+// Peças da mesa: com fila = 1 (a vitória); sem fila = cada peça conta como uma mesa (vencedor e quem bateu)
+function pecasDe(p){const st=computeState(p);const out=[];const prev={A:0,B:0};
+  (p.eventos||[]).forEach((e,i)=>{const tr=st.trace[i];if(!tr)return;for(const S of ["A","B"])if(tr[S].pecas>prev[S]){const D=p["dupla"+S];out.push({w:S,closer:e.k==="batida"&&(e.jog===D.j1||e.jog===D.j2)?e.jog:null,t:e.t});}prev.A=tr.A.pecas;prev.B=tr.B.pecas;});
+  if(p.modo!=="semfila"){if(!st.winner)return [];const f=out.filter(x=>x.w===st.winner).pop();return [f||{w:st.winner,closer:null}];}
+  return out;}
 function _computeState(p){
   // Regras (18/11/2026, revisadas): peça ganha com vitória DIRETA (ou por infração) mantém os pontos;
   // peça ganha com vitória SIMPLES (5 pts + seca, ou decisiva 3×3 vencida na seca) zera o jogo.
@@ -917,8 +922,9 @@ function stats(ini=iniPeriodo(),fim=Infinity,modo=false){const soMesas=!!modo;
     const st=computeState(p);
     if(modo==="peca"&&(st.A.pecas+st.B.pecas)===0)continue;
     if(modo==="jogada"&&!(p.eventos||[]).length)continue;
-    for(const j of [p.duplaA.j1,p.duplaA.j2,p.duplaB.j1,p.duplaB.j2])if(em(p.criadoEm))get(j).mesas++;
-    if(st.winner&&em(p.criadoEm)){const d=p["dupla"+st.winner];get(d.j1).vitorias++;get(d.j2).vitorias++;const o=p["dupla"+other(st.winner)];get(o.j1).derrotas++;get(o.j2).derrotas++;}
+    const SF=p.modo==="semfila";const PZ=SF?pecasDe(p):null;const nM=SF?Math.max(PZ.length,1):1;
+    for(const j of [p.duplaA.j1,p.duplaA.j2,p.duplaB.j1,p.duplaB.j2])if(em(p.criadoEm))get(j).mesas+=nM;
+    if(em(p.criadoEm))for(const z of SF?PZ:(st.winner?[{w:st.winner}]:[])){const d=p["dupla"+z.w];get(d.j1).vitorias++;get(d.j2).vitorias++;const o=p["dupla"+other(z.w)];get(o.j1).derrotas++;get(o.j2).derrotas++;}
     let prevP={A:0,B:0};
     (p.eventos||[]).forEach((e,i)=>{const tr=st.trace[i];const Dj=[p.duplaA,p.duplaB].find(d=>d.j1===e.jog||d.j2===e.jog);const Lj=Dj===p.duplaA?"A":"B";
       const fechou=!!(tr&&tr[Lj].pecas>prevP[Lj]);if(tr)prevP={A:tr.A.pecas,B:tr.B.pecas};
@@ -1037,8 +1043,8 @@ function janelaMes(off){const d=new Date();const a=new Date(d.getFullYear(),d.ge
 function confronto(grupo,w){
   const ids=new Set(grupo.map(x=>x.id));const v={};grupo.forEach(x=>v[x.id]=0);
   for(const p of cache.partidas){if(!(p.criadoEm>=w.ini&&p.criadoEm<w.fim)||!(p.eventos||[]).length)continue;
-    const st=computeState(p);if(!st.winner)continue;const W=p["dupla"+st.winner],L=p["dupla"+other(st.winner)];
-    for(const a of [W.j1,W.j2])if(ids.has(a))for(const b of [L.j1,L.j2])if(ids.has(b))v[a]++;}
+    for(const z of pecasDe(p)){const W=p["dupla"+z.w],L=p["dupla"+other(z.w)];
+    for(const a of [W.j1,W.j2])if(ids.has(a))for(const b of [L.j1,L.j2])if(ids.has(b))v[a]++;}}
   return v;
 }
 function tabelaMes(off){
@@ -1522,9 +1528,10 @@ function fichaJog(id){
     return `<div class="match" data-open="${p.id}" style="cursor:pointer"><div class="grow"><b>${parc?"c/ "+esc(nomeJog(parc)):"—"}</b> × ${esc([o.j1,o.j2].filter(Boolean).map(nomeJog).join(" & ")||o.nome)}<div class="muted">${fmtData(p.criadoEm)} · ${st[L].pecas}×${st[O].pecas} peças</div></div>${res}</div>`;};
   const PA={},RV={};
   for(const p of cache.partidas){const st=computeState(p);const lados=["A","B"].filter(L=>[p["dupla"+L].j1,p["dupla"+L].j2].includes(id));if(!lados.length)continue;const L=lados[0],O=other(L);
-    const parc=[p["dupla"+L].j1,p["dupla"+L].j2].find(z=>z&&z!==id);const v=st.winner===L,dd=st.winner&&st.winner!==L;
-    if(parc){const r=PA[parc]||(PA[parc]={J:0,V:0,D:0});r.J++;if(v)r.V++;if(dd)r.D++;}
-    for(const z of [p["dupla"+O].j1,p["dupla"+O].j2])if(z){const r=RV[z]||(RV[z]={J:0,V:0,D:0});r.J++;if(v)r.V++;if(dd)r.D++;}}
+    const parc=[p["dupla"+L].j1,p["dupla"+L].j2].find(z=>z&&z!==id);const SF=p.modo==="semfila";const PZ=SF?pecasDe(p):[];
+    const nJ=SF?Math.max(PZ.length,1):1,nV=SF?PZ.filter(z=>z.w===L).length:(st.winner===L?1:0),nD=SF?PZ.filter(z=>z.w!==L).length:(st.winner&&st.winner!==L?1:0);
+    if(parc){const r=PA[parc]||(PA[parc]={J:0,V:0,D:0});r.J+=nJ;r.V+=nV;r.D+=nD;}
+    for(const z of [p["dupla"+O].j1,p["dupla"+O].j2])if(z){const r=RV[z]||(RV[z]={J:0,V:0,D:0});r.J+=nJ;r.V+=nV;r.D+=nD;}}
   const tabPR=(M,tit,lab)=>{const E=Object.entries(M).sort((a,b)=>b[1].J-a[1].J||b[1].V-a[1].V).slice(0,6);if(!E.length)return "";
     return `<div class="grp" style="color:var(--gd)">${tit}</div><table class="tb" style="margin-bottom:10px"><thead><tr><th></th><th>${lab}</th><th>M</th><th>V</th><th>D</th><th>APROV.</th></tr></thead><tbody>${E.map(([j,r])=>{const mk=lab==="Parceiro"?(melhorP&&j===melhorP[0]?"⭐":""):(freg&&j===freg[0]?"😎":carr&&j===carr[0]?"😬":"");const pc=r.J<3;
   return `<tr><td>${mk}</td><td class="n">${esc(nomeJog(j))}${lab==="Adversário"&&mk?`<div class="muted" style="font-size:11px">${mk==="😎"?"freguês":"carrasco"}</div>`:""}</td><td>${r.J}</td><td>${r.V}</td><td>${r.D}</td><td class="p"${pc?' style="color:var(--mu);font-weight:400"':""}>${Math.round(100*r.V/r.J)}%${pc?'<div style="font-size:10px">poucas mesas</div>':""}</td></tr>`;}).join("")}</tbody></table>`;};
@@ -1553,11 +1560,10 @@ function selosMes(off){
   const elig=L.filter(x=>x.mesas>=SUL_MIN);if(elig.length){const mi=Math.min(...elig.map(x=>x.infTot));const g=elig.filter(x=>x.infTot===mi);const mj=Math.max(...g.map(x=>x.mesas));out.push({ic:"🧼",nome:"Mão Limpa",quem:g.filter(x=>x.mesas===mj),info:`${mi} infração(ões) em ${mj} mesas`,why:`Menos infrações entre quem jogou ${SUL_MIN}+ mesas. Empate: quem jogou mais mesas.`,rk:[...elig].sort((a,b)=>a.infTot-b.infTot||b.mesas-a.mesas).map(x=>({id:x.id,nome:x.nome,t:`${x.infTot} infração(ões) · ${x.mesas} mesas`}))});}
   // maior sequência de vitórias (mesas com peça, em ordem)
   const seq={},best={};const ms=cache.partidas.filter(p=>p.criadoEm>=w.ini&&p.criadoEm<w.fim).sort((a,b)=>a.criadoEm-b.criadoEm);
-  for(const p of ms){const st=computeState(p);if(!st.winner)continue;for(const L2 of ["A","B"])for(const j of [p["dupla"+L2].j1,p["dupla"+L2].j2]){if(!j)continue;seq[j]=L2===st.winner?(seq[j]||0)+1:0;best[j]=Math.max(best[j]||0,seq[j]);}}
+  for(const p of ms)for(const z of pecasDe(p)){for(const L2 of ["A","B"])for(const j of [p["dupla"+L2].j1,p["dupla"+L2].j2]){if(!j)continue;seq[j]=L2===z.w?(seq[j]||0)+1:0;best[j]=Math.max(best[j]||0,seq[j]);}}
   const mb=Math.max(0,...Object.values(best));if(mb>=2)out.push({ic:"🔥",nome:"Maior Sequência",quem:Object.keys(best).filter(j=>best[j]===mb).map(j=>({id:j,nome:nomeJog(j)})),info:mb+" vitórias seguidas",why:"Maior número de mesas vencidas em seguida no mês, sem derrota no meio.",rk:Object.keys(best).sort((a,b)=>best[b]-best[a]).map(j=>({id:j,nome:nomeJog(j),t:best[j]+" vitória(s) seguida(s)"}))});
   // Assistente Nato: vitórias em que o parceiro deu a batida que fechou a mesa
-  {const an={};for(const p of ms){const st=computeState(p);if(!st.winner)continue;const D=p["dupla"+st.winner];let prev=0,closer=null;
-    (p.eventos||[]).forEach((e,i)=>{const tr=st.trace[i];if(!tr)return;const up=tr[st.winner].pecas>prev;prev=tr[st.winner].pecas;if(up&&e.k==="batida"&&(e.jog===D.j1||e.jog===D.j2))closer=e.jog;});
+  {const an={};for(const p of ms)for(const z of pecasDe(p)){const D=p["dupla"+z.w];const closer=z.closer;
     if(!closer)continue;const a=closer===D.j1?D.j2:D.j1;if(!a)continue;const r=an[a]||(an[a]={v:0,parc:new Set()});r.v++;r.parc.add(closer);}
    const el=L.filter(x=>x.mesas>=LIB_MIN&&an[x.id]).map(x=>({id:x.id,nome:x.nome,v:an[x.id].v,np:an[x.id].parc.size,tx:an[x.id].v/x.mesas,mesas:x.mesas}));
    if(el.length){el.sort((a,b)=>b.tx-a.tx||b.np-a.np||b.v-a.v);const t=el[0];const g=el.filter(x=>Math.abs(x.tx-t.tx)<1e-9&&x.np===t.np&&x.v===t.v);
@@ -1568,7 +1574,7 @@ function selosMes(off){
     el.sort((a,b)=>b.nota-a.nota||a.infTot-b.infTot||b.mesas-a.mesas);const t=el[0];const g=el.filter(x=>Math.abs(x.nota-t.nota)<1e-9&&x.infTot===t.infTot&&x.mesas===t.mesas);
     out.push({ic:"🏅",nome:"Rendimento de Ouro",why:`Nota de 0 a 100: metade é a % de vitórias, metade é a média de pontos por mesa comparada à melhor do mês (a melhor vale 100). Só concorre quem jogou ${LIB_MIN}+ mesas e não teve fraude. Empate: menos infrações, depois mais mesas.`,rk:el.map(x=>({id:x.id,nome:x.nome,t:`nota ${Math.round(x.nota)} · ${Math.round(x.pv)}% vit. · ${x.mp.toFixed(2).replace(".",",")} pts/mesa`})),quem:g,info:`nota ${Math.round(t.nota)} · ${Math.round(t.pv)}% de vitórias · média ${t.mp.toFixed(2).replace(".",",")} pts/mesa`});}}
   // Carrasco e Freguesia: adversários diferentes vencidos / para quem perdeu
-  {const W={},P={};for(const p of ms){const st=computeState(p);if(!st.winner)continue;const V=p["dupla"+st.winner],D=p["dupla"+other(st.winner)];const vs=[V.j1,V.j2].filter(Boolean),ds=[D.j1,D.j2].filter(Boolean);
+  {const W={},P={};for(const p of ms)for(const z of pecasDe(p)){const V=p["dupla"+z.w],D=p["dupla"+other(z.w)];const vs=[V.j1,V.j2].filter(Boolean),ds=[D.j1,D.j2].filter(Boolean);
     for(const a of vs)for(const b of ds){(W[a]||(W[a]=new Set())).add(b);(P[b]||(P[b]=new Set())).add(a);}}
    const mk=(M,cmp)=>L.filter(x=>M[x.id]).map(x=>({id:x.id,nome:x.nome,n:M[x.id].size,v:x.vitorias,d:x.derrotas||0,mesas:x.mesas})).sort(cmp);
    const cw=mk(W,(a,b)=>b.n-a.n||b.v-a.v);if(cw.length){const t=cw[0];out.push({ic:"🪓",nome:"Carrasco",quem:cw.filter(x=>x.n===t.n&&x.v===t.v),info:`venceu ${t.n} adversário(s) diferente(s) · ${t.v} vitórias`,why:"Quem venceu o maior número de adversários diferentes no mês (cada jogador derrotado conta uma vez, não importa quantas vezes). Empate: mais vitórias no mês.",rk:cw.map(x=>({id:x.id,nome:x.nome,t:`${x.n} adversário(s) · ${x.v} vitórias`}))});}
