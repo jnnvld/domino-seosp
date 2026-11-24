@@ -1067,7 +1067,8 @@ function tabelaMes(off){
   const br=classif(B,ordB);
   // forma: últimas 5 mesas do mês (com jogada), da mais antiga para a mais recente
   const F={};for(const p of cache.partidas.filter(p=>p.criadoEm>=w.ini&&p.criadoEm<w.fim&&(p.eventos||[]).length).sort((a,b)=>a.criadoEm-b.criadoEm)){
-    const st=computeState(p);for(const L of ["A","B"])for(const j of [p["dupla"+L].j1,p["dupla"+L].j2])if(j)(F[j]||(F[j]=[])).push(!st.winner?"-":st.winner===L?"V":"D");}
+    const st=computeState(p);const R=p.modo==="semfila"?pecasDe(p).map(z=>z.w):[st.winner];if(!R.length)R.push(null);
+    for(const L of ["A","B"])for(const j of [p["dupla"+L].j1,p["dupla"+L].j2])if(j)for(const w of R)(F[j]||(F[j]=[])).push(!w?"-":w===L?"V":"D");}
   br.forEach(x=>{const a=F[x.id]||[];x.forma=a.slice(-5);});
   return {w,G,lib,sul,br,aq:L.filter(x=>x.mesas<SUL_MIN).sort((a,b)=>b.mesas-a.mesas||ordM(a,b)||a.nome.localeCompare(b.nome,"pt-BR")),
     campLib:lib.filter(x=>x.pos===1),campSul:sul.filter(x=>x.pos===1),campBr:br.filter(x=>x.pos===1)};
