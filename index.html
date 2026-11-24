@@ -392,6 +392,22 @@ async function connect(){
     },err=>{clearTimeout(timer);sync.textContent=err&&err.code==="permission-denied"?"sem permissão no banco":"sem conexão";console.error(err);});
   }
 }
+
+/* Correção pontual 24/11/2026: mesas após 16h foram sem fila (Jonni & Erley 6 × 3 Jonh & Alan) */
+let _mig2411=false;
+async function migrarSemFila2411(){
+  if(_mig2411||!live||!db)return;const IDS=["mwv2brklmnrq3j","mwv2n1749aiudq","mwv2sdww2bjq3e","mwv2viwyntbtyp","mwv30mvrt3luaa","mwv3dtinipz5s1","mwv3ic2dahrpkx","mwv3tdnmp6jqr7","mwv42l3bnr6t1m","mwv49h9fqwo1wr"];
+  const base=byId("partidas",IDS[0]);if(!base||base.modo==="semfila"||base.migr)return;_mig2411=true;
+  const je=new Set([base.duplaA.j1,base.duplaA.j2]);const ev=[];
+  for(const id of IDS){const q=byId("partidas",id);if(!q)continue;for(const e of (q.eventos||[])){const d=q["dupla"+e.lado];const ehJE=je.has(d.j1)||je.has(d.j2);ev.push({...e,lado:ehJE?"A":"B"});}}
+  const jonh=[base.duplaB.j1,base.duplaB.j2].find(j=>/jonh/i.test(nomeJog(j)))||base.duplaB.j1;
+  const ult=byId("partidas",IDS[9]);if(!ult||!(ult.eventos||[]).length)ev.push({k:"batida",tipo:"seca",lado:"B",jog:jonh,t:Math.max(...ev.map(e=>e.t||0))+60000,autor:"Presidente (correção)"});
+  const {id:_x,...resto}=base;
+  await db.collection("partidas").doc(IDS[0]).set({...resto,modo:"semfila",status:"encerrada",eventos:ev,migr:"semfila-2411",backup2411:JSON.stringify(IDS.map(i=>byId("partidas",i)).filter(Boolean))});
+  for(const id of IDS.slice(1))if(byId("partidas",id))await db.collection("partidas").doc(id).update({excluido:true,excluidoEm:Date.now(),excluidoPor:"Presidente",excluidoMotivo:"Unificada na mesa sem fila de 24/11 (16h)"});
+  toast("Mesas de hoje (16h) unificadas: sem fila, 6 × 3.");
+}
+setInterval(()=>{try{migrarSemFila2411();}catch(e){console.error(e);}},3000);
 async function importarDados(){
   if(!db){toast("Sem conexão com o banco.");return;}
   let d;try{const r=await fetch("dados-iniciais.json",{cache:"no-store"});d=await r.json();}catch(e){toast("Não achei o arquivo dados-iniciais.json.");return;}
