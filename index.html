@@ -980,8 +980,9 @@ const valorBatida=(t,fechou)=>SIMPLES.has(t)&&fechou?0:(PONTOS_BAT[t]||0);
 const PONTOS_INF={passar:-3,gato:-3,fingir:-3,fraude:-5,colagem:-2,esqueceu:-2,sinais:-2,sorteio:-1};
 const PONTO_VIT=3; // vitória de mesa, para os dois da dupla
 const PONTO_ASS=0; // assistência: só registro, não pontua
-const isEsp=t=>BATIDAS[t]&&(BATIDAS[t].cat==="direta"&&!BATIDAS[t].adv||BATIDAS[t].esp);
-const isSec=t=>t==="seca"||t==="forcado";
+// 25/11/2026: folgando bucha conta como batida simples também no desempate
+const isEsp=t=>BATIDAS[t]&&BATIDAS[t].cat==="direta"&&!BATIDAS[t].adv;
+const isSec=t=>SIMPLES.has(t);
 function pontuar(x){let p=x.vitorias*PONTO_VIT+(x.ass||0)*PONTO_ASS;for(const[k,n]of Object.entries(x.bp||{}))p+=n;for(const[k,n]of Object.entries(x.inf))p+=(PONTOS_INF[k]||0)*n;
   x.pts=p;x.espN=Object.entries(x.b).reduce((a,[k,n])=>a+(isEsp(k)?n:0),0);x.secN=Object.entries(x.b).reduce((a,[k,n])=>a+(isSec(k)?n:0),0);return x;}
 const ordemCamp=(a,b)=>b.pts-a.pts||b.vitorias-a.vitorias||b.espN-a.espN||b.secN-a.secN||a.infTot-b.infTot||(a.derrotas||0)-(b.derrotas||0)||a.nome.localeCompare(b.nome,"pt-BR");
@@ -1159,7 +1160,7 @@ function shExtrato(){
   <div class="ex"><div class="ex-t">DE ONDE VÊM OS PONTOS DO CAMPEONATO</div>
   ${ln(`Mesas vencidas: ${x.vitorias} × ${PONTO_VIT}`,d.vit)}
   ${d.bat.map(r=>ln(r.nome,r.pts)).join("")}
-  <div class="ex-l"><span>Batidas especiais (desempate)</span><b>${x.espN||0}</b></div><div class="ex-l"><span>Batidas secas/forçadas (desempate)</span><b>${x.secN||0}</b></div>
+  <div class="ex-l"><span>Batidas especiais (desempate)</span><b>${x.espN||0}</b></div><div class="ex-l"><span>Batidas simples: seca, forçado, folgando (desempate)</span><b>${x.secN||0}</b></div>
   ${PONTO_ASS&&x.ass?ln(`Assistências: ${x.ass} × ${PONTO_ASS}`,d.sa):""}
   ${d.inf.map(r=>ln(`${r.nome}: ${r.n}`,r.pts,"neg")).join("")}
   <div class="ex-l tot"><span>Total de pontos</span><b>${x.pts}</b></div>
@@ -1170,7 +1171,7 @@ function shExtrato(){
     const cols=[x];if(i>0)cols.unshift(L[i-1]);if(i<L.length-1)cols.push(L[i+1]);
     const row=(l,f)=>`<tr><td class="n">${l}</td>${cols.map(c=>`<td class="${c.id===x.id?"me":""}">${f(c)}</td>`).join("")}</tr>`;
     h+=`<table class="tb ex-c"><thead><tr><th></th>${cols.map(c=>`<th class="${c.id===x.id?"me":""}">${c.pos}º ${esc(c.nome.split(" ")[0])}</th>`).join("")}</tr></thead><tbody>
-    ${row("Mesas",c=>c.mesas)}${row("Vitórias",c=>c.vitorias)}${row("Aproveitamento",aprov)}${row("Pts de vitórias",c=>decompor(c).vit)}${row("Pts de batidas",c=>"+"+decompor(c).sb)}${PONTO_ASS?row("Assistências",c=>"+"+decompor(c).sa):""}${row("Qtd. especiais",c=>c.espN||0)}${row("Qtd. secas/forç.",c=>c.secN||0)}${row("Infrações",c=>decompor(c).si)}${row("<b>Total de pontos</b>",c=>`<b>${c.pts}</b>`)}${br?"":row("<b>Média</b>",c=>`<b>${fmtMed(c.med)}</b>`)}</tbody></table>`;
+    ${row("Mesas",c=>c.mesas)}${row("Vitórias",c=>c.vitorias)}${row("Aproveitamento",aprov)}${row("Pts de vitórias",c=>decompor(c).vit)}${row("Pts de batidas",c=>"+"+decompor(c).sb)}${PONTO_ASS?row("Assistências",c=>"+"+decompor(c).sa):""}${row("Qtd. especiais",c=>c.espN||0)}${row("Qtd. simples",c=>c.secN||0)}${row("Infrações",c=>decompor(c).si)}${row("<b>Total de pontos</b>",c=>`<b>${c.pts}</b>`)}${br?"":row("<b>Média</b>",c=>`<b>${fmtMed(c.med)}</b>`)}</tbody></table>`;
     h+=viz.map(([k,a,b])=>`<p class="ex-w">${k==="acima"?`⬆ <b>${esc(a.nome)}</b> está à frente porque ${motivoPos(a,b,div)}`:`⬇ <b>${esc(x.nome)}</b> está à frente de ${esc(b.nome)} porque ${motivoPos(a,b,div)}`}</p>`).join("");
     if(!br)h+=`<p class="muted" style="font-size:12.5px">Jogar mais ou vencer mais não basta: conta quanto se faz <b>por mesa</b>. Mesa sem pontos baixa a média; batidas e vitórias sobem; infrações descontam.</p>`;}
   h+=`<details class="ex" style="margin-top:12px"><summary class="ex-t" style="cursor:pointer;margin:0">📜 COMO FUNCIONA ${br?"O BRASILEIRÃO":"A "+COMP[div].nome.toUpperCase()}</summary><div style="font-size:13.5px;line-height:1.45;margin-top:6px">${regraComp(div)}</div></details>`;
@@ -1230,7 +1231,7 @@ function regMensal(){return `
   <p><b>Art. 6º Mínimo.</b> Só disputa o título da Libertadores quem tiver ${LIB_MIN} mesas ou mais no mês; abaixo disso, o jogador aparece em aquecimento.</p>
   <p><b>Art. 7º Zonas do Brasileirão.</b> A tabela é dividida em proporção ao número de jogadores (a partir de 5): G (40% de cima), Intermediário (20% seguintes), Meio de tabela (o restante) e Lanterna (20% de baixo).</p>
   <p><b>Art. 8º Campeões.</b> O 1º colocado de cada competição no encerramento do mês é Campeão do Brasileirão e da Libertadores, registrados na Galeria de Campeões.</p>
-  <p><b>Art. 9º Desempate</b>: I – Brasileirão: mais vitórias, mais batidas especiais, mais batidas secas, menos infrações; II – Libertadores: mais pontos, mais vitórias, mais batidas especiais, mais batidas secas, menos infrações; III – em ambas, por último, o <b>confronto direto</b>; persistindo, título dividido.</p>
+  <p><b>Art. 9º Desempate</b>: I – Brasileirão: mais vitórias, mais batidas especiais (lasquinez, buchada, fechou com menor ponto), mais batidas simples (seca, forçado, folgando), menos infrações; II – Libertadores: mais pontos, mais vitórias, mais batidas especiais, mais batidas simples, menos infrações; III – em ambas, por último, o <b>confronto direto</b>; persistindo, título dividido.</p>
   <p><b>Art. 10. Registro e correções.</b> Só vale o que estiver lançado no Placar Oficial. Erros são corrigidos pelo Presidente, com motivo registrado no Histórico de exclusões; as tabelas são recalculadas automaticamente.</p>
   <p><b>Art. 11. Selos do mês</b> (honrarias, não mudam a classificação): 👑 Rei da Buchada; 🧼 Mão Limpa (menos infrações, com ${SUL_MIN}+ mesas); 🔥 Maior Sequência (mínimo 2); 🤝 Assistente Nato (maior proporção de mesas em que a parceria levou a dupla à vitória, ${LIB_MIN}+ mesas; desempate: mais parceiros diferentes); 🏅 Rendimento de Ouro (metade % de vitórias, metade média de pontos; ${LIB_MIN}+ mesas, sem fraude); 🪓 Carrasco (venceu mais adversários diferentes); 🛒 Freguesia (perdeu para mais adversários diferentes); 🐈 Gato do Mês. Toque no selo para ver a explicação e o comparativo.</p>
   <p><b>Art. 12. Casos omissos</b> são decididos pela maioria dos presentes, mínimo de 3 (Art. 26 da Lei nº 0608/2026).</p>`;}
