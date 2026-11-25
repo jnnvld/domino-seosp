@@ -37,7 +37,10 @@ header .t1{font-family:Cinzel,serif;font-size:20px;letter-spacing:2px;line-heigh
 .fm{display:inline-flex;gap:3px;justify-content:center}.fm i{width:9px;height:9px;border-radius:50%;display:inline-block}
 .cbf-leg{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 4px 0;font-size:12.5px;color:var(--tx)}.cbf-leg>span{display:inline-flex;align-items:center;gap:6px}.cbf-leg>span>i{width:12px;height:4px;border-radius:2px;display:inline-block}
 .pn{border-radius:18px;padding:14px 10px 8px;margin-bottom:12px;color:#F2E8D8}
-.pn-lib{background:radial-gradient(130% 90% at 0% 0%,#1F6F54 0%,#0E3B2E 45%,#0A2E24 100%);box-shadow:0 0 0 1px rgba(201,162,39,.55),0 10px 24px rgba(14,59,46,.22)}
+.pn-lib{background:radial-gradient(130% 90% at 0% 0%,#3B6E80 0%,#2F5A6B 40%,#1B3A46 100%);box-shadow:0 0 0 1px rgba(201,162,39,.6),0 10px 24px rgba(27,58,70,.25)}
+.pn-lib .pn-r{grid-template-columns:26px minmax(0,1fr) 28px 24px 34px 36px 50px;font-size:14px}.pn-lib .pn-r .mu2{color:#C9DCE2;font-size:12.5px}
+.selos{display:block!important;background:var(--iv);border:1px solid var(--ln);border-radius:14px;overflow:hidden;margin-bottom:12px}.md-r{display:grid;grid-template-columns:30px minmax(0,1fr) auto 14px;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid #EEE4D2;cursor:pointer;min-height:44px}.md-r:first-child{border-top:0}.md-r .ic{font-size:20px;text-align:center}.md-r .nm{font-family:Montserrat,sans-serif;font-size:12px;font-weight:700;letter-spacing:.4px;color:var(--gd)}.md-r .qm{font-weight:700;font-size:14px;text-align:right;max-width:52vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.md-r.neg .nm{color:var(--tc)}.md-r .ch{color:var(--mu)}.md-h{display:flex;justify-content:space-between;padding:8px 12px;background:#0A2E24;color:#E0C25A;font:700 11.5px Montserrat,sans-serif;letter-spacing:.6px}
+.acoes{display:flex;gap:6px;margin:8px 0 18px}.acoes .btn{flex:1}
 .pn-sul{background:linear-gradient(160deg,#1F6F54,#185A45);box-shadow:0 0 0 1px rgba(242,232,216,.45),0 10px 24px rgba(14,59,46,.16)}
 .pn-h{display:flex;align-items:center;gap:10px;padding:0 6px 10px;border-bottom:1px solid rgba(201,162,39,.45)}.pn-lib .pn-h{color:#E0C25A}.pn-sul .pn-h{color:#F2E8D8;border-bottom-color:rgba(242,232,216,.35)}
 .pn-t{font-family:Cinzel,serif;font-weight:700;font-size:20px;letter-spacing:2.5px}.pn-s{font-family:Montserrat,sans-serif;font-size:11.5px;font-weight:600;color:#D5E2D9}
@@ -821,7 +824,7 @@ document.addEventListener("click",async e=>{
   if(a==="confMotivo")return confirmarMotivo();
   if(a==="instalar")return instalarApp();
   if(a==="noinst"){try{localStorage.setItem("seosp_noinst","1");}catch(e){}render();return;}
-  if(a==="imgMensal")return imgMensal();if(a==="imgFinal")return imgMensal(true);
+  if(a==="imgMensal"){if(el.dataset.comp)compAba=el.dataset.comp;return imgMensal();}if(a==="imgFinal")return imgMensal(true);
   if(a==="importar"){if(!admin)return;return importarDados();}
   if(a==="backup"){if(!admin)return;return baixarBackup();}
   if(a==="txtMes")return copiarTextoMes(+(el.dataset.off||0));
@@ -1151,8 +1154,9 @@ function painel(lista,tipo,fechado){
   const lib=tipo==="lib";
   let h=`<section class="pn ${lib?"pn-lib":"pn-sul"}"><div class="pn-h"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 12v5M8 21h8M10 17h4"/></svg><div><div class="pn-t ${lib?"foil":""}">${lib?"LIBERTADORES":"SUL-AMERICANA"}</div><div class="pn-s">${LIB_MIN}+ mesas · média ponderada${t0G(lista)}</div></div></div>`;
   if(!lista.length)return h+`<div class="pn-v">${lib?`Ninguém chegou a ${LIB_MIN} mesas ainda.`:"Ninguém nessa faixa ainda."}</div></section>`;
-  h+=`<div class="pn-r pn-hd"><span>#</span><span class="n">Jogador</span><span>M</span><span>PTS</span><span>Média</span></div>`;
-  for(const x of lista)h+=`<button class="pn-r ${x.pos===1?"lid":""}" data-extrato="${x.id}" data-comp="${tipo}" aria-label="${esc(x.nome)}, ${x.pos}º, média ${fmtMed(x.med)}. Ver a conta"><span class="ps">${x.pos===1&&fechado?"🏆":x.pos}</span><span class="n"><b>${esc(x.nome)}</b><small>${x.pts} pts em ${x.mesas} mesas</small>${x.empate&&x.cd!=null?`<small>empate · ${x.cd} vit. no confronto direto</small>`:""}</span><span>${x.mesas}</span><span>${x.pts}</span><b class="md">${fmtMed(x.med)}</b></button>`;
+  h+=`<div class="pn-r pn-hd"><span>#</span><span class="n">Jogador</span><span>M</span><span>V</span><span>%</span><span>PTS</span><span>Média</span></div>`;
+  for(const x of lista)h+=`<button class="pn-r ${x.pos===1?"lid":""}" data-extrato="${x.id}" data-comp="${tipo}" aria-label="${esc(x.nome)}, ${x.pos}º, média ${fmtMed(x.med)}. Ver a conta"><span class="ps">${x.pos===1&&fechado?"🏆":x.pos}</span><span class="n"><b>${esc(x.nome)}</b><small>média simples ${fmtMed(x.mesas?x.pts/x.mesas:0)} · ${x.derrotas||0} derrota(s)</small>${x.empate&&x.cd!=null?`<small>empate · ${x.cd} vit. no confronto direto</small>`:""}</span><span>${x.mesas}</span><span>${x.vitorias}</span><span class="mu2">${x.mesas?Math.round(100*x.vitorias/x.mesas):0}</span><span>${x.pts}</span><b class="md">${fmtMed(x.med)}</b></button>`;
+  h+=`<p style="margin:8px 6px 2px;font-size:12px;color:#C9DCE2">Média = (PTS + ${PESO_POND} × média do grupo) ÷ (mesas + ${PESO_POND}). Toque no jogador para ver a conta.</p>`;
   return h+`</section>`;
 }
 function regMensal(){return `
@@ -1180,16 +1184,15 @@ function vMensal(){
   if(mesOff===0&&new Date().getDate()<=7&&!fechado1("camp"+(new Date().getMonth()))){const a=tabelaMes(-1);if(a.campBr.length||a.campLib.length||a.campSul.length)h+=`<div class="card aviso" style="border:2px solid var(--go);background:#F4E6BC">${xBtn("camp"+(new Date().getMonth()))}<div class="grp" style="margin-top:0;color:var(--gd)">🏆 CAMPEÕES DE ${a.w.nome.toUpperCase()}</div>
     <div style="font-size:15px;line-height:1.6">${["br","lib"].map(k=>{const c=a["camp"+k[0].toUpperCase()+k.slice(1)];return `${COMP[k].ic} ${COMP[k].nome}: <b>${c.length?c.map(x=>esc(x.nome)).join(" e "):"—"}</b>`;}).join("<br>")}</div>
     <div class="row" style="margin-top:10px"><button class="btn sm grow" data-mes="-1">Ver tabelas finais</button><button class="btn gold sm grow" data-act="txtMes" data-off="-1">📋 Texto p/ WhatsApp</button></div></div>`;}
-  if(compAba!=="br")compAba="ls";
-  h+=`<div class="seg" style="margin-bottom:10px"><button data-comp-aba="br" class="${compAba==="br"?"on":""}">Brasileirão</button><button data-comp-aba="ls" class="${compAba==="ls"?"on":""}">Libertadores</button></div>`;
-  if(t.br.length||t.lib.length||t.sul.length||t.aq.length)h+=`<div class="row" style="margin-bottom:10px"><button class="btn sm grow" data-act="imgMensal">📸 Imagem</button><button class="btn sm grow" data-act="imgFinal" style="background:var(--go);color:#2a1e05">🏁 Fechamento</button><button class="btn ghost sm grow" data-act="txtMes" data-off="${mesOff}">📋 Texto p/ WhatsApp</button></div>`;
-  if(compAba==="br"){if(!fechado1("howbr2"))h+=`<div class="howto aviso">${xBtn("howbr2")}🇧🇷 <b>Brasileirão: quem soma mais pontos no mês fica na frente.</b><br>✔ <b>Conta toda mesa</b> que teve jogada lançada, <b>fechando peça ou não</b>.<br>👆 Toque num jogador para ver a conta.</div>`;
-    h+=tabelaBR(t.br,fechado);}
-  else{if(!fechado1("howmed3"))h+=`<div class="howto aviso">${xBtn("howmed3")}📊 <b>Libertadores: quem rende mais por mesa.</b> Vale a <b>média ponderada</b>: (pontos + ${PESO_POND} × média do grupo) ÷ (mesas + ${PESO_POND}). Assim ninguém lidera só por sorte com poucas mesas.<br>✔ Só conta mesa que <b>fechou peça</b>. Título a partir de <b>${LIB_MIN} mesas</b>.<br>👆 Toque num jogador para ver a conta.</div>`;
-    h+=painel(t.lib,"lib",fechado);
-    if(t.aq.length)h+=`<div class="card"><div class="grp" style="margin-top:0;color:var(--mu)">EM AQUECIMENTO · menos de ${SUL_MIN} mesas</div><div class="chips">${t.aq.map(x=>`<span class="chip">${esc(x.nome)} · ${x.mesas}, faltam ${SUL_MIN-x.mesas}</span>`).join("")}</div></div>`;}
+  const acoes=c=>(t.br.length||t.lib.length||t.aq.length)?`<div class="acoes"><button class="btn sm" data-act="imgMensal" data-comp="${c}">📸 Imagem</button><button class="btn sm" data-act="imgFinal" style="background:var(--go);color:#2a1e05">🏁 Fechamento</button><button class="btn ghost sm" data-act="txtMes" data-off="${mesOff}">📋 Texto</button></div>`:"";
+  if(!fechado1("howbr2"))h+=`<div class="howto aviso">${xBtn("howbr2")}🇧🇷 <b>Brasileirão: quem soma mais pontos no mês fica na frente.</b><br>✔ <b>Conta toda mesa</b> que teve jogada lançada, <b>fechando peça ou não</b>.<br>👆 Toque num jogador para ver a conta.</div>`;
+  h+=tabelaBR(t.br,fechado)+acoes("br");
+  if(!fechado1("howmed3"))h+=`<div class="howto aviso">${xBtn("howmed3")}📊 <b>Libertadores: quem rende mais por mesa.</b> Vale a <b>média ponderada</b>, assim ninguém lidera só por sorte com poucas mesas.<br>✔ Só conta mesa que <b>fechou peça</b>. Título a partir de <b>${LIB_MIN} mesas</b>.<br>👆 Toque num jogador para ver a conta.</div>`;
+  h+=painel(t.lib,"lib",fechado);
+  if(t.aq.length)h+=`<div class="card"><div class="grp" style="margin-top:0;color:var(--mu)">EM AQUECIMENTO · menos de ${SUL_MIN} mesas</div><div class="chips">${t.aq.map(x=>`<span class="chip">${esc(x.nome)} · ${x.mesas}, faltam ${SUL_MIN-x.mesas}</span>`).join("")}</div></div>`;
+  h+=acoes("ls");
   const SL=selosMes(mesOff);
-  if(SL.length)h+=`<h2>SELOS DO MÊS</h2><div class="selos">${SL.map((x,i)=>`<div class="selo ${x.neg?"neg":""}" data-selo="${i}" role="button" tabindex="0" style="cursor:pointer"><div class="ic">${x.ic}</div><div><b>${x.nome}</b><span>${listaNomes(x.quem.map(q=>esc(q.nome)))}</span><small>${x.info}</small><small style="color:var(--gd);font-weight:700">Toque para ver o porquê ›</small></div></div>`).join("")}</div>`;
+  if(SL.length)h+=`<h2>SELOS DO MÊS</h2><div class="selos"><div class="md-h"><span>QUADRO DE MEDALHAS</span><span>toque para ver o porquê</span></div>${SL.map((x,i)=>`<div class="md-r ${x.neg?"neg":""}" data-selo="${i}" role="button" tabindex="0" aria-label="${x.nome}: ${listaNomes(x.quem.map(q=>esc(q.nome)))}"><span class="ic">${x.ic}</span><span class="nm">${x.nome.toUpperCase()}</span><span class="qm">${listaNomes(x.quem.map(q=>esc(q.nome.split(" ")[0])))}</span><span class="ch">›</span></div>`).join("")}</div>`;
   h+=`<details class="card" style="padding:10px 14px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📜 Regulamento do Campeonato do Mês</summary><div class="rules" style="margin-top:6px">${regMensal()}</div></details>`;
   const galeria=[];for(let o=-1;o>=-12;o--){const g=tabelaMes(o);if(g.br.length||g.lib.length||g.sul.length)galeria.push(g);}
   const cmp=(g,k)=>{const c=g["camp"+k[0].toUpperCase()+k.slice(1)];return c.length?c.map(x=>esc(x.nome)).join(" e ")+` (${k==="br"?c[0].pts+" pts":fmtMed(c[0].med)})`:"—";};
