@@ -1063,9 +1063,10 @@ const LIB_MIN=5,SUL_MIN=5,PESO_POND=5; // Libertadores única (desde 23/11/2026)
 let campAba="mensal",mesOff=0;
 const MESES=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 function janelaMes(off){const d=new Date();const a=new Date(d.getFullYear(),d.getMonth()+off,1);const b=new Date(a.getFullYear(),a.getMonth()+1,1);return {ini:a.getTime(),fim:b.getTime(),nome:MESES[a.getMonth()]+" "+a.getFullYear(),mes:a.getMonth(),ano:a.getFullYear()};}
+const DUP_ATIVA=false; // Copa das Duplas: desligada até autorização do Presidente
 const DUP_MIN=5,DUP_PRAZO=7,DUP_INICIO=new Date(2026,11,1).getTime();
 function copaDuplas(off){
-  const w=janelaMes(off);if(w.ini<DUP_INICIO)return null;const D={};
+  const w=janelaMes(off);if(!DUP_ATIVA||w.ini<DUP_INICIO)return null;const D={};
   for(const p of cache.partidas){if(!(p.criadoEm>=w.ini&&p.criadoEm<w.fim))continue;const PZ=pecasDe(p);if(!PZ.length)continue;const st=computeState(p);
     const fechouIdx=new Set();let pv={A:0,B:0};(p.eventos||[]).forEach((e,i)=>{const tr=st.trace[i];if(!tr)return;if(tr.A.pecas>pv.A||tr.B.pecas>pv.B)fechouIdx.add(i);pv={A:tr.A.pecas,B:tr.B.pecas};});
     for(const L of ["A","B"]){const d=p["dupla"+L];if(!d.j1||!d.j2)continue;const ids=[d.j1,d.j2].sort();const k=ids.join("+");
@@ -1230,7 +1231,6 @@ function regMensal(){return `
   <p><b>Art. 9º Desempate</b>: I – Brasileirão: mais vitórias, mais batidas especiais, mais batidas secas, menos infrações; II – Libertadores: mais pontos, mais vitórias, mais batidas especiais, mais batidas secas, menos infrações; III – em ambas, por último, o <b>confronto direto</b>; persistindo, título dividido.</p>
   <p><b>Art. 10. Registro e correções.</b> Só vale o que estiver lançado no Placar Oficial. Erros são corrigidos pelo Presidente, com motivo registrado no Histórico de exclusões; as tabelas são recalculadas automaticamente.</p>
   <p><b>Art. 11. Selos do mês</b> (honrarias, não mudam a classificação): 👑 Rei da Buchada; 🧼 Mão Limpa (menos infrações, com ${SUL_MIN}+ mesas); 🔥 Maior Sequência (mínimo 2); 🤝 Assistente Nato (maior proporção de mesas em que a parceria levou a dupla à vitória, ${LIB_MIN}+ mesas; desempate: mais parceiros diferentes); 🏅 Rendimento de Ouro (metade % de vitórias, metade média de pontos; ${LIB_MIN}+ mesas, sem fraude); 🪓 Carrasco (venceu mais adversários diferentes); 🛒 Freguesia (perdeu para mais adversários diferentes); 🐈 Gato do Mês. Toque no selo para ver a explicação e o comparativo.</p>
-  <p><b>Art. 11-A. Copa das Duplas</b> (a partir de dezembro de 2026): I – toda dupla que jogar junta entra no ranking do mês, pela média ponderada da dupla (PTS da dupla + ${PESO_POND} × média do grupo) ÷ (mesas + ${PESO_POND}); PTS da dupla = vitórias × ${PONTO_VIT} + pontos das batidas dos dois + infrações dos dois; só conta mesa com peça; no sem fila, cada peça é uma mesa; II – disputa a vaga quem tiver ${DUP_MIN}+ mesas juntos; desempate: mais vitórias, depois confronto direto; III – as duas primeiras duplas fazem a <b>final em melhor de 3 mesas</b>, do dia 1º ao dia ${DUP_PRAZO} do mês seguinte; se um jogador estiver nas duas, sobe a próxima dupla sem jogador repetido; IV – vence quem fizer 2 mesas; se a série não terminar no prazo, vence quem estiver na frente na série e, empatada, a 1ª do ranking; V – as mesas da final valem também no campeonato do novo mês.</p>
   <p><b>Art. 12. Casos omissos</b> são decididos pela maioria dos presentes, mínimo de 3 (Art. 26 da Lei nº 0608/2026).</p>`;}
 let compAba="br";
 function fechado1(k){try{return localStorage.getItem("seosp_x_"+k)==="1";}catch(e){return false;}}
