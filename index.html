@@ -40,6 +40,8 @@ header .t1{font-family:Cinzel,serif;font-size:20px;letter-spacing:2px;line-heigh
 .pn-lib{background:radial-gradient(130% 90% at 0% 0%,#3B6E80 0%,#2F5A6B 40%,#1B3A46 100%);box-shadow:0 0 0 1px rgba(201,162,39,.6),0 10px 24px rgba(27,58,70,.25)}
 .pn-lib .pn-r{grid-template-columns:26px minmax(0,1fr) 28px 24px 34px 36px 50px;font-size:14px}.pn-lib .pn-r .mu2{color:#C9DCE2;font-size:12.5px}
 .selos{display:block!important;background:var(--iv);border:1px solid var(--ln);border-radius:14px;overflow:hidden;margin-bottom:12px}.md-r{display:grid;grid-template-columns:30px minmax(0,1fr) auto 14px;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid #EEE4D2;cursor:pointer;min-height:44px}.md-r:first-child{border-top:0}.md-r .ic{font-size:20px;text-align:center}.md-r .nm{font-family:Montserrat,sans-serif;font-size:12px;font-weight:700;letter-spacing:.4px;color:var(--gd)}.md-r .qm{font-weight:700;font-size:14px;text-align:right;max-width:52vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.md-r.neg .nm{color:var(--tc)}.md-r .ch{color:var(--mu)}.md-h{display:flex;justify-content:space-between;padding:8px 12px;background:#0A2E24;color:#E0C25A;font:700 11.5px Montserrat,sans-serif;letter-spacing:.6px}
+.pn-dup{background:radial-gradient(130% 90% at 0% 0%,#B8623F 0%,#A84B2A 40%,#6E2F19 100%);box-shadow:0 0 0 1px rgba(201,162,39,.6),0 10px 24px rgba(110,47,25,.25)}.pn-dup .pn-h{color:#F6E7C8}.pn-dup .pn-r{grid-template-columns:26px minmax(0,1fr) 28px 24px 34px 36px 50px;font-size:14px}.pn-dup .ps,.pn-dup .md{color:#F2D27A}.pn-dup .mu2{color:#F1D9C8;font-size:12.5px}.pn-dup .pn-r.lid{background:rgba(242,210,122,.18);border-radius:10px}.pn-dup .pn-s,.pn-dup small{color:#F1D9C8!important}
+.dup-fin{background:rgba(0,0,0,.14);border:1px solid rgba(242,210,122,.5);border-radius:12px;padding:10px;margin:10px 4px}.dup-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center;font-size:14px}.dup-vs span{font:800 20px Montserrat,sans-serif;color:#F2D27A}.dup-vs .cp{color:#F2D27A}
 .acoes{display:flex;gap:6px;margin:8px 0 18px}.acoes .btn{flex:1;white-space:nowrap;font-size:13px;padding-left:6px;padding-right:6px}
 .pn-sul{background:linear-gradient(160deg,#1F6F54,#185A45);box-shadow:0 0 0 1px rgba(242,232,216,.45),0 10px 24px rgba(14,59,46,.16)}
 .pn-h{display:flex;align-items:center;gap:10px;padding:0 6px 10px;border-bottom:1px solid rgba(201,162,39,.45)}.pn-lib .pn-h{color:#E0C25A}.pn-sul .pn-h{color:#F2E8D8;border-bottom-color:rgba(242,232,216,.35)}
@@ -324,7 +326,7 @@ function _computeState(p){
     if(st.decisiva){peca(side,1,p.regra!=="v1");return p.regra==="v1"?"decisiva":"zera";}
     if(st[side].s>=2){peca(side,1,true);return "zera";}
     st[side].s+=1;
-    if(forcado||(st.A.s===1&&st.B.s===1))st.decisiva=true;
+    if(st.A.s===1&&st.B.s===1)st.decisiva=true; // 25/11/2026: forçado é batida simples comum; decisiva só no 3×3
     return null;
   };
   for(const ev of (p.eventos||[])){
@@ -401,6 +403,23 @@ async function connect(){
   }
 }
 
+
+/* Retificação 25/11/2026: 2ª batida do Yago (Allan & Yago × Jonh & Jonni) volta a ser fechamento forçado */
+let _ret2511=false;
+async function retif2511(){
+  if(_ret2511||!live||!db||!cache.partidas.length)return;
+  const i0=new Date(2026,10,25).getTime(),i1=new Date(2026,10,26).getTime();
+  const has=(d,re)=>re.test(nomeJog(d.j1))||re.test(nomeJog(d.j2));
+  const cands=cache.partidas.filter(p=>p.criadoEm>=i0&&p.criadoEm<i1&&!p.retif2511).map(p=>{
+    const LY=["A","B"].find(L=>has(p["dupla"+L],/yago/i)&&has(p["dupla"+L],/allan/i));if(!LY)return null;const O=p["dupla"+other(LY)];if(!(has(O,/jonh/i)&&has(O,/jonni/i)))return null;
+    const y=[p["dupla"+LY].j1,p["dupla"+LY].j2].find(j=>/yago/i.test(nomeJog(j)));const idx=(p.eventos||[]).map((e,i)=>e.k==="batida"&&e.jog===y?i:-1).filter(i=>i>=0);
+    return idx.length>=2&&p.eventos[idx[1]].tipo==="seca"?{p,i:idx[1]}:null;}).filter(Boolean);
+  _ret2511=true;
+  if(cands.length!==1){console.warn("retif2511: candidatos",cands.length);return;}
+  const {p,i}=cands[0];const ev=p.eventos.map((e,k)=>k===i?{...e,tipo:"forcado",retificado:"25/11: era fechamento forçado (lançado como seca por erro do placar)"}:e);
+  await db.collection("partidas").doc(p.id).update({eventos:ev,retif2511:true});toast("Mesa de hoje retificada: 2ª batida do Yago = fechamento forçado.");
+}
+setInterval(()=>{try{retif2511();}catch(e){console.error(e);}},4000);
 async function importarDados(){
   if(!db){toast("Sem conexão com o banco.");return;}
   let d;try{const r=await fetch("dados-iniciais.json",{cache:"no-store"});d=await r.json();}catch(e){toast("Não achei o arquivo dados-iniciais.json.");return;}
@@ -492,7 +511,8 @@ let curLust=null;
 const ADMIN_HASH="a38f3bbd6c8cb33bb0c4641ec511d51f17ee744471a1d9e0a1a766b4385533f3";
 let admin=false;try{admin=sessionStorage.getItem("seospAdmin")==="1";}catch(e){}
 let gUser=null;
-function presEmail(){try{return localStorage.getItem("seosp_pres_email")||"";}catch(e){return "";}}
+const PRES_EMAIL="jonnivaldosilva@gmail.com";
+function presEmail(){return PRES_EMAIL;}
 async function entrarGoogle(){
   if(!window.firebase||!firebase.auth){toast("Login indisponível agora.");return;}
   const prov=new firebase.auth.GoogleAuthProvider();prov.setCustomParameters({prompt:"select_account"});
@@ -501,8 +521,8 @@ async function entrarGoogle(){
     if(e&&e.code==="auth/unauthorized-domain"){toast("Falta autorizar o domínio no Firebase (passo 2).");return;}
     if(e&&e.code==="auth/operation-not-allowed"){toast("Falta ativar o login Google no Firebase (passo 1).");return;}
     toast("Não deu para entrar: "+(e&&e.code||e));return;}
-  if(admin&&gUser&&gUser.email){try{localStorage.setItem("seosp_pres_email",gUser.email);}catch(e){}}
-  render();toast("Conectado como "+(gUser&&gUser.email));
+  if(gUser&&gUser.email===PRES_EMAIL){admin=true;try{sessionStorage.setItem("seospAdmin","1");}catch(e){}}
+  render();toast(gUser&&gUser.email===PRES_EMAIL?"Presidente conectado.":"Conta sem permissão de Presidente: "+(gUser&&gUser.email));
 }
 function regrasProtegidas(email){return `rules_version = '2';
 service cloud.firestore {
@@ -1043,6 +1063,32 @@ const LIB_MIN=5,SUL_MIN=5,PESO_POND=5; // Libertadores única (desde 23/11/2026)
 let campAba="mensal",mesOff=0;
 const MESES=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 function janelaMes(off){const d=new Date();const a=new Date(d.getFullYear(),d.getMonth()+off,1);const b=new Date(a.getFullYear(),a.getMonth()+1,1);return {ini:a.getTime(),fim:b.getTime(),nome:MESES[a.getMonth()]+" "+a.getFullYear(),mes:a.getMonth(),ano:a.getFullYear()};}
+const DUP_MIN=5,DUP_PRAZO=7,DUP_INICIO=new Date(2026,11,1).getTime();
+function copaDuplas(off){
+  const w=janelaMes(off);if(w.ini<DUP_INICIO)return null;const D={};
+  for(const p of cache.partidas){if(!(p.criadoEm>=w.ini&&p.criadoEm<w.fim))continue;const PZ=pecasDe(p);if(!PZ.length)continue;const st=computeState(p);
+    const fechouIdx=new Set();let pv={A:0,B:0};(p.eventos||[]).forEach((e,i)=>{const tr=st.trace[i];if(!tr)return;if(tr.A.pecas>pv.A||tr.B.pecas>pv.B)fechouIdx.add(i);pv={A:tr.A.pecas,B:tr.B.pecas};});
+    for(const L of ["A","B"]){const d=p["dupla"+L];if(!d.j1||!d.j2)continue;const ids=[d.j1,d.j2].sort();const k=ids.join("+");
+      const x=D[k]||(D[k]={k,ids,nome:ids.map(nomeJog).join(" & "),mesas:0,vitorias:0,derrotas:0,pts:0});
+      x.mesas+=PZ.length;const v=PZ.filter(z=>z.w===L).length;x.vitorias+=v;x.derrotas+=PZ.length-v;x.pts+=v*PONTO_VIT;
+      (p.eventos||[]).forEach((e,i)=>{if(!ids.includes(e.jog))return;if(e.k==="batida")x.pts+=valorBatida(e.tipo,fechouIdx.has(i));else if(e.k==="infr")x.pts+=PONTOS_INF[e.tipo]||0;});}}
+  const L=Object.values(D);const sp=L.reduce((a,x)=>a+x.pts,0),sm=L.reduce((a,x)=>a+x.mesas,0);const G=sm?sp/sm:0;
+  L.forEach(x=>{x.G=G;x.med=(x.pts+PESO_POND*G)/(x.mesas+PESO_POND);});
+  const cdv=(a,b)=>{let va=0,vb=0;for(const p of cache.partidas){if(!(p.criadoEm>=w.ini&&p.criadoEm<w.fim))continue;const kA=[p.duplaA.j1,p.duplaA.j2].sort().join("+"),kB=[p.duplaB.j1,p.duplaB.j2].sort().join("+");
+    if(!((kA===a.k&&kB===b.k)||(kA===b.k&&kB===a.k)))continue;for(const z of pecasDe(p)){const kw=z.w==="A"?kA:kB;if(kw===a.k)va++;else vb++;}}return vb-va;};
+  const el=L.filter(x=>x.mesas>=DUP_MIN).sort((a,b)=>b.med-a.med||b.vitorias-a.vitorias||cdv(a,b));el.forEach((x,i)=>x.pos=i+1);
+  const aq=L.filter(x=>x.mesas<DUP_MIN).sort((a,b)=>b.mesas-a.mesas);
+  let fin=[];if(el.length){fin=[el[0]];const o=el.slice(1).find(x=>!x.ids.some(j=>el[0].ids.includes(j)));if(o)fin.push(o);}
+  // final: mesas entre as duas finalistas do dia 1º ao dia DUP_PRAZO do mês seguinte
+  let serie=null;const fimMes=Date.now()>=w.fim;
+  if(fin.length===2&&fimMes){const fi=w.fim,ff=new Date(new Date(w.fim).getFullYear(),new Date(w.fim).getMonth(),DUP_PRAZO+1).getTime();const pl={[fin[0].k]:0,[fin[1].k]:0};const jogos=[];
+    for(const p of cache.partidas.filter(p=>p.criadoEm>=fi&&p.criadoEm<ff).sort((a,b)=>a.criadoEm-b.criadoEm)){const kA=[p.duplaA.j1,p.duplaA.j2].sort().join("+"),kB=[p.duplaB.j1,p.duplaB.j2].sort().join("+");
+      if(!(pl[kA]!=null&&pl[kB]!=null&&kA!==kB))continue;for(const z of pecasDe(p)){if(pl[fin[0].k]>=2||pl[fin[1].k]>=2)break;const kw=z.w==="A"?kA:kB;pl[kw]++;jogos.push(kw);}}
+    const enc=pl[fin[0].k]>=2||pl[fin[1].k]>=2||Date.now()>=ff;
+    let camp=null;if(enc)camp=pl[fin[1].k]>pl[fin[0].k]?fin[1]:fin[0];
+    serie={pl,jogos,enc,camp,prazo:ff};}
+  return {w,G,el,aq,fin,serie,fimMes};
+}
 function confronto(grupo,w){
   const ids=new Set(grupo.map(x=>x.id));const v={};grupo.forEach(x=>v[x.id]=0);
   for(const p of cache.partidas){if(!(p.criadoEm>=w.ini&&p.criadoEm<w.fim)||!(p.eventos||[]).length)continue;
@@ -1150,6 +1196,19 @@ function tabelaBR(lista,fechado){
   return h;
 }
 const t0G=l=>l.length&&l[0].G!=null?` (grupo ${fmtMed(l[0].G)})`:"";
+function painelDuplas(c,fechado){
+  let h=`<section class="pn pn-dup"><div class="pn-h"><span style="font-size:24px" aria-hidden="true">🤝</span><div><div class="pn-t">COPA DAS DUPLAS</div><div class="pn-s">${DUP_MIN}+ mesas juntos · média ponderada · 2 primeiras vão à final (melhor de 3)</div></div></div>`;
+  const s=c.serie;
+  if(c.fin.length===2){const [a,b]=c.fin;const sa=s?s.pl[a.k]:0,sb=s?s.pl[b.k]:0;
+    h+=`<div class="dup-fin"><div class="grp" style="margin:0 0 6px;color:#F6E7C8">${s&&s.enc?"🏆 CAMPEÃ DA COPA":c.fimMes?"⚔️ FINAL · melhor de 3 · até dia "+DUP_PRAZO:"⚔️ FINALISTAS (parcial)"}</div>
+    <div class="dup-vs"><b class="${s&&s.camp===a?"cp":""}">${esc(a.nome)}</b><span>${c.fimMes?sa+" × "+sb:"×"}</span><b class="${s&&s.camp===b?"cp":""}">${esc(b.nome)}</b></div>
+    ${s&&s.enc?`<div style="text-align:center;margin-top:6px">🏆 <b>${esc(s.camp.nome)}</b></div>`:c.fimMes?`<div class="pn-s" style="text-align:center;margin-top:6px">Joguem as mesas entre as duas duplas: o site conta sozinho. Vence quem fizer 2.</div>`:`<div class="pn-s" style="text-align:center;margin-top:6px">A final acontece do dia 1º ao dia ${DUP_PRAZO} do mês seguinte.</div>`}</div>`;}
+  if(!c.el.length)h+=`<div class="pn-v">Nenhuma dupla com ${DUP_MIN} mesas juntos ainda.</div>`;
+  else{h+=`<div class="pn-r pn-hd"><span>#</span><span class="n">Dupla</span><span>M</span><span>V</span><span>%</span><span>PTS</span><span>Média</span></div>`;
+    for(const x of c.el){const f=c.fin.includes(x);h+=`<div class="pn-r ${f?"lid":""}" style="cursor:default"><span class="ps">${x.pos}</span><span class="n"><b>${esc(x.ids.map(j=>nomeJog(j).split(" ")[0]).join(" & "))}</b><small>${f?"finalista · ":""}${x.derrotas} D</small></span><span>${x.mesas}</span><span>${x.vitorias}</span><span class="mu2">${x.mesas?Math.round(100*x.vitorias/x.mesas):0}</span><span>${x.pts}</span><b class="md">${fmtMed(x.med)}</b></div>`;}}
+  if(c.aq.length)h+=`<div class="pn-s" style="padding:8px 6px 2px">Em aquecimento: ${c.aq.slice(0,8).map(x=>esc(x.nome)+" ("+x.mesas+")").join(" · ")}</div>`;
+  return h+`</section>`;
+}
 function painel(lista,tipo,fechado){
   const lib=tipo==="lib";
   let h=`<section class="pn ${lib?"pn-lib":"pn-sul"}"><div class="pn-h"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h8v4a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 12v5M8 21h8M10 17h4"/></svg><div><div class="pn-t ${lib?"foil":""}">${lib?"LIBERTADORES":"SUL-AMERICANA"}</div><div class="pn-s">${LIB_MIN}+ mesas · média ponderada${t0G(lista)}</div></div></div>`;
@@ -1170,7 +1229,8 @@ function regMensal(){return `
   <p><b>Art. 8º Campeões.</b> O 1º colocado de cada competição no encerramento do mês é Campeão do Brasileirão e da Libertadores, registrados na Galeria de Campeões.</p>
   <p><b>Art. 9º Desempate</b>: I – Brasileirão: mais vitórias, mais batidas especiais, mais batidas secas, menos infrações; II – Libertadores: mais pontos, mais vitórias, mais batidas especiais, mais batidas secas, menos infrações; III – em ambas, por último, o <b>confronto direto</b>; persistindo, título dividido.</p>
   <p><b>Art. 10. Registro e correções.</b> Só vale o que estiver lançado no Placar Oficial. Erros são corrigidos pelo Presidente, com motivo registrado no Histórico de exclusões; as tabelas são recalculadas automaticamente.</p>
-  <p><b>Art. 11. Selos do mês</b> (honrarias, não mudam a classificação): 👑 Rei da Buchada; 🧼 Mão Limpa (menos infrações, com ${SUL_MIN}+ mesas); 🔥 Maior Sequência (mínimo 2); 🐈 Gato do Mês.</p>
+  <p><b>Art. 11. Selos do mês</b> (honrarias, não mudam a classificação): 👑 Rei da Buchada; 🧼 Mão Limpa (menos infrações, com ${SUL_MIN}+ mesas); 🔥 Maior Sequência (mínimo 2); 🤝 Assistente Nato (maior proporção de mesas em que a parceria levou a dupla à vitória, ${LIB_MIN}+ mesas; desempate: mais parceiros diferentes); 🏅 Rendimento de Ouro (metade % de vitórias, metade média de pontos; ${LIB_MIN}+ mesas, sem fraude); 🪓 Carrasco (venceu mais adversários diferentes); 🛒 Freguesia (perdeu para mais adversários diferentes); 🐈 Gato do Mês. Toque no selo para ver a explicação e o comparativo.</p>
+  <p><b>Art. 11-A. Copa das Duplas</b> (a partir de dezembro de 2026): I – toda dupla que jogar junta entra no ranking do mês, pela média ponderada da dupla (PTS da dupla + ${PESO_POND} × média do grupo) ÷ (mesas + ${PESO_POND}); PTS da dupla = vitórias × ${PONTO_VIT} + pontos das batidas dos dois + infrações dos dois; só conta mesa com peça; no sem fila, cada peça é uma mesa; II – disputa a vaga quem tiver ${DUP_MIN}+ mesas juntos; desempate: mais vitórias, depois confronto direto; III – as duas primeiras duplas fazem a <b>final em melhor de 3 mesas</b>, do dia 1º ao dia ${DUP_PRAZO} do mês seguinte; se um jogador estiver nas duas, sobe a próxima dupla sem jogador repetido; IV – vence quem fizer 2 mesas; se a série não terminar no prazo, vence quem estiver na frente na série e, empatada, a 1ª do ranking; V – as mesas da final valem também no campeonato do novo mês.</p>
   <p><b>Art. 12. Casos omissos</b> são decididos pela maioria dos presentes, mínimo de 3 (Art. 26 da Lei nº 0608/2026).</p>`;}
 let compAba="br";
 function fechado1(k){try{return localStorage.getItem("seosp_x_"+k)==="1";}catch(e){return false;}}
@@ -1191,12 +1251,14 @@ function vMensal(){
   h+=painel(t.lib,"lib",fechado);
   if(t.aq.length)h+=`<div class="card"><div class="grp" style="margin-top:0;color:var(--mu)">EM AQUECIMENTO · menos de ${SUL_MIN} mesas</div><div class="chips">${t.aq.map(x=>`<span class="chip">${esc(x.nome)} · ${x.mesas}, faltam ${SUL_MIN-x.mesas}</span>`).join("")}</div></div>`;
   h+=acoes("ls");
+  {const cd=copaDuplas(mesOff);if(cd)h+=painelDuplas(cd,fechado);}
   const SL=selosMes(mesOff);
   if(SL.length)h+=`<h2>SELOS DO MÊS</h2><div class="selos"><div class="md-h"><span>QUADRO DE MEDALHAS</span><span>toque para ver o porquê</span></div>${SL.map((x,i)=>`<div class="md-r ${x.neg?"neg":""}" data-selo="${i}" role="button" tabindex="0" aria-label="${x.nome}: ${listaNomes(x.quem.map(q=>esc(q.nome)))}"><span class="ic">${x.ic}</span><span class="nm">${x.nome.toUpperCase()}</span><span class="qm">${listaNomes(x.quem.map(q=>esc(q.nome.split(" ")[0])))}</span><span class="ch">›</span></div>`).join("")}</div>`;
   h+=`<details class="card" style="padding:10px 14px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📜 Regulamento do Campeonato do Mês</summary><div class="rules" style="margin-top:6px">${regMensal()}</div></details>`;
   const galeria=[];for(let o=-1;o>=-12;o--){const g=tabelaMes(o);if(g.br.length||g.lib.length||g.sul.length)galeria.push(g);}
   const cmp=(g,k)=>{const c=g["camp"+k[0].toUpperCase()+k.slice(1)];return c.length?c.map(x=>esc(x.nome)).join(" e ")+` (${k==="br"?c[0].pts+" pts":fmtMed(c[0].med)})`:"—";};
-  h+=`<h2>GALERIA DE CAMPEÕES</h2><div class="card">${galeria.length?galeria.map(g=>`<div class="match"><div class="grow"><b>${g.w.nome}</b><div class="muted">${["br","lib"].map(k=>`${COMP[k].ic} ${COMP[k].nome}: ${cmp(g,k)}`).join("<br>")}</div></div></div>`).join(""):`<div class="empty" style="padding:12px">Os campeões aparecem aqui quando o primeiro mês terminar.</div>`}</div>`;
+  const cDup=g=>{const o=Math.round((g.w.ano-new Date().getFullYear())*12+g.w.mes-new Date().getMonth());const c=copaDuplas(o);return c&&c.serie&&c.serie.enc?`<br>🤝 Copa das Duplas: ${esc(c.serie.camp.nome)}`:"";};
+  h+=`<h2>GALERIA DE CAMPEÕES</h2><div class="card">${galeria.length?galeria.map(g=>`<div class="match"><div class="grow"><b>${g.w.nome}</b><div class="muted">${["br","lib"].map(k=>`${COMP[k].ic} ${COMP[k].nome}: ${cmp(g,k)}`).join("<br>")}${cDup(g)}</div></div></div>`).join(""):`<div class="empty" style="padding:12px">Os campeões aparecem aqui quando o primeiro mês terminar.</div>`}</div>`;
   return h;
 }
 function vCamps(){
@@ -1943,7 +2005,7 @@ function vRegras(){
   <p><b>Pontos da mesa</b> — o placar dentro da mesa: 1ª vitória simples = <b>3</b>, 2ª = <b>5</b> (Art. 3º).</p>
   <p><b>Peça</b> — a conquista que vence a mesa: 3ª vitória simples ou qualquer vitória direta (Art. 3º, III e IV).</p>
   <p><b>Vitória simples</b> — batida seca, fechamento folgando bucha, fechamento forçado (Art. 8º). <b>Vitória direta</b> — lasquinez, lasquinez preso, buchada, buchada dobrada, fechou com menor ponto (Art. 7º).</p>
-  <p><b>Rodada decisiva</b> — após 3×3 ou fechamento forçado: quem vencer leva a peça (Arts. 6º e 21).</p>
+  <p><b>Rodada decisiva</b> — após 3×3: quem vencer leva a peça (Art. 6º). O fechamento forçado conta como batida simples comum (3 → 5 → peça), conforme decisão do Presidente de 25/11/2026.</p>
   <p><b>Pontos do campeonato (PTS)</b> — o que soma nas tabelas (mesa vencida +${PONTO_VIT}, batidas e bônus das especiais, infrações). Não se confunde com os pontos 3 e 5 da mesa.</p>
   <p><b>Média ponderada</b> — (pontos + ${PESO_POND} × média do grupo) ÷ (mesas + ${PESO_POND}), usada na Libertadores.</p></div>
   <details class="card rg"><summary>🁢 Como se ganha a mesa (Arts. 3º a 8º e 21)</summary><div class="rules"><p>1ª vitória simples = <b>3 pontos</b> · 2ª = <b>5 pontos</b> · 3ª = <b>1 peça</b>. Vitória direta = <b>1 peça na hora</b>. <b>Fechou–Chorou</b>: a peça vai para a dupla adversária.</p><p>Com 3×3, ou depois de um fechamento forçado, a próxima rodada é <b>decisiva</b>, com saída na bucha de ás.</p></div></details>
