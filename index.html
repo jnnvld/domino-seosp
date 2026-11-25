@@ -953,7 +953,7 @@ function stats(ini=iniPeriodo(),fim=Infinity,modo=false){const soMesas=!!modo;
       const fechou=!!(tr&&tr[Lj].pecas>prevP[Lj]);if(tr)prevP={A:tr.A.pecas,B:tr.B.pecas};
       if(!em(e.t))return;const x=get(e.jog);
       if(e.k==="batida"){x.b[e.tipo]=(x.b[e.tipo]||0)+1;if(BATIDAS[e.tipo]&&BATIDAS[e.tipo].esp)x.esp++;
-        const v=valorBatida(e.tipo,fechou);x.bp=x.bp||{};x.bp[e.tipo]=(x.bp[e.tipo]||0)+v;if(fechou&&SIMPLES.has(e.tipo))x.fechSec=(x.fechSec||0)+1;
+        const v=valorBatida(e.tipo,fechou);x.bp=x.bp||{};x.bp[e.tipo]=(x.bp[e.tipo]||0)+v;if(fechou&&SIMPLES.has(e.tipo)){x.fechSec=(x.fechSec||0)+1;x.bf=x.bf||{};x.bf[e.tipo]=(x.bf[e.tipo]||0)+1;}
         if(e.tipo!=="fechou_chorou"){const D=[p.duplaA,p.duplaB].find(d=>d.j1===e.jog||d.j2===e.jog);const par=D&&(D.j1===e.jog?D.j2:D.j1);if(par){const y=get(par);y.ass=(y.ass||0)+1;}}}
       else{x.inf[e.tipo]=(x.inf[e.tipo]||0)+1;x.infTot++;if(INFR[e.tipo]&&INFR[e.tipo].adv)x.adv++;}
     });
@@ -1125,7 +1125,8 @@ function tabelaMes(off){
 }
 const fmtMed=v=>v.toFixed(2).replace(".",",");
 function decompor(x){
-  const bat=Object.entries(x.b||{}).map(([k,n])=>({nome:(BATIDAS[k]||{nome:k}).nome+(SIMPLES.has(k)&&(x.bp||{})[k]!==n*(PONTOS_BAT[k]||0)?" (a que fechou a mesa vale só a vitória)":""),n,pts:(x.bp||{})[k]||0})).filter(r=>r.n);
+  const bat=Object.entries(x.b||{}).map(([k,n])=>{const f=(x.bf||{})[k]||0;const nm=(BATIDAS[k]||{nome:k}).nome;
+    return {nome:SIMPLES.has(k)&&f?`${nm}: ${n} (${n-f} × +1, e ${f} ${f>1?"fecharam":"fechou"} a mesa: vale só a vitória)`:`${nm}: ${n} × ${(PONTOS_BAT[k]>0?"+":"")+(PONTOS_BAT[k]||0)}`,n,pts:(x.bp||{})[k]||0};}).filter(r=>r.n);
   const inf=Object.entries(x.inf||{}).map(([k,n])=>({nome:(INFR[k]||{nome:k}).nome,n,pts:(PONTOS_INF[k]||0)*n})).filter(r=>r.n);
   const vit=x.vitorias*PONTO_VIT,sb=bat.reduce((a,r)=>a+r.pts,0),si=inf.reduce((a,r)=>a+r.pts,0),sa=(x.ass||0)*PONTO_ASS;
   return {vit,bat,inf,sb,si,sa,tot:vit+sb+si+sa};
@@ -1157,7 +1158,8 @@ function shExtrato(){
   let h=`<h3>${esc(x.nome.toUpperCase())}</h3><p class="muted" style="margin:-6px 0 10px">${COMP[div].ic} ${COMP[div].nome} · ${t.w.nome} · ${x.pos}º lugar</p>
   <div class="ex"><div class="ex-t">DE ONDE VÊM OS PONTOS DO CAMPEONATO</div>
   ${ln(`Mesas vencidas: ${x.vitorias} × ${PONTO_VIT}`,d.vit)}
-  ${d.bat.map(r=>ln(`${r.nome}: ${r.n}`,r.pts)).join("")}
+  ${d.bat.map(r=>ln(r.nome,r.pts)).join("")}
+  <div class="ex-l"><span>Batidas especiais (desempate)</span><b>${x.espN||0}</b></div><div class="ex-l"><span>Batidas secas/forçadas (desempate)</span><b>${x.secN||0}</b></div>
   ${PONTO_ASS&&x.ass?ln(`Assistências: ${x.ass} × ${PONTO_ASS}`,d.sa):""}
   ${d.inf.map(r=>ln(`${r.nome}: ${r.n}`,r.pts,"neg")).join("")}
   <div class="ex-l tot"><span>Total de pontos</span><b>${x.pts}</b></div>
@@ -1168,7 +1170,7 @@ function shExtrato(){
     const cols=[x];if(i>0)cols.unshift(L[i-1]);if(i<L.length-1)cols.push(L[i+1]);
     const row=(l,f)=>`<tr><td class="n">${l}</td>${cols.map(c=>`<td class="${c.id===x.id?"me":""}">${f(c)}</td>`).join("")}</tr>`;
     h+=`<table class="tb ex-c"><thead><tr><th></th>${cols.map(c=>`<th class="${c.id===x.id?"me":""}">${c.pos}º ${esc(c.nome.split(" ")[0])}</th>`).join("")}</tr></thead><tbody>
-    ${row("Mesas",c=>c.mesas)}${row("Vitórias",c=>c.vitorias)}${row("Aproveitamento",aprov)}${row("Pts de vitórias",c=>decompor(c).vit)}${row("Pts de batidas",c=>"+"+decompor(c).sb)}${PONTO_ASS?row("Assistências",c=>"+"+decompor(c).sa):""}${row("Infrações",c=>decompor(c).si)}${row("<b>Total de pontos</b>",c=>`<b>${c.pts}</b>`)}${br?"":row("<b>Média</b>",c=>`<b>${fmtMed(c.med)}</b>`)}</tbody></table>`;
+    ${row("Mesas",c=>c.mesas)}${row("Vitórias",c=>c.vitorias)}${row("Aproveitamento",aprov)}${row("Pts de vitórias",c=>decompor(c).vit)}${row("Pts de batidas",c=>"+"+decompor(c).sb)}${PONTO_ASS?row("Assistências",c=>"+"+decompor(c).sa):""}${row("Qtd. especiais",c=>c.espN||0)}${row("Qtd. secas/forç.",c=>c.secN||0)}${row("Infrações",c=>decompor(c).si)}${row("<b>Total de pontos</b>",c=>`<b>${c.pts}</b>`)}${br?"":row("<b>Média</b>",c=>`<b>${fmtMed(c.med)}</b>`)}</tbody></table>`;
     h+=viz.map(([k,a,b])=>`<p class="ex-w">${k==="acima"?`⬆ <b>${esc(a.nome)}</b> está à frente porque ${motivoPos(a,b,div)}`:`⬇ <b>${esc(x.nome)}</b> está à frente de ${esc(b.nome)} porque ${motivoPos(a,b,div)}`}</p>`).join("");
     if(!br)h+=`<p class="muted" style="font-size:12.5px">Jogar mais ou vencer mais não basta: conta quanto se faz <b>por mesa</b>. Mesa sem pontos baixa a média; batidas e vitórias sobem; infrações descontam.</p>`;}
   h+=`<details class="ex" style="margin-top:12px"><summary class="ex-t" style="cursor:pointer;margin:0">📜 COMO FUNCIONA ${br?"O BRASILEIRÃO":"A "+COMP[div].nome.toUpperCase()}</summary><div style="font-size:13.5px;line-height:1.45;margin-top:6px">${regraComp(div)}</div></details>`;
@@ -1613,7 +1615,7 @@ function fichaJog(id){
   ${selos.length?`<div class="grp" style="color:var(--gd)">SELOS DO MÊS</div><div style="margin-bottom:10px">${selos.map(t=>`<div data-selo="${t.i}" data-soff="0" role="button" tabindex="0" style="cursor:pointer;padding:3px 0">${esc(t.t)} <span class="muted">›</span></div>`).join("")}</div>`:""}
   ${melhorP?`<p class="ex-w">⭐ Melhor parceria: <b>${esc(nomeJog(melhorP[0]))}</b>, ${melhorP[1].V} vitórias em ${melhorP[1].J} mesas juntos (${Math.round(100*melhorP[1].V/melhorP[1].J)}%).</p>`:""}
   ${tabPR(PA,"PARCERIAS","Parceiro")}${tabPR(RV,"RIVALIDADES (CONTRA)","Adversário")}
-  <div class="grp" style="color:var(--gd)">BATIDAS E INFRAÇÕES (HISTÓRICO)</div><div class="chips" style="margin-bottom:10px">${chips.join("")||`<span class="muted">Nada registrado.</span>`}</div>
+  <div class="grp" style="color:var(--gd)">BATIDAS E INFRAÇÕES (HISTÓRICO · todos os meses, não só o mês)</div><div class="chips" style="margin-bottom:10px">${chips.join("")||`<span class="muted">Nada registrado.</span>`}</div>
   <div class="grp" style="color:var(--gd)">ÚLTIMAS MESAS</div><div>${mesas.length?mesas.map(linhaM).join(""):`<p class="muted">Nenhuma mesa.</p>`}</div>
   <div class="row" style="margin-top:14px"><button class="btn ghost grow" data-act="fecharSheet">Fechar</button><button class="btn ghost grow" data-ren="jogadores:${id}">Renomear</button><button class="btn tc grow" data-avj="${esc(nome)}">+ Avulso</button></div>`;
 }

@@ -1,5 +1,5 @@
 // Placar Oficial Dominó SEOSP — funciona sem internet.
-const V="seosp-v21";
+const V="seosp-v22";
 const SHELL=["./","./index.html","./manifest.webmanifest","./icon-192.png","./icon-512.png",
  "https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js",
  "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js",
