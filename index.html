@@ -1755,7 +1755,7 @@ const SERIE={A:{nome:"SÉRIE A",cor:"#0E3B2E",sub:"elite · disputa o título"},
 function tabelaSerie(L,s){const lista=L.S[s];const cfg=SERIE[s];
   let h=`<section class="lg-t"><div class="lg-h" style="background:${cfg.cor}"><b>${cfg.nome}</b><span>${cfg.sub}</span></div>`;
   if(!lista.length)return h+`<div class="empty" style="padding:12px">Ninguém nesta série.</div></section>`;
-  h+=`<div class="lg-r lg-hd"><span>#</span><span>Jogador</span><span>Dias</span><span>M</span><span>Últ. 5</span><span>Nota</span></div>`;
+  h+=`<div class="lg-r lg-hd"><span>#</span><span>Jogador</span><span>Dias</span><span>M</span><span>Últ. 5</span><span>Média</span></div>`;
   for(const x of lista){const z=ZL[x.zona];const ap=x.mesas?Math.round(100*x.vitorias/x.mesas):0;
     h+=`<button class="lg-r" style="box-shadow:inset 5px 0 ${z[0]}" data-liga="${x.id}" aria-label="${esc(x.nome)}, ${x.pos}º, ${z[1]}. Ver a conta"><span class="ps">${x.zona==="camp"&&L.fechado?"🏆":x.pos}</span>
     <span class="n"><span><b>${esc(x.nome)}</b></span><small>${x.vitorias}V ${x.derrotas||0}D · ${x.bat} bat. · ${ap}%</small><small style="color:${z[0]==="#CDBF9F"?"var(--mu)":z[0]};font-weight:700">${z[1]}</small></span>
@@ -1764,10 +1764,10 @@ function tabelaSerie(L,s){const lista=L.S[s];const cfg=SERIE[s];
 function vLiga(L){
   const acoes=`<div class="acoes"><button class="btn sm" data-act="imgMensal">📸 Imagem</button><button class="btn sm" data-act="imgFinal" style="background:var(--go);color:#2a1e05">🏁 Fechamento</button><button class="btn ghost sm" data-act="txtMes" data-off="${mesOff}">📋 Texto</button></div>`;
   let h="";
-  if(!fechado1("howliga1"))h+=`<div class="howto aviso">${xBtn("howliga1")}🇧🇷 <b>Brasileirão em séries.</b> Cada <b>dia</b> que você joga vira uma <b>nota</b> (pontos do dia ÷ mesas do dia). Sua nota do mês é a média dessas notas. Precisa de <b>${LIGA_DIAS} dias</b> para ter posição.<br>👆 Toque no seu nome para ver a conta dia a dia.</div>`;
+  if(!fechado1("howliga1"))h+=`<div class="howto aviso">${xBtn("howliga1")}🇧🇷 <b>Brasileirão em séries.</b> Cada <b>dia</b> que você joga vira uma <b>nota</b> (pontos do dia ÷ mesas do dia). Sua <b>média acumulada</b> junta essas notas e é atualizada a cada mesa; no último dia do mês, a média final define as posições. Precisa de <b>${LIGA_DIAS} dias</b> para ter posição.<br>👆 Toque no seu nome para ver a conta dia a dia.</div>`;
   h+=tabelaSerie(L,"A")+tabelaSerie(L,"B")+(L.S.C.length?tabelaSerie(L,"C"):"");
   h+=`<div class="lg-leg">${["camp","fica","cai","sobe","ficaB","aq"].map(k=>`<span><i style="background:${ZL[k][0]}"></i>${ZL[k][1].replace(/^[^A-Za-zÀ-ú]+/,"")}</span>`).join("")}</div>`;
-  h+=`<p class="muted" style="font-size:12.5px;margin:6px 4px 0">Nota = (soma das notas diárias + ${LIGA_POND} × ${fmtMed(L.Gd)}) ÷ (dias + ${LIGA_POND}). ${fmtMed(L.Gd)} é a nota média de todo mundo no mês.</p>`;
+  h+=`<p class="muted" style="font-size:12.5px;margin:6px 4px 0">Média = (soma das notas diárias + ${LIGA_POND} × ${fmtMed(L.Gd)}) ÷ (dias + ${LIGA_POND}). ${fmtMed(L.Gd)} é a nota média de todo mundo no mês.</p>`;
   return h+acoes;}
 /* Conta do jogador (transparência total) */
 function shLiga(){
@@ -1780,20 +1780,20 @@ function shLiga(){
   <div class="ex"><div class="ex-t">1. A NOTA DE CADA DIA</div><table class="tb ex-c"><thead><tr><th>Dia</th><th>Mesas</th><th>Pontos</th><th>Nota do dia</th></tr></thead><tbody>
   ${x.dias.map(dd=>`<tr><td class="n">${fd(dd.d)}</td><td>${dd.m}</td><td>${dd.pts}</td><td><b>${dd.pts} ÷ ${dd.m} = ${fmtMed(dd.n)}</b></td></tr>`).join("")||`<tr><td colspan="4">Nenhum dia ainda.</td></tr>`}</tbody></table>
   <p class="muted" style="font-size:12.5px;margin:6px 0 0">Cada dia vale igual, jogando 2 ou 10 mesas. Conta o dia com pelo menos ${LIGA_MD} mesas com peça.</p></div>
-  <div class="ex"><div class="ex-t">2. A NOTA DO MÊS, PASSO A PASSO</div>
+  <div class="ex"><div class="ex-t">2. A MÉDIA ACUMULADA, PASSO A PASSO</div>
   <div class="ex-l"><span>Passo 1 · some as notas dos ${x.nd} dia(s)</span><b>${fmtMed(x.soma||0)}</b></div>
   <div class="ex-l"><span>Passo 2 · some ${LIGA_POND} dias de bônus (${LIGA_POND} × ${fmtMed(L.Gd)}, a média do grupo)</span><b>+ ${fmtMed(LIGA_POND*L.Gd)}</b></div>
   <div class="ex-l"><span>Total</span><b>${fmtMed((x.soma||0)+LIGA_POND*L.Gd)}</b></div>
   <div class="ex-l"><span>Passo 3 · divida pelo total de dias (${x.nd} + ${LIGA_POND})</span><b>÷ ${x.nd+LIGA_POND}</b></div>
-  <div class="ex-r">NOTA DO MÊS = <b>${x.nota==null?"–":fmtMed(x.nota)}</b></div>
+  <div class="ex-r">${L.fechado?"MÉDIA FINAL":"MÉDIA ACUMULADA"} = <b>${x.nota==null?"–":fmtMed(x.nota)}</b></div>
   <p class="muted" style="font-size:12.5px;margin:6px 0 0">Os ${LIGA_POND} dias de bônus evitam que alguém fique em 1º com poucos dias de sorte. Quanto mais dias você joga, menos eles pesam. Sem eles, sua média seria ${x.nd?fmtMed(x.simples):"–"}.</p></div>
   <div class="ex"><div class="ex-t">3. DE ONDE VIERAM OS PONTOS NO MÊS</div>
   ${ln(`Mesas vencidas: ${x.vitorias} × ${PONTO_VIT}`,d.vit)}${d.bat.map(r=>ln(r.nome,r.pts)).join("")}${d.inf.map(r=>ln(`${r.nome}: ${r.n}`,r.pts,"neg")).join("")}
   <div class="ex-l tot"><span>Total de pontos (${x.mesas} mesas)</span><b>${x.pts}</b></div></div>`;
   const S=L.S[x.serie];const i=S.findIndex(y=>y.id===x.id);const viz=[S[i-1],x,S[i+1]].filter(Boolean);
   if(viz.length>1){h+=`<div class="ex-t" style="margin-top:12px">COMPARAÇÃO NA ${SERIE[x.serie].nome}</div><table class="tb ex-c"><thead><tr><th></th>${viz.map(c=>`<th class="${c.id===x.id?"me":""}">${c.pos}º ${esc(c.nome.split(" ")[0])}</th>`).join("")}</tr></thead><tbody>
-    ${[["Dias",c=>c.nd],["Mesas",c=>c.mesas],["Vitórias",c=>c.vitorias],["Derrotas",c=>c.derrotas||0],["Batidas",c=>c.bat],["Pontos",c=>c.pts],["<b>Nota</b>",c=>`<b>${c.nota==null?"–":fmtMed(c.nota)}</b>`]].map(([l,f])=>`<tr><td class="n">${l}</td>${viz.map(c=>`<td class="${c.id===x.id?"me":""}">${f(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>
-    <p class="muted" style="font-size:12.5px">Ordem: primeiro quem tem ${LIGA_DIAS}+ dias; depois maior nota. Empate: mais vitórias → mais especiais → mais simples → menos infrações → mais dias.</p>`;}
+    ${[["Dias",c=>c.nd],["Mesas",c=>c.mesas],["Vitórias",c=>c.vitorias],["Derrotas",c=>c.derrotas||0],["Batidas",c=>c.bat],["Pontos",c=>c.pts],["<b>Média</b>",c=>`<b>${c.nota==null?"–":fmtMed(c.nota)}</b>`]].map(([l,f])=>`<tr><td class="n">${l}</td>${viz.map(c=>`<td class="${c.id===x.id?"me":""}">${f(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>
+    <p class="muted" style="font-size:12.5px">Ordem: primeiro quem tem ${LIGA_DIAS}+ dias; depois maior média. Empate: mais vitórias → mais especiais → mais simples → menos infrações → mais dias.</p>`;}
   h+=`<details class="ex" style="margin-top:12px"><summary class="ex-t" style="cursor:pointer;margin:0">📜 REGULAMENTO COMPLETO</summary><div class="rules" style="font-size:13.5px;margin-top:6px">${regLiga()}</div></details>
   <div class="row" style="margin-top:12px"><button class="btn ghost grow" data-act="fecharSheet">Fechar</button><button class="btn grow" data-ficha="${x.id}">Ficha completa</button></div>`;
   return h;
@@ -1809,9 +1809,9 @@ function regLiga(){return `
 <p><b>Art. 2. As séries.</b> Os jogadores ficam em três grupos:<br>• <b>Série A</b> — os 5 melhores. Quem ganha a Série A é o <b>Campeão do Brasileirão</b>.<br>• <b>Série B</b> — os seguintes (6º ao 10º). Quem ganha a Série B é o <b>Campeão da Série B</b>.<br>• <b>Série C</b> — aquecimento: quem não completou os dias mínimos e quem é novo.<br><i>Todo mundo continua jogando com todo mundo, em qualquer dupla.</i> A série só diz em qual tabela o seu nome aparece.</p>
 <p><b>Art. 3. Os pontos de cada mesa</b> (iguais aos de sempre):<br>• Ganhou a mesa: <b>+3</b> para os dois da dupla.<br>• Batida simples (seca, forçado, folgando) que <b>não</b> fecha a mesa: <b>+1</b> para quem bateu. Se fechou a mesa, vale só a vitória.<br>• Batida especial (lasquinez, buchada, fechou com menor ponto): <b>+3</b>. Lasquinez preso e buchada dobrada: <b>+4</b>.<br>• Fechou–chorou: <b>−2</b>.<br>• Infrações: fraude −5; passar, gato e fingir −3; colagem, esqueceu e sinais −2; sorteio −1.<br>• Sem fila: cada peça conta como uma mesa.</p>
 <p><b>Art. 4. A nota do dia.</b> Em cada dia que você joga, o site faz uma conta: <b>seus pontos do dia ÷ suas mesas do dia</b>. Isso é a sua <b>nota do dia</b>.<br><i>Exemplo:</i> hoje você jogou 4 mesas e fez 10 pontos → nota do dia = 10 ÷ 4 = <b>2,50</b>.<br>O dia só conta se você jogar pelo menos <b>${LIGA_MD} mesas com peça</b> nele. Dia com 1 mesa só não entra na conta: nem ajuda, nem atrapalha. <b>Tanto faz o turno</b> (almoço ou depois das 16h): o dia vale igual, com 2 ou com 10 mesas.</p>
-<p><b>Art. 5. A nota do mês</b>, em 4 passos:<br><b>1)</b> Cada dia vira uma nota: pontos do dia ÷ mesas do dia.<br><b>2)</b> Some as notas de todos os dias que você jogou.<br><b>3)</b> Some mais ${LIGA_POND} dias “de bônus”, cada um com a nota média do grupo no mês.<br><b>4)</b> Divida pelo total de dias (dias jogados + ${LIGA_POND}). O resultado é a sua nota do mês.<br><i>Exemplo:</i> 5 dias com notas 3,00 · 2,50 · 2,00 · 3,50 · 2,00 → soma <b>13,00</b>. Média do grupo 2,20 → 13,00 + 2,20 + 2,20 = <b>17,40</b>. Total de dias 5 + 2 = 7 → 17,40 ÷ 7 = <b>2,49</b>.<br><i>Por que os dias de bônus?</i> Para ninguém ficar em 1º com poucos dias de sorte. Eles puxam todos um pouco para o meio; quem joga mais dias quase não sente.</p>
+<p><b>Art. 5. A média acumulada</b> (atualizada a cada mesa lançada; no último dia do mês vira a <b>média final</b>, que define campeão, quem sobe e quem cai), em 4 passos:<br><b>1)</b> Cada dia vira uma nota: pontos do dia ÷ mesas do dia.<br><b>2)</b> Some as notas de todos os dias que você jogou.<br><b>3)</b> Some mais ${LIGA_POND} dias “de bônus”, cada um com a nota média do grupo no mês.<br><b>4)</b> Divida pelo total de dias (dias jogados + ${LIGA_POND}). O resultado é a sua média acumulada.<br><i>Exemplo:</i> 5 dias com notas 3,00 · 2,50 · 2,00 · 3,50 · 2,00 → soma <b>13,00</b>. Média do grupo 2,20 → 13,00 + 2,20 + 2,20 = <b>17,40</b>. Total de dias 5 + 2 = 7 → 17,40 ÷ 7 = <b>2,49</b>.<br><i>Por que os dias de bônus?</i> Para ninguém ficar em 1º com poucos dias de sorte. Eles puxam todos um pouco para o meio; quem joga mais dias quase não sente.</p>
 <p><b>Art. 6. Mínimo para ter posição.</b> Precisa jogar pelo menos <b>${LIGA_DIAS} dias no mês</b>. Quem não chegar aparece com “faltam X dias” e fica abaixo de quem chegou.</p>
-<p><b>Art. 7. Ordem da tabela.</b> Dentro de cada série: primeiro quem completou ${LIGA_DIAS} dias; depois, a <b>maior nota</b>. Empate: mais vitórias → mais batidas especiais → mais batidas simples → menos infrações → mais dias jogados.</p>
+<p><b>Art. 7. Ordem da tabela.</b> Dentro de cada série: primeiro quem completou ${LIGA_DIAS} dias; depois, a <b>maior média</b>. Empate: mais vitórias → mais batidas especiais → mais batidas simples → menos infrações → mais dias jogados.</p>
 <p><b>Art. 8. Fim do mês — Série A.</b> 1º lugar: <b>Campeão do Brasileirão</b> 🏆. 2º e 3º: continuam na A. 4º e 5º: <b>caem</b> para a B. Quem estiver na A e não completar ${LIGA_DIAS} dias também cai para a B.</p>
 <p><b>Art. 9. Fim do mês — Série B.</b> 1º da B (6º geral): <b>Campeão da Série B</b> 🥈 e <b>sobe</b>. 2º da B (7º geral): também sobe. Os demais continuam na B. Quem estiver na B e não completar ${LIGA_DIAS} dias cai para a C.</p>
 <p><b>Art. 10. Série C.</b> Quem estiver na C e completar ${LIGA_DIAS} dias sobe para a B no mês seguinte. Jogador novo começa na C. Se faltar gente na A (por exemplo, alguém deixou de jogar), a vaga vai para o próximo da B que completou os dias.</p>
@@ -1828,7 +1828,7 @@ function textoLiga(off){
   for(const k of ["A","B","C"]){const S=L.S[k];if(!S.length)continue;s+=`\n*${SERIE[k].nome}*\n`+S.map(x=>`${x.pos}. ${x.nome}: *${x.nota==null?"–":fmtMed(x.nota)}* (${x.nd} dias · ${x.mesas} mesas · V ${x.vitorias} D ${x.derrotas||0})${x.q?"":` · faltam ${LIGA_DIAS-x.nd} dia(s)`} — ${ZL[x.zona][1]}`).join("\n")+"\n";}
   const A=artilharia(off).filter(c=>c.top.length);if(A.length)s+=`\n*ARTILHARIA*\n${A.map(c=>`${c.ic} ${c.nome}: ${c.top.map(x=>x.nome).join(", ")} (${c.top[0].v})`).join("\n")}\n`;
   const SL=selosMes(off);if(SL.length)s+=`\n*SELOS DO MÊS*\n${SL.map(x=>`${x.ic} ${x.nome}: ${listaNomes(x.quem.map(q=>q.nome))}`).join("\n")}\n`;
-  s+=`\nNota do dia = pontos ÷ mesas do dia. Nota do mês = (soma das notas + ${LIGA_POND} × média do grupo) ÷ (dias + ${LIGA_POND}). Mínimo ${LIGA_DIAS} dias.\n${location.origin+location.pathname}#mes`;return s;}
+  s+=`\nNota do dia = pontos ÷ mesas do dia. Média = (soma das notas + ${LIGA_POND} × média do grupo) ÷ (dias + ${LIGA_POND}). Mínimo ${LIGA_DIAS} dias.\n${location.origin+location.pathname}#mes`;return s;}
 async function imgLiga(final){
   const L=ligaMes(mesOff);const GR="#0E3B2E",GO="#C9A227",GL="#E0C25A",IV="#F8F1E4",CR="#F2E8D8",TX="#15291F",MU="#5F5646";
   const W=1080,RH=96;const SER=["A","B","C"].filter(k=>L.S[k].length);const A=artilharia(mesOff).filter(c=>c.top.length);const SL=selosMes(mesOff);
@@ -1862,7 +1862,7 @@ async function imgLiga(final){
   if(A.length)grade("ARTILHARIA DO MÊS",A.map(c=>({ic:c.ic,t:c.nome,q:c.top.map(x=>x.nome).join(", ")+" · "+c.top[0].v})));
   if(SL.length)grade("SELOS DO MÊS",SL.map(x=>({ic:x.ic,t:x.nome,q:listaNomes(x.quem.map(q=>q.nome)),neg:x.neg})));
   y+=10;g.fillStyle=GO;g.fillRect(50,y,W-100,2);g.fillStyle=MU;g.font="400 20px 'Source Sans 3', sans-serif";
-  g.fillText(`Nota do dia = pontos ÷ mesas do dia · Nota do mês = (soma + ${LIGA_POND} × ${fmtMed(L.Gd)}) ÷ (dias + ${LIGA_POND}) · mínimo ${LIGA_DIAS} dias`,60,y+40);
+  g.fillText(`Nota do dia = pontos ÷ mesas do dia · Média = (soma + ${LIGA_POND} × ${fmtMed(L.Gd)}) ÷ (dias + ${LIGA_POND}) · mínimo ${LIGA_DIAS} dias`,60,y+40);
   g.fillText("A: 1º campeão · 4º e 5º caem   B: 1º e 2º sobem   C: quem completar os dias sobe",60,y+72);
   g.textAlign="right";g.fillStyle=GO;g.font="700 26px Cinzel, Georgia, serif";g.fillText("Mão de ferro",W-60,y+110);g.textAlign="left";
   const HF=Math.min(H,y+150);const out=document.createElement("canvas");out.width=W;out.height=HF;const o=out.getContext("2d");o.drawImage(c,0,0);o.strokeStyle=GO;o.lineWidth=3;o.strokeRect(22,22,W-44,HF-44);
