@@ -42,6 +42,13 @@ header .t1{font-family:Cinzel,serif;font-size:20px;letter-spacing:2px;line-heigh
 .selos{display:block!important;background:var(--iv);border:1px solid var(--ln);border-radius:14px;overflow:hidden;margin-bottom:12px}.md-r{display:grid;grid-template-columns:30px minmax(0,1fr) auto 14px;align-items:center;gap:8px;padding:8px 12px;border-top:1px solid #EEE4D2;cursor:pointer;min-height:44px}.md-r:first-child{border-top:0}.md-r .ic{font-size:20px;text-align:center}.md-r .nm{font-family:Montserrat,sans-serif;font-size:12px;font-weight:700;letter-spacing:.4px;color:var(--gd)}.md-r .qm{font-weight:700;font-size:14px;text-align:right;max-width:52vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.md-r.neg .nm{color:var(--tc)}.md-r .ch{color:var(--mu)}.md-h{display:flex;justify-content:space-between;padding:8px 12px;background:#0A2E24;color:#E0C25A;font:700 11.5px Montserrat,sans-serif;letter-spacing:.6px}
 .pn-dup{background:radial-gradient(130% 90% at 0% 0%,#B8623F 0%,#A84B2A 40%,#6E2F19 100%);box-shadow:0 0 0 1px rgba(201,162,39,.6),0 10px 24px rgba(110,47,25,.25)}.pn-dup .pn-h{color:#F6E7C8}.pn-dup .pn-r{grid-template-columns:26px minmax(0,1fr) 28px 24px 34px 36px 50px;font-size:14px}.pn-dup .ps,.pn-dup .md{color:#F2D27A}.pn-dup .mu2{color:#F1D9C8;font-size:12.5px}.pn-dup .pn-r.lid{background:rgba(242,210,122,.18);border-radius:10px}.pn-dup .pn-s,.pn-dup small{color:#F1D9C8!important}
 .dup-fin{background:rgba(0,0,0,.14);border:1px solid rgba(242,210,122,.5);border-radius:12px;padding:10px;margin:10px 4px}.dup-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center;font-size:14px}.dup-vs span{font:800 20px Montserrat,sans-serif;color:#F2D27A}.dup-vs .cp{color:#F2D27A}
+.lg-t{background:var(--iv);border:1px solid var(--go);border-radius:16px;overflow:hidden;margin-bottom:12px}.lg-h{display:flex;justify-content:space-between;align-items:baseline;padding:10px 14px;color:#E0C25A}.lg-h b{font:700 16px Montserrat,sans-serif;letter-spacing:1.5px}.lg-h span{font-size:12px;color:#D5E2D9}
+.lg-r{display:grid;grid-template-columns:26px minmax(0,1fr) 34px 28px 62px 46px;gap:4px;align-items:center;width:100%;padding:8px 10px 8px 8px;border:0;border-top:1px solid #EEE4D2;background:transparent;text-align:center;font:inherit;font-size:14px;color:inherit;cursor:pointer}
+.lg-r.lg-hd{cursor:default;background:#E9DEC7;font-size:11px;font-weight:700;color:var(--mu);border-top:0}.lg-r .n{text-align:left;display:flex;flex-direction:column;line-height:1.2;min-width:0}.lg-r .n small{font-size:11.5px;color:var(--mu)}.lg-r .n b{display:inline}.lg-r .ps{font-weight:800}.lg-r .md{color:#7A6111;font-size:16px;text-align:right}
+.lg-r .lg-falta{color:#A84B2A;font-weight:700;display:flex;flex-direction:column;line-height:1.1}.lg-r .lg-falta small{font-size:9.5px;font-weight:600}.lg-r .fm{justify-content:center}
+.lg-leg{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11.5px;color:var(--mu);margin:0 4px 4px}.lg-leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.art .md-r{grid-template-columns:30px minmax(0,1fr) auto 30px}.art .av{color:#7A6111;font-size:16px;text-align:right}
+.patch{display:inline-block;align-self:flex-start;flex:0 0 auto;width:auto;margin-left:4px;font-size:.78em;line-height:1;padding:1px 4px;border-radius:6px;background:#F4E6BC;border:1px solid #C9A227;vertical-align:1px;white-space:nowrap}
 .acoes{display:flex;gap:6px;margin:8px 0 18px}.acoes .btn{flex:1;white-space:nowrap;font-size:13px;padding-left:6px;padding-right:6px}
 .pn-sul{background:linear-gradient(160deg,#1F6F54,#185A45);box-shadow:0 0 0 1px rgba(242,232,216,.45),0 10px 24px rgba(14,59,46,.16)}
 .pn-h{display:flex;align-items:center;gap:10px;padding:0 6px 10px;border-bottom:1px solid rgba(201,162,39,.45)}.pn-lib .pn-h{color:#E0C25A}.pn-sul .pn-h{color:#F2E8D8;border-bottom-color:rgba(242,232,216,.35)}
@@ -556,7 +563,7 @@ function go(v){view=v;sheet=null;if(location.hash!=="#"+v)history.replaceState(n
 window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(VIEWS.some(x=>x[0]===h)&&h!==view){view=h;render();}});
 
 function render(){
-  normalizar();
+  normalizar();ligaLimpa();
   document.getElementById("nav").innerHTML=VIEWS.map(([k,l])=>`<a href="#${k}" class="${view===k?"on":""}" data-go="${k}">${svg(k)}${l}</a>`).join("");
   const app=document.getElementById("app");
   const keep={};app.querySelectorAll("input[id],textarea[id],select[id]").forEach(i=>{if(i.type!=="checkbox"&&i.type!=="radio")keep[i.id]=i.value;});
@@ -567,6 +574,7 @@ function render(){
   else if(view==="camp")app.innerHTML=curCamp&&byId("campeonatos",curCamp)?vCampDet(byId("campeonatos",curCamp)):vCamps();
   else app.innerHTML=vRegras();
   for(const [id,v] of Object.entries(keep)){const i=document.getElementById(id);if(i&&app.contains(i)&&v&&!i.value)i.value=v;}
+  try{marcaCampeoes(app);}catch(e){console.error(e);}
   marcaPresidente(app);
   if(foco){const i=document.getElementById(foco.id);if(i&&app.contains(i)){i.focus({preventScroll:true});try{if(foco.a!=null)i.setSelectionRange(foco.a,foco.b);}catch(e){}}}
   renderSheet();
@@ -661,6 +669,8 @@ function renderSheet(){
   else if(sheet.t==="autor")h=shAutor();
   else if(sheet.t==="motivo")h=shMotivo();
   else if(sheet.t==="extrato")h=shExtrato();
+  else if(sheet.t==="liga")h=shLiga();
+  else if(sheet.t==="art")h=shArt(sheet.i);
   else if(sheet.t==="img")h=`<h3>${esc(sheet.titulo||"RANKING EM IMAGEM")}</h3><p class="muted" style="margin:0 0 8px">Use <b>Copiar imagem</b> e cole no WhatsApp, ou abra em <b>tela cheia</b> e tire um print.</p><img src="${sheet.url}" alt="${esc(sheet.titulo||"Ranking do Dominó SEOSP")}" style="width:100%;border-radius:10px;border:1px solid var(--ln)"><div class="row" style="margin-top:12px"><button class="btn gold grow" data-act="copiarImg">📋 Copiar imagem</button><button class="btn grow" data-act="telaCheia">🖼 Tela cheia p/ print</button></div><button class="btn ghost" style="width:100%;margin-top:8px" data-act="fecharSheet">Fechar</button>`;
   else if(sheet.t==="merge")h=shMerge();
   else if(sheet.t==="balanco")h=`<h3>BALANÇO DO DIA</h3><p class="muted" style="margin:0 0 8px">Gera uma imagem com o ranking do dia, os destaques e todas as mesas jogadas na data escolhida, até agora.</p><label class="f" for="balDia">Dia</label><input type="date" id="balDia" value="${esc(sheet.dia)}" style="width:100%;padding:11px 12px;border:1.5px solid var(--ln);border-radius:10px;min-height:46px"><div class="row" style="margin-top:14px"><button class="btn ghost grow" data-act="fecharSheet">Cancelar</button><button class="btn gold grow" data-act="gerarBalanco">GERAR</button></div>`;
@@ -672,6 +682,7 @@ function renderSheet(){
   else if(sheet.t==="info")h=`<h3>${esc(sheet.titulo||"")}</h3><div class="rules">${sheet.html}</div><button class="btn ghost" style="width:100%;margin-top:10px" data-act="fecharSheet">Fechar</button>`;
   else if(sheet.t==="texto")h=`<h3>COPIE O TEXTO</h3><textarea readonly style="width:100%;min-height:260px;border-radius:10px;border:1.5px solid var(--ln);padding:10px;font:inherit">${esc(sheet.txt)}</textarea><button class="btn ghost" style="width:100%;margin-top:10px" data-act="fecharSheet">Fechar</button>`;
   ov.innerHTML=`<div class="ov" data-act="fecharOv"><div class="sheet" role="dialog" aria-modal="true">${h}</div></div>`;
+  try{marcaCampeoes(ov);}catch(e){console.error(e);}
   marcaPresidente(ov);
 }
 function datalist(){return `<datalist id="dlj">${cache.jogadores.map(j=>`<option value="${esc(j.nome)}">`).join("")}</datalist>`;}
@@ -774,7 +785,7 @@ document.addEventListener("change",e=>{
   if(t.id==="rankOrdem"){rankOrdem=t.value;render();}
 });
 document.addEventListener("click",async e=>{
-  const el=e.target.closest("[data-selo],[data-fx],[data-comp-aba],[data-autor],[data-extrato],[data-ficha],[data-rkc],[data-campaba],[data-mes],[data-lance],[data-lt],[data-slot],[data-cj],[data-cdp],[data-rmdp],[data-ndp],[data-rk],[data-delev],[data-merge],[data-mto],[data-lsel],[data-lmeta],[data-lpts],[data-lopen],[data-lmaoi],[data-lout],[data-avn],[data-avc],[data-avj],[data-rmav],[data-esc],[data-rmfila],[data-act],[data-go],[data-open],[data-ji],[data-tipo],[data-modo],[data-filtro],[data-camp],[data-cdupla],[data-fmt],[data-jogar],[data-ren]");
+  const el=e.target.closest("[data-liga],[data-art],[data-selo],[data-fx],[data-comp-aba],[data-autor],[data-extrato],[data-ficha],[data-rkc],[data-campaba],[data-mes],[data-lance],[data-lt],[data-slot],[data-cj],[data-cdp],[data-rmdp],[data-ndp],[data-rk],[data-delev],[data-merge],[data-mto],[data-lsel],[data-lmeta],[data-lpts],[data-lopen],[data-lmaoi],[data-lout],[data-avn],[data-avc],[data-avj],[data-rmav],[data-esc],[data-rmfila],[data-act],[data-go],[data-open],[data-ji],[data-tipo],[data-modo],[data-filtro],[data-camp],[data-cdupla],[data-fmt],[data-jogar],[data-ren]");
   if(!el)return;
   if(el.dataset.selo!=null){const so=el.dataset.soff!=null?+el.dataset.soff:mesOff;const x=selosMes(so)[+el.dataset.selo];if(!x)return;const ids=new Set(x.quem.map(q=>q.id));const rk=(x.rk||[]).slice(0,Math.max(5,ids.size+3));
     openSheet({t:"info",titulo:x.ic+" "+x.nome.toUpperCase(),html:`<p><b>Recebeu:</b> ${listaNomes(x.quem.map(q=>esc(q.nome)))} — ${x.info}</p><p><b>Como funciona:</b> ${x.why||""}</p>${rk.length?`<p><b>Comparativo do mês:</b></p><ol style="padding-left:20px">${rk.map(r=>`<li style="margin:4px 0">${ids.has(r.id)?"🏆 <b>"+esc(r.nome)+"</b>":esc(r.nome)} — ${r.t}</li>`).join("")}</ol>`:""}`});return;}
@@ -792,6 +803,8 @@ document.addEventListener("click",async e=>{
   if(el.dataset.rmdp){if(!el.dataset.ok){el.dataset.ok="1";el.textContent="Confirmar";setTimeout(()=>{if(el.isConnected){delete el.dataset.ok;el.textContent="Excluir";}},3000);return;}await del("duplas",el.dataset.rmdp);toast("Dupla excluída.");return;}
   if(el.dataset.fx){try{localStorage.setItem("seosp_x_"+el.dataset.fx,"1");}catch(e){}render();return;}
   if(el.dataset.compAba){compAba=el.dataset.compAba;render();return;}
+  if(el.dataset.liga){openSheet({t:"liga",id:el.dataset.liga,off:mesOff});return;}
+  if(el.dataset.art!=null){openSheet({t:"art",i:+el.dataset.art,off:mesOff});return;}
   if(el.dataset.extrato){openSheet({t:"extrato",id:el.dataset.extrato,off:mesOff,comp:el.dataset.comp});return;}
   if(el.dataset.ficha){openSheet({t:"ficha",id:el.dataset.ficha});return;}
   if(el.dataset.rkc){rankCrit=el.dataset.rkc;render();return;}
@@ -1244,24 +1257,25 @@ function vMensal(){
   let h=`<h2>CAMPEONATO DO MÊS</h2>
   <div class="mesbar"><button class="btn ghost sm" data-mes="-1" aria-label="Mês anterior">‹</button><div class="nm">${t.w.nome}</div><button class="btn ghost sm" data-mes="1" ${mesOff>=0?"disabled":""} aria-label="Próximo mês">›</button></div>
   <p class="muted" style="text-align:center;margin:-4px 0 12px">${fechado?"Mês encerrado · campeões definidos":mesOff===0?`Em disputa · termina em ${dias} dia(s)`:""}</p>`;
-  if(mesOff===0&&new Date().getDate()<=7&&!fechado1("camp"+(new Date().getMonth()))){const a=tabelaMes(-1);if(a.campBr.length||a.campLib.length||a.campSul.length)h+=`<div class="card aviso" style="border:2px solid var(--go);background:#F4E6BC">${xBtn("camp"+(new Date().getMonth()))}<div class="grp" style="margin-top:0;color:var(--gd)">🏆 CAMPEÕES DE ${a.w.nome.toUpperCase()}</div>
+  if(mesOff===0&&new Date().getDate()<=7&&ligaAtiva(-1)&&!fechado1("campL"+(new Date().getMonth()))){const a=ligaMes(-1);if(a.campA||a.campB)h+=`<div class="card aviso" style="border:2px solid var(--go);background:#F4E6BC">${xBtn("campL"+(new Date().getMonth()))}<div class="grp" style="margin-top:0;color:var(--gd)">🏆 CAMPEÕES DE ${a.w.nome.toUpperCase()}</div><div style="font-size:15px;line-height:1.6">🏆 Brasileirão (Série A): <b>${a.campA?esc(a.campA.nome):"—"}</b><br>🥈 Série B: <b>${a.campB?esc(a.campB.nome):"—"}</b></div><div class="row" style="margin-top:10px"><button class="btn sm grow" data-mes="-1">Ver tabelas finais</button><button class="btn gold sm grow" data-act="txtMes" data-off="-1">📋 Texto p/ WhatsApp</button></div></div>`;}
+  else if(mesOff===0&&new Date().getDate()<=7&&!fechado1("camp"+(new Date().getMonth()))){const a=tabelaMes(-1);if(a.campBr.length||a.campLib.length||a.campSul.length)h+=`<div class="card aviso" style="border:2px solid var(--go);background:#F4E6BC">${xBtn("camp"+(new Date().getMonth()))}<div class="grp" style="margin-top:0;color:var(--gd)">🏆 CAMPEÕES DE ${a.w.nome.toUpperCase()}</div>
     <div style="font-size:15px;line-height:1.6">${["br","lib"].map(k=>{const c=a["camp"+k[0].toUpperCase()+k.slice(1)];return `${COMP[k].ic} ${COMP[k].nome}: <b>${c.length?c.map(x=>esc(x.nome)).join(" e "):"—"}</b>`;}).join("<br>")}</div>
     <div class="row" style="margin-top:10px"><button class="btn sm grow" data-mes="-1">Ver tabelas finais</button><button class="btn gold sm grow" data-act="txtMes" data-off="-1">📋 Texto p/ WhatsApp</button></div></div>`;}
   const acoes=c=>(t.br.length||t.lib.length||t.aq.length)?`<div class="acoes"><button class="btn sm" data-act="imgMensal" data-comp="${c}">📸 Imagem</button><button class="btn sm" data-act="imgFinal" style="background:var(--go);color:#2a1e05">🏁 Fechamento</button><button class="btn ghost sm" data-act="txtMes" data-off="${mesOff}">📋 Texto</button></div>`:"";
+  const LG=ligaAtiva(mesOff)?ligaMes(mesOff):null;
+  if(LG){h+=vLiga(LG);h+=blocoArtilharia(mesOff);}
+  else{
   if(!fechado1("howbr2"))h+=`<div class="howto aviso">${xBtn("howbr2")}🇧🇷 <b>Brasileirão: quem soma mais pontos no mês fica na frente.</b><br>✔ <b>Conta toda mesa</b> que teve jogada lançada, <b>fechando peça ou não</b>.<br>👆 Toque num jogador para ver a conta.</div>`;
   h+=tabelaBR(t.br,fechado)+acoes("br");
   if(!fechado1("howmed3"))h+=`<div class="howto aviso">${xBtn("howmed3")}📊 <b>Libertadores: quem rende mais por mesa.</b> Vale a <b>média ponderada</b>, assim ninguém lidera só por sorte com poucas mesas.<br>✔ Só conta mesa que <b>fechou peça</b>. Título a partir de <b>${LIB_MIN} mesas</b>.<br>👆 Toque num jogador para ver a conta.</div>`;
   h+=painel(t.lib,"lib",fechado);
   if(t.aq.length)h+=`<div class="card"><div class="grp" style="margin-top:0;color:var(--mu)">EM AQUECIMENTO · menos de ${SUL_MIN} mesas</div><div class="chips">${t.aq.map(x=>`<span class="chip">${esc(x.nome)} · ${x.mesas}, faltam ${SUL_MIN-x.mesas}</span>`).join("")}</div></div>`;
-  h+=acoes("ls");
+  h+=acoes("ls");}
   {const cd=copaDuplas(mesOff);if(cd)h+=painelDuplas(cd,fechado);}
   const SL=selosMes(mesOff);
   if(SL.length)h+=`<h2>SELOS DO MÊS</h2><div class="selos"><div class="md-h"><span>QUADRO DE MEDALHAS</span><span>toque para ver o porquê</span></div>${SL.map((x,i)=>`<div class="md-r ${x.neg?"neg":""}" data-selo="${i}" role="button" tabindex="0" aria-label="${x.nome}: ${listaNomes(x.quem.map(q=>esc(q.nome)))}"><span class="ic">${x.ic}</span><span class="nm">${x.nome.toUpperCase()}</span><span class="qm">${listaNomes(x.quem.map(q=>esc(q.nome.split(" ")[0])))}</span><span class="ch">›</span></div>`).join("")}</div>`;
-  h+=`<details class="card" style="padding:10px 14px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📜 Regulamento do Campeonato do Mês</summary><div class="rules" style="margin-top:6px">${regMensal()}</div></details>`;
-  const galeria=[];for(let o=-1;o>=-12;o--){const g=tabelaMes(o);if(g.br.length||g.lib.length||g.sul.length)galeria.push(g);}
-  const cmp=(g,k)=>{const c=g["camp"+k[0].toUpperCase()+k.slice(1)];return c.length?c.map(x=>esc(x.nome)).join(" e ")+` (${k==="br"?c[0].pts+" pts":fmtMed(c[0].med)})`:"—";};
-  const cDup=g=>{const o=Math.round((g.w.ano-new Date().getFullYear())*12+g.w.mes-new Date().getMonth());const c=copaDuplas(o);return c&&c.serie&&c.serie.enc?`<br>🤝 Copa das Duplas: ${esc(c.serie.camp.nome)}`:"";};
-  h+=`<h2>GALERIA DE CAMPEÕES</h2><div class="card">${galeria.length?galeria.map(g=>`<div class="match"><div class="grow"><b>${g.w.nome}</b><div class="muted">${["br","lib"].map(k=>`${COMP[k].ic} ${COMP[k].nome}: ${cmp(g,k)}`).join("<br>")}${cDup(g)}</div></div></div>`).join(""):`<div class="empty" style="padding:12px">Os campeões aparecem aqui quando o primeiro mês terminar.</div>`}</div>`;
+  h+=`<details class="card" style="padding:10px 14px"><summary style="font-weight:700;color:var(--gd);cursor:pointer">📜 Regulamento ${LG?"do Brasileirão em séries":"do Campeonato do Mês"}</summary><div class="rules" style="margin-top:6px">${LG?regLiga():regMensal()}</div></details>`;
+  h+=quadroCampeoes();
   return h;
 }
 function vCamps(){
@@ -1572,6 +1586,7 @@ function baixarBackup(){
 }
 /* ===================== TEXTO DO MÊS P/ WHATSAPP ===================== */
 function textoMes(off){
+  if(ligaAtiva(off))return textoLiga(off);
   const t=tabelaMes(off);const fechado=Date.now()>=t.w.fim;
   const linM=(x)=>`${x.pos===1?(fechado?"🏆":"👑"):x.pos+"."} ${x.nome}: *${fmtMed(x.med)}* (${x.pts} pts ÷ ${x.mesas} mesas · V ${x.vitorias} D ${x.derrotas||0})`;
   const linB=(x)=>`${x.pos===1?(fechado?"🏆":"👑"):x.pos+"."} ${x.nome}: *${x.pts} pts* (${x.mesas} mesas · V ${x.vitorias} D ${x.derrotas||0})`;
@@ -1590,7 +1605,7 @@ function fichaJog(id){
   const j=byId("jogadores",id);const nome=j?j.nome:nomeJog(id);
   const x=stats(0,Infinity).find(y=>y.id===id)||{mesas:0,vitorias:0,derrotas:0,pts:0,espN:0,secN:0,infTot:0,b:{},inf:{}};
   const meses=[];for(let o=0;o>=-5;o--){const t=tabelaMes(o);const B=t.br.find(y=>y.id===id),L=t.lib.find(y=>y.id===id),S=t.sul.find(y=>y.id===id),A=t.aq.find(y=>y.id===id);if(B||L||S||A)meses.push({t,o,B,div:L?"Libertadores":S?"Sul-Americana":A?"Aquecimento":"—",y:L||S||A});}
-  const titulos=[];for(let o=-1;o>=-24;o--){const t=tabelaMes(o);if(t.campBr.some(y=>y.id===id))titulos.push("🇧🇷 Brasileirão · "+t.w.nome);if(t.campLib.some(y=>y.id===id))titulos.push("🏆 Libertadores · "+t.w.nome);if(t.campSul.some(y=>y.id===id))titulos.push("🥈 Sul-Americana · "+t.w.nome);}
+  const titulos=titulosTodos().filter(t=>t.id===id).map(t=>`${t.ic} ${t.txt} · ${t.w.nome}`);
   const mesas=cache.partidas.filter(p=>[p.duplaA.j1,p.duplaA.j2,p.duplaB.j1,p.duplaB.j2].includes(id)).sort((a,b)=>b.criadoEm-a.criadoEm).slice(0,10);
   const linhaM=p=>{const L=[p.duplaA.j1,p.duplaA.j2].includes(id)?"A":"B";const O=other(L);const st=computeState(p);const d=p["dupla"+L],o=p["dupla"+O];
     const parc=[d.j1,d.j2].find(z=>z&&z!==id);const res=st.winner?(st.winner===L?`<span class="pill" style="background:#DCEBE2;color:var(--gd)">V</span>`:`<span class="pill" style="background:#F2D9C9;color:var(--tc)">D</span>`):`<span class="pill" style="background:#EEE">${p.status==="ativa"?"em jogo":"s/ venc."}</span>`;
@@ -1649,11 +1664,214 @@ function selosMes(off){
    const cw=mk(W,(a,b)=>b.n-a.n||b.v-a.v);if(cw.length){const t=cw[0];out.push({ic:"🪓",nome:"Carrasco",quem:cw.filter(x=>x.n===t.n&&x.v===t.v),info:`venceu ${t.n} adversário(s) diferente(s) · ${t.v} vitórias`,why:"Quem venceu o maior número de adversários diferentes no mês (cada jogador derrotado conta uma vez, não importa quantas vezes). Empate: mais vitórias no mês.",rk:cw.map(x=>({id:x.id,nome:x.nome,t:`${x.n} adversário(s) · ${x.v} vitórias`}))});}
    const fp=mk(P,(a,b)=>b.n-a.n||b.d-a.d);if(fp.length){const t=fp[0];out.push({ic:"🛒",nome:"Freguesia",neg:true,quem:fp.filter(x=>x.n===t.n&&x.d===t.d),info:`perdeu para ${t.n} adversário(s) diferente(s) · ${t.d} derrotas`,why:"Quem perdeu para o maior número de adversários diferentes no mês (cada jogador que o venceu conta uma vez). Empate: mais derrotas no mês.",rk:fp.map(x=>({id:x.id,nome:x.nome,t:`${x.n} adversário(s) · ${x.d} derrotas`}))});}}
   const gato=top(x=>x.inf.gato||0);if(gato)out.push({ic:"🐈",nome:"Gato do Mês",quem:gato.quem,info:gato.m+" gato(s)",neg:true,why:"Quem mais cometeu gato no mês.",rk:L.filter(x=>x.inf.gato).sort((a,b)=>b.inf.gato-a.inf.gato).map(x=>({id:x.id,nome:x.nome,t:x.inf.gato+" gato(s)"}))});
+  if(w.ini>=LIGA_INI)return out.filter(x=>x.nome!=="Assistente Nato"&&x.nome!=="Rei da Buchada");
   return out;
 }
+/* ===================== BRASILEIRÃO EM SÉRIES (a partir de dez/2026) ===================== */
+const LIGA_INI=new Date(2026,11,1).getTime(),LIGA_DIAS=5,LIGA_MD=1,LIGA_POND=2,LIGA_A=5,LIGA_B=5;
+const _lm=new Map();
+function ligaLimpa(){_lm.clear();}
+function diasDoMes(w){const out=[];let d=new Date(w.ini);while(d.getTime()<w.fim){const a=d.getTime();d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);out.push([a,d.getTime()]);}return out;}
+function formaMes(w){const F={};for(const p of cache.partidas.filter(p=>p.criadoEm>=w.ini&&p.criadoEm<w.fim&&(p.eventos||[]).length).sort((a,b)=>a.criadoEm-b.criadoEm)){
+  const st=computeState(p);const R=p.modo==="semfila"?pecasDe(p).map(z=>z.w):[st.winner];if(!R.length)R.push(null);
+  for(const L of ["A","B"])for(const j of [p["dupla"+L].j1,p["dupla"+L].j2])if(j)for(const v of R)(F[j]||(F[j]=[])).push(!v?"-":v===L?"V":"D");}return F;}
+const ordL=(a,b)=>(b.q?1:0)-(a.q?1:0)||(b.nota??-99)-(a.nota??-99)||(b.vitorias||0)-(a.vitorias||0)||(b.espN||0)-(a.espN||0)||(b.secN||0)-(a.secN||0)||(a.infTot||0)-(b.infTot||0)||(b.nd||0)-(a.nd||0)||String(a.nome).localeCompare(String(b.nome),"pt-BR");
+function rankLiga(w){
+  const k="r"+w.ini;if(_lm.has(k))return _lm.get(k);
+  const D={};const notas=[];
+  for(const [a,b] of diasDoMes(w)){if(!cache.partidas.some(p=>p.criadoEm>=a&&p.criadoEm<b))continue;
+    for(const x of stats(a,b,"peca")){if(x.mesas<LIGA_MD)continue;const n=x.pts/x.mesas;(D[x.id]||(D[x.id]=[])).push({d:a,m:x.mesas,pts:x.pts,v:x.vitorias,dd:x.derrotas||0,n});notas.push(n);}}
+  const Gd=notas.length?notas.reduce((s,v)=>s+v,0)/notas.length:0;
+  const F=formaMes(w);
+  const rows=stats(w.ini,w.fim,"peca").filter(x=>D[x.id]).map(x=>{const dias=D[x.id];const soma=dias.reduce((s,d)=>s+d.n,0);const nd=dias.length;
+    return {...x,dias,nd,soma,simples:soma/nd,nota:(soma+LIGA_POND*Gd)/(nd+LIGA_POND),Gd,q:nd>=LIGA_DIAS,bat:Object.values(x.b||{}).reduce((s,v)=>s+v,0),forma:(F[x.id]||[]).slice(-5)};});
+  const r={Gd,rows,byId:Object.fromEntries(rows.map(x=>[x.id,x]))};_lm.set(k,r);return r;
+}
+function vazioL(id,Gd){return {id,nome:nomeJog(id),dias:[],nd:0,soma:0,simples:0,nota:null,Gd,q:false,mesas:0,vitorias:0,derrotas:0,bat:0,forma:[],b:{},bp:{},inf:{},espN:0,secN:0,infTot:0,pts:0};}
+function compLiga(off){
+  const w=janelaMes(off);if(w.ini<LIGA_INI)return null;const k="c"+w.ini;if(_lm.has(k))return _lm.get(k);
+  let comp;const r=rankLiga(janelaMes(off-1));
+  if(w.ini===LIGA_INI){const ord=[...r.rows].sort(ordL).map(x=>x.id);comp={A:ord.slice(0,LIGA_A),B:ord.slice(LIGA_A,LIGA_A+LIGA_B),C:ord.slice(LIGA_A+LIGA_B)};}
+  else{const prev=compLiga(off-1);const q=id=>!!(r.byId[id]&&r.byId[id].q);
+    const srt=ids=>ids.map(id=>r.byId[id]||vazioL(id,r.Gd)).sort(ordL).map(x=>x.id);
+    const conhecidos=new Set([...prev.A,...prev.B,...prev.C]);
+    const A=srt(prev.A),B=srt(prev.B),C=srt([...prev.C,...r.rows.map(x=>x.id).filter(id=>!conhecidos.has(id))]);
+    const Aq=A.filter(q),Bq=B.filter(q),Cq=C.filter(q);
+    const nA=[...Aq.slice(0,3),...Bq.slice(0,2)];const pool=[...Bq.slice(2),...Cq,...Aq.slice(3)];
+    while(nA.length<LIGA_A&&pool.length){const id=pool.shift();if(!nA.includes(id))nA.push(id);}
+    const nB=[...A,...B,...C].filter(id=>!nA.includes(id)&&(prev.A.includes(id)||q(id)));
+    const nC=[...A,...B,...C].filter(id=>!nA.includes(id)&&!nB.includes(id));
+    comp={A:nA,B:nB,C:nC};}
+  _lm.set(k,comp);return comp;
+}
+const ZL={camp:["#C9A227","🏆 Campeão do Brasileirão"],fica:["#1F6F54","permanece na Série A"],cai:["#A84B2A","🔻 cai para a Série B"],caiMin:["#A84B2A","🔻 abaixo do mínimo · cai para a B"],
+  campB:["#C9A227","🏆 Campeão da Série B · sobe"],sobe:["#1F6F54","🔺 sobe para a Série A"],ficaB:["#CDBF9F","permanece na Série B"],caiC:["#A84B2A","🔻 abaixo do mínimo · cai para a C"],
+  sobeC:["#1F6F54","🔺 sobe para a Série B"],aq:["#CDBF9F","aquecimento"]};
+function ligaMes(off){
+  const w=janelaMes(off);const comp=compLiga(off);if(!comp)return null;const k="l"+w.ini;if(_lm.has(k))return _lm.get(k);
+  const r=rankLiga(w);const fechado=Date.now()>=w.fim;
+  const conhecidos=new Set([...comp.A,...comp.B,...comp.C]);const novos=r.rows.filter(x=>!conhecidos.has(x.id)).map(x=>x.id);
+  const mk=ids=>ids.map(id=>({...(r.byId[id]||vazioL(id,r.Gd))})).sort(ordL);
+  const S={A:mk(comp.A),B:mk(comp.B),C:mk([...comp.C,...novos])};let pos=0;
+  for(const s of ["A","B","C"]){let qi=0;for(const x of S[s]){x.serie=s;x.pos=++pos;
+    if(s==="A")x.zona=!x.q?"caiMin":qi===0?"camp":qi<3?"fica":"cai";
+    else if(s==="B")x.zona=!x.q?(comp.A.includes(x.id)?"caiC":"caiC"):qi===0?"campB":qi===1?"sobe":"ficaB";
+    else x.zona=x.q?"sobeC":"aq";
+    if(x.q)qi++;}}
+  const campA=fechado&&S.A[0]&&S.A[0].q?S.A[0]:null,campB=fechado&&S.B[0]&&S.B[0].q?S.B[0]:null;
+  const out={w,off,S,Gd:r.Gd,fechado,campA,campB,todos:[...S.A,...S.B,...S.C]};_lm.set(k,out);return out;
+}
+const ligaAtiva=off=>janelaMes(off).ini>=LIGA_INI;
+/* Campeões desde o modelo atual (nov/2026) */
+function titulosTodos(){
+  if(_lm.has("tit"))return _lm.get("tit");const T=[];
+  for(let o=-1;o>=-36;o--){const w=janelaMes(o);if(w.fim<=new Date(2026,10,1).getTime())break;
+    if(w.ini>=LIGA_INI){const L=ligaMes(o);if(L.campA)T.push({id:L.campA.id,ic:"🏆",tipo:"A",txt:"Campeão do Brasileirão (Série A)",w});if(L.campB)T.push({id:L.campB.id,ic:"🥈",tipo:"B",txt:"Campeão da Série B",w});}
+    else{const t=tabelaMes(o);t.campBr.forEach(x=>T.push({id:x.id,ic:"🏆",tipo:"br",txt:"Campeão do Brasileirão",w}));t.campLib.forEach(x=>T.push({id:x.id,ic:"🏆",tipo:"lib",txt:"Campeão da Libertadores",w}));}}
+  _lm.set("tit",T);return T;
+}
+function marcaCampeoes(root){if(!root)return;const T=titulosTodos();if(!T.length)return;const P={};
+  for(const t of T){const n=nomeJog(t.id);const p=P[n]||(P[n]={o:0,p:0,tt:[]});if(t.ic==="🏆")p.o++;else p.p++;p.tt.push(t.txt+" · "+t.w.nome);}
+  root.querySelectorAll("b,strong,span,td,div,small,li").forEach(el=>{if(el.children.length||el.dataset.patch)return;const n=el.textContent.trim();const p=P[n];if(!p)return;
+    if(el.closest(".patch"))return;el.dataset.patch="1";
+    el.insertAdjacentHTML("afterend",`<span class="patch" title="${esc(p.tt.join(" | "))}" aria-label="Títulos: ${esc(p.tt.join(", "))}">${p.o?`🏆${p.o>1?"×"+p.o:""}`:""}${p.p?`🥈${p.p>1?"×"+p.p:""}`:""}</span>`);});}
+/* Artilharia do mês */
+function artilharia(off){
+  const w=janelaMes(off);const L=stats(w.ini,w.fim,"jogada").filter(x=>x.mesas>0);const M={},G={};
+  for(const p of cache.partidas.filter(p=>p.criadoEm>=w.ini&&p.criadoEm<w.fim))for(const z of pecasDe(p)){if(!z.closer)continue;M[z.closer]=(M[z.closer]||0)+1;const D=p["dupla"+z.w];const a=z.closer===D.j1?D.j2:D.j1;if(a)G[a]=(G[a]||0)+1;}
+  const b=(x,...ks)=>ks.reduce((s,k)=>s+((x.b||{})[k]||0),0);
+  const cats=[["⚽","Artilheiro","todas as batidas",x=>Object.values(x.b||{}).reduce((s,v)=>s+v,0)],["🎯","Matador","batida que fechou a mesa",x=>M[x.id]||0],["🅰️","Garçom","parceiro bateu e a dupla venceu",x=>G[x.id]||0],
+    ["👑","Rei da Buchada","buchada simples ou dobrada",x=>b(x,"buchada","buch_dobrada")],["🔪","Lasquinez","simples ou preso",x=>b(x,"lasquinez","lasq_preso")],["💨","Rei da Seca","batidas secas",x=>b(x,"seca")],
+    ["🧠","Estrategista","fechou com menor ponto",x=>b(x,"fechou_menor")],["✨","Especialista","batidas especiais",x=>x.espN||0]];
+  return cats.map(([ic,nome,sub,f])=>{const rk=L.map(x=>({id:x.id,nome:x.nome,v:f(x)})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v||a.nome.localeCompare(b.nome,"pt-BR"));const top=rk.length?rk.filter(x=>x.v===rk[0].v):[];return {ic,nome,sub,rk,top};});
+}
+function blocoArtilharia(off){const A=artilharia(off);if(!A.some(c=>c.rk.length))return "";
+  return `<h2>ARTILHARIA DO MÊS</h2><div class="selos art"><div class="md-h"><span>LÍDER DE CADA CATEGORIA</span><span>toque para ver o top</span></div>${A.map((c,i)=>`<div class="md-r" data-art="${i}" role="button" tabindex="0" aria-label="${c.nome}: ${c.top.map(x=>esc(x.nome)).join(", ")||"ninguém"}"><span class="ic">${c.ic}</span><span><span class="nm">${c.nome.toUpperCase()}</span><br><small class="muted">${c.sub}</small></span><span class="qm">${c.top.length?listaNomes(c.top.map(x=>esc(x.nome.split(" ")[0]))):"—"}</span><b class="av">${c.top.length?c.top[0].v:""}</b></div>`).join("")}</div>`;}
+function shArt(i){const c=artilharia(sheet.off||0)[i];if(!c)return "";return `<h3>${c.ic} ${c.nome.toUpperCase()}</h3><p class="muted" style="margin:-6px 0 10px">${c.sub} · ${janelaMes(sheet.off||0).nome}</p>
+  ${c.rk.length?`<ol style="padding-left:22px;font-size:15px;line-height:1.8">${c.rk.map(x=>`<li><b>${esc(x.nome)}</b> — ${x.v}</li>`).join("")}</ol>`:`<p>Ninguém pontuou nesta categoria ainda.</p>`}
+  <p class="muted" style="font-size:13px">A artilharia é só honraria: não muda a classificação. Atualiza a cada mesa lançada e zera no dia 1º de cada mês.</p><button class="btn ghost" style="width:100%" data-act="fecharSheet">Fechar</button>`;}
+/* Tabela das séries */
+const SERIE={A:{nome:"SÉRIE A",cor:"#0E3B2E",sub:"elite · disputa o título"},B:{nome:"SÉRIE B",cor:"#2F5A6B",sub:"disputa o acesso"},C:{nome:"SÉRIE C",cor:"#6B5A3A",sub:"aquecimento · quem completar "+LIGA_DIAS+" dias sobe"}};
+function tabelaSerie(L,s){const lista=L.S[s];const cfg=SERIE[s];
+  let h=`<section class="lg-t"><div class="lg-h" style="background:${cfg.cor}"><b>${cfg.nome}</b><span>${cfg.sub}</span></div>`;
+  if(!lista.length)return h+`<div class="empty" style="padding:12px">Ninguém nesta série.</div></section>`;
+  h+=`<div class="lg-r lg-hd"><span>#</span><span>Jogador</span><span>Dias</span><span>M</span><span>Últ. 5</span><span>Nota</span></div>`;
+  for(const x of lista){const z=ZL[x.zona];const ap=x.mesas?Math.round(100*x.vitorias/x.mesas):0;
+    h+=`<button class="lg-r" style="box-shadow:inset 5px 0 ${z[0]}" data-liga="${x.id}" aria-label="${esc(x.nome)}, ${x.pos}º, ${z[1]}. Ver a conta"><span class="ps">${x.zona==="camp"&&L.fechado?"🏆":x.pos}</span>
+    <span class="n"><span><b>${esc(x.nome)}</b></span><small>${x.vitorias}V ${x.derrotas||0}D · ${x.bat} bat. · ${ap}%</small><small style="color:${z[0]==="#CDBF9F"?"var(--mu)":z[0]};font-weight:700">${z[1]}</small></span>
+    <span class="${x.q?"":"lg-falta"}">${x.nd}${x.q?"":`<small>faltam ${LIGA_DIAS-x.nd}</small>`}</span><span>${x.mesas}</span><span>${bolinhas(x.forma||[])}</span><b class="md">${x.nota==null?"–":fmtMed(x.nota)}</b></button>`;}
+  return h+`</section>`;}
+function vLiga(L){
+  const acoes=`<div class="acoes"><button class="btn sm" data-act="imgMensal">📸 Imagem</button><button class="btn sm" data-act="imgFinal" style="background:var(--go);color:#2a1e05">🏁 Fechamento</button><button class="btn ghost sm" data-act="txtMes" data-off="${mesOff}">📋 Texto</button></div>`;
+  let h="";
+  if(!fechado1("howliga1"))h+=`<div class="howto aviso">${xBtn("howliga1")}🇧🇷 <b>Brasileirão em séries.</b> Cada <b>dia</b> que você joga vira uma <b>nota</b> (pontos do dia ÷ mesas do dia). Sua nota do mês é a média dessas notas. Precisa de <b>${LIGA_DIAS} dias</b> para ter posição.<br>👆 Toque no seu nome para ver a conta dia a dia.</div>`;
+  h+=tabelaSerie(L,"A")+tabelaSerie(L,"B")+(L.S.C.length?tabelaSerie(L,"C"):"");
+  h+=`<div class="lg-leg">${["camp","fica","cai","sobe","ficaB","aq"].map(k=>`<span><i style="background:${ZL[k][0]}"></i>${ZL[k][1].replace(/^[^A-Za-zÀ-ú]+/,"")}</span>`).join("")}</div>`;
+  h+=`<p class="muted" style="font-size:12.5px;margin:6px 4px 0">Nota = (soma das notas diárias + ${LIGA_POND} × ${fmtMed(L.Gd)}) ÷ (dias + ${LIGA_POND}). ${fmtMed(L.Gd)} é a nota média de todo mundo no mês.</p>`;
+  return h+acoes;}
+/* Conta do jogador (transparência total) */
+function shLiga(){
+  const L=ligaMes(sheet.off||0);if(!L)return "";const x=L.todos.find(y=>y.id===sheet.id);if(!x)return `<p>Jogador não encontrado.</p><button class="btn ghost" data-act="fecharSheet">Fechar</button>`;
+  const z=ZL[x.zona];const d=decompor(x);const fd=t=>new Date(t).toLocaleDateString("pt-BR",{weekday:"short",day:"2-digit",month:"2-digit"});
+  const ln=(l,v,cls="")=>`<div class="ex-l ${cls}"><span>${l}</span><b>${v>0?"+":""}${v}</b></div>`;
+  let h=`<h3>${esc(x.nome.toUpperCase())}</h3><p class="muted" style="margin:-6px 0 8px">🇧🇷 Brasileirão · ${L.w.nome} · ${SERIE[x.serie].nome} · ${x.pos}º lugar</p>
+  <div class="ex" style="border-left:5px solid ${z[0]}"><div class="ex-t">${L.fechado?"RESULTADO DO MÊS":"SE O MÊS ACABASSE HOJE"}</div><div style="font-size:15px"><b>${z[1]}</b></div>
+  <div class="muted" style="font-size:13px;margin-top:4px">Dias jogados: <b>${x.nd}</b> de ${LIGA_DIAS} necessários${x.q?" ✔":` · faltam <b>${LIGA_DIAS-x.nd}</b> dia(s)`}.</div></div>
+  <div class="ex"><div class="ex-t">1. A NOTA DE CADA DIA</div><table class="tb ex-c"><thead><tr><th>Dia</th><th>Mesas</th><th>Pontos</th><th>Nota do dia</th></tr></thead><tbody>
+  ${x.dias.map(dd=>`<tr><td class="n">${fd(dd.d)}</td><td>${dd.m}</td><td>${dd.pts}</td><td><b>${dd.pts} ÷ ${dd.m} = ${fmtMed(dd.n)}</b></td></tr>`).join("")||`<tr><td colspan="4">Nenhum dia ainda.</td></tr>`}</tbody></table>
+  <p class="muted" style="font-size:12.5px;margin:6px 0 0">Cada dia vale igual, jogando 1 ou 10 mesas. Conta o dia com pelo menos ${LIGA_MD} mesa com peça.</p></div>
+  <div class="ex"><div class="ex-t">2. A NOTA DO MÊS</div>
+  <div class="ex-l"><span>Soma das notas diárias</span><b>${fmtMed(x.soma||0)}</b></div>
+  <div class="ex-l"><span>Dias jogados</span><b>${x.nd}</b></div>
+  <div class="ex-l"><span>Nota média de todos no mês</span><b>${fmtMed(L.Gd)}</b></div>
+  <div class="ex-r">NOTA = (${fmtMed(x.soma||0)} + ${LIGA_POND} × ${fmtMed(L.Gd)}) ÷ (${x.nd} + ${LIGA_POND}) = <b>${x.nota==null?"–":fmtMed(x.nota)}</b></div>
+  <p class="muted" style="font-size:12.5px;margin:6px 0 0">Os ${LIGA_POND} “dias imaginários” na média do grupo protegem contra sorte: quem jogou poucos dias bons ainda precisa confirmar. Quanto mais dias, menos eles pesam. Sua média simples (sem eles) é ${x.nd?fmtMed(x.simples):"–"}.</p></div>
+  <div class="ex"><div class="ex-t">3. DE ONDE VIERAM OS PONTOS NO MÊS</div>
+  ${ln(`Mesas vencidas: ${x.vitorias} × ${PONTO_VIT}`,d.vit)}${d.bat.map(r=>ln(r.nome,r.pts)).join("")}${d.inf.map(r=>ln(`${r.nome}: ${r.n}`,r.pts,"neg")).join("")}
+  <div class="ex-l tot"><span>Total de pontos (${x.mesas} mesas)</span><b>${x.pts}</b></div></div>`;
+  const S=L.S[x.serie];const i=S.findIndex(y=>y.id===x.id);const viz=[S[i-1],x,S[i+1]].filter(Boolean);
+  if(viz.length>1){h+=`<div class="ex-t" style="margin-top:12px">COMPARAÇÃO NA ${SERIE[x.serie].nome}</div><table class="tb ex-c"><thead><tr><th></th>${viz.map(c=>`<th class="${c.id===x.id?"me":""}">${c.pos}º ${esc(c.nome.split(" ")[0])}</th>`).join("")}</tr></thead><tbody>
+    ${[["Dias",c=>c.nd],["Mesas",c=>c.mesas],["Vitórias",c=>c.vitorias],["Derrotas",c=>c.derrotas||0],["Batidas",c=>c.bat],["Pontos",c=>c.pts],["<b>Nota</b>",c=>`<b>${c.nota==null?"–":fmtMed(c.nota)}</b>`]].map(([l,f])=>`<tr><td class="n">${l}</td>${viz.map(c=>`<td class="${c.id===x.id?"me":""}">${f(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>
+    <p class="muted" style="font-size:12.5px">Ordem: primeiro quem tem ${LIGA_DIAS}+ dias; depois maior nota. Empate: mais vitórias → mais especiais → mais simples → menos infrações → mais dias.</p>`;}
+  h+=`<details class="ex" style="margin-top:12px"><summary class="ex-t" style="cursor:pointer;margin:0">📜 REGULAMENTO COMPLETO</summary><div class="rules" style="font-size:13.5px;margin-top:6px">${regLiga()}</div></details>
+  <div class="row" style="margin-top:12px"><button class="btn ghost grow" data-act="fecharSheet">Fechar</button><button class="btn grow" data-ficha="${x.id}">Ficha completa</button></div>`;
+  return h;
+}
+/* Quadro de campeões */
+function quadroCampeoes(){const T=titulosTodos();
+  const meses=[];for(const t of T){let m=meses.find(z=>z.w.ini===t.w.ini);if(!m){m={w:t.w,L:[]};meses.push(m);}m.L.push(t);}
+  return `<h2>QUADRO DE CAMPEÕES</h2><div class="card">${meses.length?meses.map(m=>`<div class="match"><div class="grow"><b>${m.w.nome}</b><div class="muted" style="line-height:1.6">${m.L.map(t=>`${t.ic} ${t.txt}: <b>${esc(nomeJog(t.id))}</b>`).join("<br>")}</div></div></div>`).join("")
+   :`<div class="empty" style="padding:12px">Os campeões aparecem aqui quando o mês termina. Quem ganha recebe o selo 🏆 (Série A) ou 🥈 (Série B) ao lado do nome, em todo o site.</div>`}</div>`;}
+/* Regulamento — linguagem simples */
+function regLiga(){return `
+<p><b>Art. 1. O que é.</b> Todo mês tem um campeonato: o <b>Brasileirão</b>. Ele começa no dia 1º e termina no último dia do mês. No mês seguinte, começa outro, do zero.</p>
+<p><b>Art. 2. As séries.</b> Os jogadores ficam em três grupos:<br>• <b>Série A</b> — os 5 melhores. Quem ganha a Série A é o <b>Campeão do Brasileirão</b>.<br>• <b>Série B</b> — os seguintes (6º ao 10º). Quem ganha a Série B é o <b>Campeão da Série B</b>.<br>• <b>Série C</b> — aquecimento: quem não completou os dias mínimos e quem é novo.<br><i>Todo mundo continua jogando com todo mundo, em qualquer dupla.</i> A série só diz em qual tabela o seu nome aparece.</p>
+<p><b>Art. 3. Os pontos de cada mesa</b> (iguais aos de sempre):<br>• Ganhou a mesa: <b>+3</b> para os dois da dupla.<br>• Batida simples (seca, forçado, folgando) que <b>não</b> fecha a mesa: <b>+1</b> para quem bateu. Se fechou a mesa, vale só a vitória.<br>• Batida especial (lasquinez, buchada, fechou com menor ponto): <b>+3</b>. Lasquinez preso e buchada dobrada: <b>+4</b>.<br>• Fechou–chorou: <b>−2</b>.<br>• Infrações: fraude −5; passar, gato e fingir −3; colagem, esqueceu e sinais −2; sorteio −1.<br>• Sem fila: cada peça conta como uma mesa.</p>
+<p><b>Art. 4. A nota do dia.</b> Em cada dia que você joga, o site faz uma conta: <b>seus pontos do dia ÷ suas mesas do dia</b>. Isso é a sua <b>nota do dia</b>.<br><i>Exemplo:</i> hoje você jogou 4 mesas e fez 10 pontos → nota do dia = 10 ÷ 4 = <b>2,50</b>.<br>O dia conta a partir de ${LIGA_MD} mesa com peça. <b>Tanto faz o turno</b> (almoço ou depois das 16h): o dia vale igual, com 2 ou com 10 mesas.</p>
+<p><b>Art. 5. A nota do mês.</b> É a média das suas notas diárias, com uma proteção contra sorte: o site soma <b>${LIGA_POND} dias imaginários</b> com a nota média de todos.<br><b>Nota do mês = (soma das notas diárias + ${LIGA_POND} × nota média do grupo) ÷ (dias jogados + ${LIGA_POND})</b>.<br><i>Exemplo:</i> você jogou 5 dias, com notas 3,0 · 2,5 · 2,0 · 3,5 · 2,0 (soma 13,0). A média do grupo é 2,2. Nota = (13,0 + 2 × 2,2) ÷ (5 + 2) = 17,4 ÷ 7 = <b>2,49</b>.</p>
+<p><b>Art. 6. Mínimo para ter posição.</b> Precisa jogar pelo menos <b>${LIGA_DIAS} dias no mês</b>. Quem não chegar aparece com “faltam X dias” e fica abaixo de quem chegou.</p>
+<p><b>Art. 7. Ordem da tabela.</b> Dentro de cada série: primeiro quem completou ${LIGA_DIAS} dias; depois, a <b>maior nota</b>. Empate: mais vitórias → mais batidas especiais → mais batidas simples → menos infrações → mais dias jogados.</p>
+<p><b>Art. 8. Fim do mês — Série A.</b> 1º lugar: <b>Campeão do Brasileirão</b> 🏆. 2º e 3º: continuam na A. 4º e 5º: <b>caem</b> para a B. Quem estiver na A e não completar ${LIGA_DIAS} dias também cai para a B.</p>
+<p><b>Art. 9. Fim do mês — Série B.</b> 1º da B (6º geral): <b>Campeão da Série B</b> 🥈 e <b>sobe</b>. 2º da B (7º geral): também sobe. Os demais continuam na B. Quem estiver na B e não completar ${LIGA_DIAS} dias cai para a C.</p>
+<p><b>Art. 10. Série C.</b> Quem estiver na C e completar ${LIGA_DIAS} dias sobe para a B no mês seguinte. Jogador novo começa na C. Se faltar gente na A (por exemplo, alguém deixou de jogar), a vaga vai para o próximo da B que completou os dias.</p>
+<p><b>Art. 11. Primeiro mês (dezembro/2026).</b> As séries de dezembro são montadas com novembro, pela mesma conta: os 5 melhores vão para a A, os 5 seguintes para a B, os demais para a C.</p>
+<p><b>Art. 12. Campeões e selo no nome.</b> Os campeões ficam no <b>Quadro de Campeões</b>. Quem ganha recebe um selo ao lado do nome em todo o site: 🏆 Brasileirão (Série A) e 🥈 Série B, somando os títulos (🏆×2). Os campeões de novembro/2026 (Brasileirão e Libertadores, modelo anterior) também ganham o 🏆.</p>
+<p><b>Art. 13. Artilharia do mês</b> (só honraria, não muda a tabela): Artilheiro (mais batidas), Matador (batida que fechou a mesa), Garçom (parceiro bateu e a dupla venceu), Rei da Buchada, Lasquinez, Rei da Seca, Estrategista (fechou com menor ponto) e Especialista (mais especiais).</p>
+<p><b>Art. 14. Selos do mês</b> continuam: Mão Limpa, Maior Sequência, Rendimento de Ouro, Carrasco, Freguesia e Gato do Mês.</p>
+<p><b>Art. 15. Transparência.</b> Tocando no nome de qualquer jogador, o site mostra a conta inteira: cada dia, cada nota, a fórmula com os números e de onde veio cada ponto.</p>
+<p><b>Art. 16. Casos omissos</b> são decididos pela maioria dos presentes, mínimo de 3 (Art. 26 da Lei nº 0608/2026).</p>`;}
+
+function textoLiga(off){
+  const L=ligaMes(off);const s0=`*DOMINÓ SEOSP · BRASILEIRÃO*\n*${L.w.nome}*${L.fechado?" · encerrado":" · parcial"}\n`;let s=s0;
+  if(L.fechado)s+=`\n🏆 *Campeão do Brasileirão:* ${L.campA?L.campA.nome:"—"}\n🥈 *Campeão da Série B:* ${L.campB?L.campB.nome:"—"}\n`;
+  for(const k of ["A","B","C"]){const S=L.S[k];if(!S.length)continue;s+=`\n*${SERIE[k].nome}*\n`+S.map(x=>`${x.pos}. ${x.nome}: *${x.nota==null?"–":fmtMed(x.nota)}* (${x.nd} dias · ${x.mesas} mesas · V ${x.vitorias} D ${x.derrotas||0})${x.q?"":` · faltam ${LIGA_DIAS-x.nd} dia(s)`} — ${ZL[x.zona][1]}`).join("\n")+"\n";}
+  const A=artilharia(off).filter(c=>c.top.length);if(A.length)s+=`\n*ARTILHARIA*\n${A.map(c=>`${c.ic} ${c.nome}: ${c.top.map(x=>x.nome).join(", ")} (${c.top[0].v})`).join("\n")}\n`;
+  const SL=selosMes(off);if(SL.length)s+=`\n*SELOS DO MÊS*\n${SL.map(x=>`${x.ic} ${x.nome}: ${listaNomes(x.quem.map(q=>q.nome))}`).join("\n")}\n`;
+  s+=`\nNota do dia = pontos ÷ mesas do dia. Nota do mês = (soma das notas + ${LIGA_POND} × média do grupo) ÷ (dias + ${LIGA_POND}). Mínimo ${LIGA_DIAS} dias.\n${location.origin+location.pathname}#mes`;return s;}
+async function imgLiga(final){
+  const L=ligaMes(mesOff);const GR="#0E3B2E",GO="#C9A227",GL="#E0C25A",IV="#F8F1E4",CR="#F2E8D8",TX="#15291F",MU="#5F5646";
+  const W=1080,RH=96;const SER=["A","B","C"].filter(k=>L.S[k].length);const A=artilharia(mesOff).filter(c=>c.top.length);const SL=selosMes(mesOff);
+  const H=380+(final?200:0)+SER.reduce((a,k)=>a+100+L.S[k].length*RH+20,0)+60+(A.length?60+Math.ceil(A.length/2)*84:0)+(SL.length?60+Math.ceil(SL.length/2)*84:0)+200;
+  const c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");
+  g.fillStyle=CR;g.fillRect(0,0,W,H);g.fillStyle=GR;g.fillRect(0,0,W,320);g.fillStyle=GO;g.fillRect(0,320,W,8);
+  const selo=document.querySelector("header img");
+  if(selo&&selo.complete){g.save();g.beginPath();g.arc(140,160,88,0,Math.PI*2);g.fillStyle=IV;g.fill();g.lineWidth=6;g.strokeStyle=GL;g.stroke();g.clip();g.drawImage(selo,56,76,168,168);g.restore();}
+  g.fillStyle=GL;g.font="600 26px Montserrat, sans-serif";g.fillText("D O M I N Ó   S E O S P",262,110);
+  g.fillStyle=IV;g.font="700 54px Cinzel, Georgia, serif";g.fillText(txtFit(g,final?"FECHAMENTO DO MÊS":"BRASILEIRÃO",W-300),258,180);
+  g.font="700 34px 'Source Sans 3', sans-serif";g.fillStyle="#EADFC8";g.fillText(L.w.nome+" · Série A, B e C",262,232);
+  g.font="400 24px 'Source Sans 3', sans-serif";g.fillText(L.fechado?"Mês encerrado · campeões definidos":"Em disputa · parcial de "+new Date().toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}),262,274);
+  let y=370;
+  if(final){rr(g,50,y,W-100,170,20);g.fillStyle=GR;g.fill();g.strokeStyle=GO;g.lineWidth=4;rr(g,50,y,W-100,170,20);g.stroke();
+    g.fillStyle=GL;g.font="700 24px Montserrat, sans-serif";g.fillText(L.fechado?"🏆  CAMPEÕES":"🏆  LÍDERES (PARCIAL)",80,y+44);
+    g.fillStyle=IV;g.font="700 32px 'Source Sans 3', sans-serif";const a=L.campA||L.S.A.find(x=>x.q),b=L.campB||L.S.B.find(x=>x.q);
+    g.fillText(txtFit(g,"Brasileirão (Série A): "+(a?a.nome:"—"),W-160),80,y+96);g.fillText(txtFit(g,"Série B: "+(b?b.nome:"—"),W-160),80,y+142);y+=200;}
+  for(const k of SER){const cfg=SERIE[k];rr(g,50,y,W-100,80,18);g.fillStyle=cfg.cor;g.fill();g.fillStyle=IV;g.font="800 34px Montserrat, sans-serif";g.fillText(cfg.nome,80,y+52);
+    g.textAlign="right";g.font="600 22px 'Source Sans 3', sans-serif";g.fillStyle="#EADFC8";g.fillText(cfg.sub,W-80,y+50);g.textAlign="left";y+=96;
+    for(const x of L.S[k]){const z=ZL[x.zona];g.fillStyle=x.zona==="camp"||x.zona==="campB"?"#F4E6BC":IV;rr(g,50,y,W-100,RH-10,14);g.fill();g.fillStyle=z[0];g.fillRect(50,y+6,8,RH-22);
+      g.fillStyle=GR;g.font="800 30px Montserrat, sans-serif";g.textAlign="center";g.fillText(String(x.pos),104,y+54);g.textAlign="left";
+      g.fillStyle=TX;g.font="700 32px 'Source Sans 3', sans-serif";g.fillText(txtFit(g,x.nome,520),150,y+40);
+      g.fillStyle=MU;g.font="400 21px 'Source Sans 3', sans-serif";g.fillText(txtFit(g,`${x.nd} dias${x.q?"":" (faltam "+(LIGA_DIAS-x.nd)+")"} · ${x.mesas} mesas · V ${x.vitorias} D ${x.derrotas||0} · ${x.bat} bat. · ${z[1].replace(/^[^A-Za-zÀ-ú]+/,"")}`,700),150,y+72);
+      g.textAlign="right";g.fillStyle=GR;g.font="800 44px Montserrat, sans-serif";g.fillText(x.nota==null?"–":fmtMed(x.nota),W-80,y+56);g.textAlign="left";y+=RH;}
+    y+=20;}
+  const grade=(tit,itens)=>{g.fillStyle=GR;g.font="700 24px Montserrat, sans-serif";g.fillText(tit,60,y+36);y+=50;
+    itens.forEach((it,i)=>{const cx=60+(i%2)*480,cy=y+Math.floor(i/2)*84;rr(g,cx-10,cy,460,74,12);g.fillStyle=IV;g.fill();g.fillStyle=it.neg?"#A84B2A":GO;g.fillRect(cx-10,cy,6,74);
+      g.font="26px sans-serif";g.fillText(it.ic,cx+6,cy+48);g.fillStyle=GR;g.font="700 17px Montserrat, sans-serif";g.fillText(it.t.toUpperCase(),cx+48,cy+26);
+      g.fillStyle=TX;g.font="700 21px 'Source Sans 3', sans-serif";g.fillText(txtFit(g,it.q,390),cx+48,cy+56);});
+    y+=Math.ceil(itens.length/2)*84+10;};
+  if(A.length)grade("ARTILHARIA DO MÊS",A.map(c=>({ic:c.ic,t:c.nome,q:c.top.map(x=>x.nome).join(", ")+" · "+c.top[0].v})));
+  if(SL.length)grade("SELOS DO MÊS",SL.map(x=>({ic:x.ic,t:x.nome,q:listaNomes(x.quem.map(q=>q.nome)),neg:x.neg})));
+  y+=10;g.fillStyle=GO;g.fillRect(50,y,W-100,2);g.fillStyle=MU;g.font="400 20px 'Source Sans 3', sans-serif";
+  g.fillText(`Nota do dia = pontos ÷ mesas do dia · Nota do mês = (soma + ${LIGA_POND} × ${fmtMed(L.Gd)}) ÷ (dias + ${LIGA_POND}) · mínimo ${LIGA_DIAS} dias`,60,y+40);
+  g.fillText("A: 1º campeão · 4º e 5º caem   B: 1º e 2º sobem   C: quem completar os dias sobe",60,y+72);
+  g.textAlign="right";g.fillStyle=GO;g.font="700 26px Cinzel, Georgia, serif";g.fillText("Mão de ferro",W-60,y+110);g.textAlign="left";
+  const HF=Math.min(H,y+150);const out=document.createElement("canvas");out.width=W;out.height=HF;const o=out.getContext("2d");o.drawImage(c,0,0);o.strokeStyle=GO;o.lineWidth=3;o.strokeRect(22,22,W-44,HF-44);
+  imgBlob=await new Promise(r=>out.toBlob(r,"image/png"));openSheet({t:"img",url:out.toDataURL("image/png"),titulo:final?"FECHAMENTO DO MÊS":"BRASILEIRÃO"});
+}
+
 /* ===================== CAMPEONATO DO MÊS EM IMAGEM ===================== */
 async function imgMensal(final){
   try{await document.fonts.ready;}catch(e){}
+  if(ligaAtiva(mesOff))return imgLiga(final);
   const t=tabelaMes(mesOff);const agora=Date.now();const fechado=agora>=t.w.fim;const dias=Math.ceil((t.w.fim-agora)/86400000);
   const GR="#0E3B2E",GO="#C9A227",GL="#E0C25A",IV="#F8F1E4",CR="#F2E8D8",TX="#15291F",MU="#5F5646",TC="#A0522D",SU="#1F6F54";
   const W=1080,RH=104,lib=final?t.lib:t.lib.slice(0,20),sul=[],brl=final?t.br:t.br.slice(0,20),eBR=!final&&compAba==="br";
@@ -2022,7 +2240,8 @@ function vRegras(){
   </div></details>
   <details class="card rg"><summary>⚠️ Infrações (Arts. 22 a 24-D)</summary><div class="rules"><p><b>Derrota imediata</b> (1 peça ao adversário; sem fila, passar com pedra vale 2 peças): passar com pedra na mão (22), gato (23), fingir que não tem e jogar (24), fraude (24-D).</p><p><b>3 pontos ao adversário</b> no placar da mesa, como uma vitória simples dele: colagem irregular (24-A, com advertência), esqueceu de jogar ou “passei” errado (24-B), sinais ao parceiro (24 §4).</p><p><b>Pedra marcada no sorteio</b> (24-C): o infrator perde o sorteio. Fica registrado, sem efeito no placar.</p><p><b>Registro oficial (Decreto nº 001/2026):</b> desde 18/11/2026 as infrações contam por jogador.</p></div></details>
   <details class="card rg"><summary>📊 Pontos do campeonato (PTS)</summary><div class="rules"><p><b>Vitória de mesa</b> (fechou a peça): <b>+${PONTO_VIT}</b> para os dois da dupla.</p><p><b>Batida simples</b> (seca, fechamento forçado, folgando bucha) que <b>não</b> fecha a mesa: <b>+1</b> para quem bateu, inclusive da dupla que perdeu. A que fecha a mesa vale só a vitória.</p><p><b>Batida especial</b>, bônus para quem bateu: lasquinez, buchada, fechou com menor ponto <b>+3</b>; lasquinez preso e buchada dobrada <b>+4</b>.</p><p>Na prática, por mesa vencida (quem fechou / parceiro): com secas 5 / 3 · com especial 6 / 3 · com preso ou dobrada 7 / 3.</p><p>Fechou–Chorou <b>−2</b>. Infrações: fraude <b>−5</b>; passar com pedra, gato, fingir <b>−3</b>; colagem, esqueceu de jogar, sinais <b>−2</b>; pedra marcada no sorteio <b>−1</b>.</p><p>Assistência: só fica registrada (coluna ASS), não pontua. Regra de 23/11/2026, com todo o histórico recalculado.</p></div></details>
-  <details class="card rg"><summary>🏆 Campeonato do Mês (Brasileirão e Libertadores)</summary><div class="rules">${regMensal()}</div></details>
+  <details class="card rg"><summary>🇧🇷 Brasileirão em séries (a partir de dezembro/2026)</summary><div class="rules">${regLiga()}</div></details>
+  <details class="card rg"><summary>🏆 Campeonato do Mês até novembro/2026 (Brasileirão e Libertadores)</summary><div class="rules">${regMensal()}</div></details>
   <details class="card rg"><summary>📈 Ranking geral</summary><div class="rules"><p>Histórico geral, sem disputa de título, nos períodos Hoje, Desde 18/11 ou Tudo. Inclui lançamentos avulsos. Desempate: vitórias → especiais → secas → menos infrações → menos derrotas. Duplas: mesmos critérios e depois peças.</p></div></details>
   <details class="card rg"><summary>🎯 Lustrado (modo individual)</summary><div class="rules"><p>Cada um joga por si, normalmente em 3. Na sua vez, se a soma das pontas da mesa der <b>5 ou múltiplo de 5</b>, você marca esse valor (5, 10, 15…). Quem bate, ou vence o fechamento, soma os pontos que sobraram na mão dos adversários, <b>arredondados para baixo ao múltiplo de 5</b>. Vence quem atingir a meta primeiro ou, sem meta, quem tiver mais pontos ao encerrar. Regras do lustrado variam de mesa para mesa: combinem antes.</p></div></details>
   <details class="card rg"><summary>✅ Boas práticas</summary><div class="rules"><p>Registre cada mesa de um celular por vez. Errou? Use “Desfazer último” (fica registrado). Casos omissos: maioria dos presentes, mínimo de 3 (Art. 26).</p></div></details>
