@@ -411,22 +411,6 @@ async function connect(){
 }
 
 
-/* Retificação 25/11/2026: 2ª batida do Yago (Allan & Yago × Jonh & Jonni) volta a ser fechamento forçado */
-let _ret2511=false;
-async function retif2511(){
-  if(_ret2511||!live||!db||!cache.partidas.length)return;
-  const i0=new Date(2026,10,25).getTime(),i1=new Date(2026,10,26).getTime();
-  const has=(d,re)=>re.test(nomeJog(d.j1))||re.test(nomeJog(d.j2));
-  const cands=cache.partidas.filter(p=>p.criadoEm>=i0&&p.criadoEm<i1&&!p.retif2511).map(p=>{
-    const LY=["A","B"].find(L=>has(p["dupla"+L],/yago/i)&&has(p["dupla"+L],/allan/i));if(!LY)return null;const O=p["dupla"+other(LY)];if(!(has(O,/jonh/i)&&has(O,/jonni/i)))return null;
-    const y=[p["dupla"+LY].j1,p["dupla"+LY].j2].find(j=>/yago/i.test(nomeJog(j)));const idx=(p.eventos||[]).map((e,i)=>e.k==="batida"&&e.jog===y?i:-1).filter(i=>i>=0);
-    return idx.length>=2&&p.eventos[idx[1]].tipo==="seca"?{p,i:idx[1]}:null;}).filter(Boolean);
-  _ret2511=true;
-  if(cands.length!==1){console.warn("retif2511: candidatos",cands.length);return;}
-  const {p,i}=cands[0];const ev=p.eventos.map((e,k)=>k===i?{...e,tipo:"forcado",retificado:"25/11: era fechamento forçado (lançado como seca por erro do placar)"}:e);
-  await db.collection("partidas").doc(p.id).update({eventos:ev,retif2511:true});toast("Mesa de hoje retificada: 2ª batida do Yago = fechamento forçado.");
-}
-setInterval(()=>{try{retif2511();}catch(e){console.error(e);}},4000);
 async function importarDados(){
   if(!db){toast("Sem conexão com o banco.");return;}
   let d;try{const r=await fetch("dados-iniciais.json",{cache:"no-store"});d=await r.json();}catch(e){toast("Não achei o arquivo dados-iniciais.json.");return;}
