@@ -1668,7 +1668,7 @@ function selosMes(off){
   return out;
 }
 /* ===================== BRASILEIRÃO EM SÉRIES (a partir de dez/2026) ===================== */
-const LIGA_INI=new Date(2026,11,1).getTime(),LIGA_DIAS=5,LIGA_MD=1,LIGA_POND=2,LIGA_A=5,LIGA_B=5;
+const LIGA_INI=new Date(2026,11,1).getTime(),LIGA_DIAS=5,LIGA_MD=2,LIGA_POND=2,LIGA_A=5,LIGA_B=5;
 const _lm=new Map();
 function ligaLimpa(){_lm.clear();}
 function diasDoMes(w){const out=[];let d=new Date(w.ini);while(d.getTime()<w.fim){const a=d.getTime();d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);out.push([a,d.getTime()]);}return out;}
@@ -1779,7 +1779,7 @@ function shLiga(){
   <div class="muted" style="font-size:13px;margin-top:4px">Dias jogados: <b>${x.nd}</b> de ${LIGA_DIAS} necessários${x.q?" ✔":` · faltam <b>${LIGA_DIAS-x.nd}</b> dia(s)`}.</div></div>
   <div class="ex"><div class="ex-t">1. A NOTA DE CADA DIA</div><table class="tb ex-c"><thead><tr><th>Dia</th><th>Mesas</th><th>Pontos</th><th>Nota do dia</th></tr></thead><tbody>
   ${x.dias.map(dd=>`<tr><td class="n">${fd(dd.d)}</td><td>${dd.m}</td><td>${dd.pts}</td><td><b>${dd.pts} ÷ ${dd.m} = ${fmtMed(dd.n)}</b></td></tr>`).join("")||`<tr><td colspan="4">Nenhum dia ainda.</td></tr>`}</tbody></table>
-  <p class="muted" style="font-size:12.5px;margin:6px 0 0">Cada dia vale igual, jogando 1 ou 10 mesas. Conta o dia com pelo menos ${LIGA_MD} mesa com peça.</p></div>
+  <p class="muted" style="font-size:12.5px;margin:6px 0 0">Cada dia vale igual, jogando 2 ou 10 mesas. Conta o dia com pelo menos ${LIGA_MD} mesas com peça.</p></div>
   <div class="ex"><div class="ex-t">2. A NOTA DO MÊS</div>
   <div class="ex-l"><span>Soma das notas diárias</span><b>${fmtMed(x.soma||0)}</b></div>
   <div class="ex-l"><span>Dias jogados</span><b>${x.nd}</b></div>
@@ -1807,7 +1807,7 @@ function regLiga(){return `
 <p><b>Art. 1. O que é.</b> Todo mês tem um campeonato: o <b>Brasileirão</b>. Ele começa no dia 1º e termina no último dia do mês. No mês seguinte, começa outro, do zero.</p>
 <p><b>Art. 2. As séries.</b> Os jogadores ficam em três grupos:<br>• <b>Série A</b> — os 5 melhores. Quem ganha a Série A é o <b>Campeão do Brasileirão</b>.<br>• <b>Série B</b> — os seguintes (6º ao 10º). Quem ganha a Série B é o <b>Campeão da Série B</b>.<br>• <b>Série C</b> — aquecimento: quem não completou os dias mínimos e quem é novo.<br><i>Todo mundo continua jogando com todo mundo, em qualquer dupla.</i> A série só diz em qual tabela o seu nome aparece.</p>
 <p><b>Art. 3. Os pontos de cada mesa</b> (iguais aos de sempre):<br>• Ganhou a mesa: <b>+3</b> para os dois da dupla.<br>• Batida simples (seca, forçado, folgando) que <b>não</b> fecha a mesa: <b>+1</b> para quem bateu. Se fechou a mesa, vale só a vitória.<br>• Batida especial (lasquinez, buchada, fechou com menor ponto): <b>+3</b>. Lasquinez preso e buchada dobrada: <b>+4</b>.<br>• Fechou–chorou: <b>−2</b>.<br>• Infrações: fraude −5; passar, gato e fingir −3; colagem, esqueceu e sinais −2; sorteio −1.<br>• Sem fila: cada peça conta como uma mesa.</p>
-<p><b>Art. 4. A nota do dia.</b> Em cada dia que você joga, o site faz uma conta: <b>seus pontos do dia ÷ suas mesas do dia</b>. Isso é a sua <b>nota do dia</b>.<br><i>Exemplo:</i> hoje você jogou 4 mesas e fez 10 pontos → nota do dia = 10 ÷ 4 = <b>2,50</b>.<br>O dia conta a partir de ${LIGA_MD} mesa com peça. <b>Tanto faz o turno</b> (almoço ou depois das 16h): o dia vale igual, com 2 ou com 10 mesas.</p>
+<p><b>Art. 4. A nota do dia.</b> Em cada dia que você joga, o site faz uma conta: <b>seus pontos do dia ÷ suas mesas do dia</b>. Isso é a sua <b>nota do dia</b>.<br><i>Exemplo:</i> hoje você jogou 4 mesas e fez 10 pontos → nota do dia = 10 ÷ 4 = <b>2,50</b>.<br>O dia só conta se você jogar pelo menos <b>${LIGA_MD} mesas com peça</b> nele. Dia com 1 mesa só não entra na conta: nem ajuda, nem atrapalha. <b>Tanto faz o turno</b> (almoço ou depois das 16h): o dia vale igual, com 2 ou com 10 mesas.</p>
 <p><b>Art. 5. A nota do mês.</b> É a média das suas notas diárias, com uma proteção contra sorte: o site soma <b>${LIGA_POND} dias imaginários</b> com a nota média de todos.<br><b>Nota do mês = (soma das notas diárias + ${LIGA_POND} × nota média do grupo) ÷ (dias jogados + ${LIGA_POND})</b>.<br><i>Exemplo:</i> você jogou 5 dias, com notas 3,0 · 2,5 · 2,0 · 3,5 · 2,0 (soma 13,0). A média do grupo é 2,2. Nota = (13,0 + 2 × 2,2) ÷ (5 + 2) = 17,4 ÷ 7 = <b>2,49</b>.</p>
 <p><b>Art. 6. Mínimo para ter posição.</b> Precisa jogar pelo menos <b>${LIGA_DIAS} dias no mês</b>. Quem não chegar aparece com “faltam X dias” e fica abaixo de quem chegou.</p>
 <p><b>Art. 7. Ordem da tabela.</b> Dentro de cada série: primeiro quem completou ${LIGA_DIAS} dias; depois, a <b>maior nota</b>. Empate: mais vitórias → mais batidas especiais → mais batidas simples → menos infrações → mais dias jogados.</p>
